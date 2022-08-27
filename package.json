@@ -5,12 +5,18 @@
   "source": "src/index.html",
   "scripts": {
     "start": "parcel",
-    "build": "parcel build"
+    "build": "parcel build",
+    "tsc": "tsc"
   },
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "parcel": "2.7.0"
+    "@types/react": "18.0.17",
+    "@types/react-dom": "18.0.6",
+    "parcel": "2.7.0",
+    "prettier": "2.7.1",
+    "process": "0.11.10",
+    "typescript": "4.8.2"
   },
   "dependencies": {
     "react": "18.2.0",
