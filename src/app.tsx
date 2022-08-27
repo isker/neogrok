@@ -1,5 +1,14 @@
-import * as styles from "./app.module.css";
+import { Suspense, lazy } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-export function App() {
-  return <h1 className={styles.header}>Hello world!</h1>;
-}
+const Home = lazy(() => import("./home"));
+
+export const App = () => (
+  <Router>
+    <Suspense fallback={<div>Loading...</div>}>
+      <Routes>
+        <Route path="/" element={<Home />} />
+      </Routes>
+    </Suspense>
+  </Router>
+);
