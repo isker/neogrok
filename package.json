@@ -1,0 +1,19 @@
+{
+  "name": "zoekt-snel",
+  "version": "0.0.1",
+  "description": "A snappier frontend for zoekt",
+  "source": "src/index.html",
+  "scripts": {
+    "start": "parcel",
+    "build": "parcel build"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "parcel": "2.7.0"
+  },
+  "dependencies": {
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  }
+}
