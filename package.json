@@ -1,36 +1,40 @@
 {
-  "name": "zoekt-snel",
+  "name": "neogrok",
   "version": "0.0.1",
   "description": "A snappier frontend for zoekt",
   "source": "src/index.html",
   "scripts": {
     "start": "parcel",
     "build": "parcel build",
-    "lint": "eslint src/"
+    "lint": "prettier -c src/ && tsc -b && eslint --report-unused-disable-directives src/"
   },
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@parcel/reporter-bundle-analyzer": "2.7.0",
-    "@parcel/validator-typescript": "2.7.0",
+    "@parcel/reporter-bundle-analyzer": "2.8.2",
+    "@parcel/validator-typescript": "2.8.2",
     "@types/react": "18.0.17",
     "@types/react-dom": "18.0.6",
     "@typescript-eslint/eslint-plugin": "5.35.1",
     "@typescript-eslint/parser": "5.35.1",
     "eslint": "8.23.0",
     "eslint-config-airbnb": "19.0.4",
+    "eslint-config-prettier": "8.6.0",
     "eslint-plugin-import": "2.26.0",
     "eslint-plugin-jsx-a11y": "6.6.1",
     "eslint-plugin-react": "7.31.1",
     "eslint-plugin-react-hooks": "4.6.0",
-    "parcel": "2.7.0",
+    "parcel": "2.8.2",
+    "postcss": "8.4.16",
     "prettier": "2.7.1",
     "process": "0.11.10",
-    "typescript": "4.8.2"
+    "tailwindcss": "3.1.8",
+    "typescript": "4.9.4"
   },
   "dependencies": {
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-router-dom": "6.3.0"
+    "react-router-dom": "6.6.2",
+    "zod": "3.20.2"
   }
 }

@@ -2,12 +2,14 @@
   "include": ["src/**/*"],
   "compilerOptions": {
     "module": "es2022",
+    "target": "es2022",
     "strict": true,
     "isolatedModules": true,
     "typeRoots": ["src/@types", "node_modules/@types"],
     "noEmit": true,
     "jsx": "react-jsx",
-    "lib": ["ES2021", "dom"],
-    "moduleResolution": "node"
+    "lib": ["ES2022", "dom"],
+    "moduleResolution": "node",
+    "importsNotUsedAsValues": "error"
   }
 }

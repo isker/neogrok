@@ -13,15 +13,17 @@
     "airbnb/hooks",
     "plugin:react/jsx-runtime",
     "plugin:@typescript-eslint/recommended",
-    "plugin:import/typescript"
+    "plugin:import/typescript",
+    "prettier"
   ],
   "rules": {
-    "quotes": "off",
-    "comma-dangle": "off",
     "import/prefer-default-export": "off",
     "react/jsx-filename-extension": ["error", { "extensions": [".tsx"] }],
     "react/function-component-definition": "off",
-    "@typescript-eslint/no-non-null-assertion": "off",
+    "no-plusplus": "off",
+    "no-else-return": "off",
+    "no-use-before-define": "off",
+    "jsx-a11y/label-has-associated-control": ["error", { "assert": "either" }],
     "import/extensions": [
       "error",
       "ignorePackages",

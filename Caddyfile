@@ -1,0 +1,13 @@
+localhost:1337 {
+	encode gzip
+
+	handle /api/* {
+		reverse_proxy localhost:6070
+	}
+
+	handle {
+		root * dist
+		try_files {path} /index.html
+		file_server
+	}
+}
