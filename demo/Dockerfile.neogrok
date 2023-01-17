@@ -1,0 +1,13 @@
+# Can't use 18-slim because parcel needs python for native installs... for dev
+# tooling we don't even use ;_;
+FROM node:18 as app-builder
+WORKDIR /app
+COPY package.json package-lock.json .parcelrc .postcssrc tailwind.config.js .
+COPY src src
+RUN npm install && npm run build
+
+FROM caddy:2.6.2
+WORKDIR /app
+COPY /demo/Caddyfile Caddyfile
+COPY --from=app-builder /app/dist dist
+ENTRYPOINT caddy run

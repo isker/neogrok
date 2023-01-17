@@ -1,0 +1,10 @@
+*
+!package.json
+!package-lock.json
+!.parcelrc
+!.postcssrc
+!tailwind.config.js
+!src/
+!.git
+!Caddyfile
+!demo/
