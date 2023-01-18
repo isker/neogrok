@@ -247,7 +247,6 @@ const SearchResults = memo(function SearchResults({
       <>
         <h1 className="text-xs flex pt-2">
           <span>
-            {/* TODO need separate numbers for backend files/matches/time and frontend files/matches/time */}
             Backend: {fileCount} {fileCount === 1 ? "file" : "files"} /{" "}
             {matchCount} {matchCount === 1 ? "match" : "matches"} /{" "}
             {
@@ -258,7 +257,7 @@ const SearchResults = memo(function SearchResults({
           </span>
           <span className="ml-auto">
             Frontend: {files.length} {files.length === 1 ? "file" : "files"} /{" "}
-            {frontendMatchCount} {matchCount === 1 ? "match" : "matches"} /
+            {frontendMatchCount} {matchCount === 1 ? "match" : "matches"} /{" "}
             {/* TODO need to have search-api return a timing, and also bake in time spent debouncing.
                 Doing render time on top of that sounds too hard. */}
             TODOms
@@ -288,8 +287,8 @@ const SearchResultsFile = ({
   rank,
 }: {
   file: ResultFile;
-  fileUrlTemplate: string;
-  lineNumberTemplate: string;
+  fileUrlTemplate: string | undefined;
+  lineNumberTemplate: string | undefined;
   rank: number;
 }) => {
   // Search results may match not only on file contents but also the filename itself.
@@ -303,6 +302,10 @@ const SearchResultsFile = ({
       `Unreachable: received ${fileNameMatches.length} file name matches`
     );
   }
+
+  const fileUrl = fileUrlTemplate
+    ?.replaceAll("{{.Version}}", version)
+    .replaceAll("{{.Path}}", fileName);
 
   let renderedFileName;
   if (fileNameMatches.length === 1) {
@@ -322,9 +325,13 @@ const SearchResultsFile = ({
     renderedFileName = fileName;
   }
 
-  const fileUrl = fileUrlTemplate
-    .replaceAll("{{.Version}}", version)
-    .replaceAll("{{.Path}}", fileName);
+  const linkedFilename = fileUrl ? (
+    <a className="text-cyan-700 hover:underline decoration-1" href={fileUrl}>
+      {renderedFileName}
+    </a>
+  ) : (
+    renderedFileName
+  );
 
   // TODO could put branch here if we care
   const metadata = [
@@ -337,7 +344,14 @@ const SearchResultsFile = ({
     ({ isFileNameMatch }) => !isFileNameMatch
   );
 
-  const fileLines = nonFileNameMatches
+  // Groups of contiguous lines in the file; contiguous matches are merged into
+  // a single group.
+  //
+  // TODO we need to cut off these sections after a certain number of matches are
+  // rendered, making them invisible by default. Users don't want to see a
+  // thousand matches in a single file, generally. We should have an
+  // expand/collapse UI for the remainder.
+  const fileSections = nonFileNameMatches
     .map(
       ({
         contentBase64,
@@ -360,19 +374,19 @@ const SearchResultsFile = ({
       }
     )
     // Instead of simply flattening the matchLines to create the fileLines, we
-    // do this reduction so that we can identify discontinuities between lines
-    // and insert spacers for them into the UI.
-    .reduce<Array<{ lineNumber: number; lineTokens: LineToken[] } | null>>(
+    // do this reduction so that we can identify discontinuities between lines.
+    .reduce<Array<Array<{ lineNumber: number; lineTokens: LineToken[] }>>>(
       (acc, matchLines) => {
         if (
-          acc.length > 0 &&
+          acc.length === 0 ||
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          acc[acc.length - 1]!.lineNumber !== matchLines[0].lineNumber - 1
+          acc.at(-1)!.at(-1)!.lineNumber !== matchLines[0].lineNumber - 1
         ) {
-          // Null signifies a gap.
-          acc.push(null);
+          acc.push(Array.from(matchLines));
+        } else {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          acc.at(-1)!.push(...matchLines);
         }
-        acc.push(...matchLines);
         return acc;
       },
       []
@@ -380,34 +394,35 @@ const SearchResultsFile = ({
 
   return (
     <section className="my-2 p-1 border-2 flex flex-col gap-1">
-      <h2 className="px-2 py-1 border-1 text-sm items-center sticky flex bg-slate-100 top-0 whitespace-pre-wrap">
+      <h2 className="px-2 py-1 text-sm items-center sticky flex bg-slate-100 top-0 whitespace-pre-wrap">
         {/* ideally we could hyperlink the repository but there is no such
         URL in search results - either we do dumb stuff to the file template URL
-        or we make a separate API request for each repo */}
+        or we make a separate API request for each repo
+
+        TODO font-mono for the entire pathname looks pretty lame, but I couldn't find
+        a repo/path separator that looked good with non-mono font.  Might need an SVG?
+        */}
         <span className="font-mono">
           {/* eslint-disable react/jsx-no-comment-textnodes */}
           {repository}//
           {/* eslint-enable react/jsx-no-comment-textnodes */}
-          <a
-            className="text-cyan-700 hover:underline decoration-1"
-            href={fileUrl}
-          >
-            {renderedFileName}
-          </a>
+          {linkedFilename}
         </span>
         <span className="ml-auto">{metadata.join(" | ")}</span>
       </h2>
-      {fileLines.length > 0 ? (
-        // minmax because we don't want the line number column to slide left and
-        // right as you scroll down through files with different `min-content`s'
-        // worth of line numbers; 50px is vaguely 5 digits
-        <div className="font-mono text-sm grid grid-cols-[minmax(50px,_min-content)_1fr] gap-x-2">
-          {fileLines.map((lineOrGap, index) => {
-            if (lineOrGap !== null) {
-              const { lineNumber, lineTokens } = lineOrGap;
-              return (
-                <Fragment key={lineNumber}>
-                  <span className="select-none text-right pr-1 border-r-2">
+      {fileSections.length > 0 ? (
+        <div className="font-mono text-xs divide-y">
+          {fileSections.map((section) => (
+            // minmax because we don't want the line number column to slide left and
+            // right as you scroll down through sections with different `min-content`s'
+            // worth of line numbers. 2rem is enough for 4 digits.
+            <div
+              key={section[0].lineNumber}
+              className="py-1 grid grid-cols-[minmax(2rem,_min-content)_1fr] gap-x-2"
+            >
+              {section.map(({ lineNumber, lineTokens }) => {
+                const linkedLineNumber =
+                  fileUrl && lineNumberTemplate ? (
                     <a
                       className="hover:underline decoration-1"
                       href={`${fileUrl}${lineNumberTemplate.replaceAll(
@@ -417,31 +432,22 @@ const SearchResultsFile = ({
                     >
                       {lineNumber}
                     </a>
-                  </span>
-                  <code className="whitespace-pre-wrap">
-                    <SearchResultLine lineTokens={lineTokens} />
-                  </code>
-                </Fragment>
-              );
-            } else {
-              // TODO this is a fairly lame gap UI. Ideally we'd get contiguous
-              // lines boxed like on sourcegraph.com, but to do that cleanly with
-              // our styling approach requires subgrid. Some day.
-              //
-              // OR abandon the top-level grid and only have each group of
-              // contiguous lines be a grid.
-              return (
-                // eslint-disable-next-line react/no-array-index-key
-                <Fragment key={`${index}-gap`}>
-                  <span className="select-none text-right pr-1 border-r-2">
-                    ⋮
-                  </span>
-                  {/* To consume the grid column: */}
-                  <span />
-                </Fragment>
-              );
-            }
-          })}
+                  ) : (
+                    lineNumber
+                  );
+                return (
+                  <Fragment key={lineNumber}>
+                    <span className="select-none text-gray-600 text-right pr-1">
+                      {linkedLineNumber}
+                    </span>
+                    <code className="whitespace-pre-wrap">
+                      <SearchResultLine lineTokens={lineTokens} />
+                    </code>
+                  </Fragment>
+                );
+              })}
+            </div>
+          ))}
         </div>
       ) : null}
     </section>
