@@ -1,6 +1,7 @@
 import { Fragment, memo, startTransition, useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { LineToken, parseIntoLines } from "./content-parser";
+import { useFileMatchesCutoff, useMatchSortOrder } from "./preferences";
 import { ResultFile, search, SearchResult } from "./search-api";
 import { useRouteSearchQuery } from "./use-route-search-query";
 
@@ -241,8 +242,8 @@ const SearchResults = memo(function SearchResults({
       repoLineNumberFragments,
     } = searchState.result;
     const frontendMatchCount = files
-      .map(({ matches }) => matches.length)
-      .reduce((a, b) => a + b, 0);
+      .flatMap(({ chunks }) => chunks)
+      .reduce((a, { matchRanges }) => a + matchRanges.length, 0);
     return (
       <>
         <h1 className="text-xs flex pt-2">
@@ -281,7 +282,7 @@ const SearchResults = memo(function SearchResults({
 });
 
 const SearchResultsFile = ({
-  file: { repository, fileName, language, matches, version },
+  file: { repository, fileName, language, chunks, version },
   fileUrlTemplate,
   lineNumberTemplate,
   rank,
@@ -293,13 +294,13 @@ const SearchResultsFile = ({
 }) => {
   // Search results may match not only on file contents but also the filename itself.
   // We have to especially handle such matches to render them properly.
-  const fileNameMatches = matches.filter(
-    ({ isFileNameMatch }) => isFileNameMatch
+  const fileNameChunks = chunks.filter(
+    ({ isFileNameChunk }) => isFileNameChunk
   );
-  if (fileNameMatches.length > 1) {
+  if (fileNameChunks.length > 1) {
     // Should only ever be one match, with one or more ranges.  Check just to be sure.
     throw new Error(
-      `Unreachable: received ${fileNameMatches.length} file name matches`
+      `Unreachable: received ${fileNameChunks.length} file name matches`
     );
   }
 
@@ -308,16 +309,16 @@ const SearchResultsFile = ({
     .replaceAll("{{.Path}}", fileName);
 
   let renderedFileName;
-  if (fileNameMatches.length === 1) {
+  if (fileNameChunks.length === 1) {
     const [
       {
         contentBase64,
         contentStart: { byteOffset },
-        ranges,
+        matchRanges,
       },
-    ] = fileNameMatches;
+    ] = fileNameChunks;
     // If you put newlines in your filenames, you deserve this to be broken.
-    const [lineTokens] = parseIntoLines(contentBase64, byteOffset, ranges);
+    const [lineTokens] = parseIntoLines(contentBase64, byteOffset, matchRanges);
     renderedFileName = (
       <SearchResultLine key={fileName} lineTokens={lineTokens} />
     );
@@ -333,68 +334,91 @@ const SearchResultsFile = ({
     renderedFileName
   );
 
+  const [sortOrder] = useMatchSortOrder();
+  const nonFileNameMatches = chunks.filter(
+    ({ isFileNameChunk }) => !isFileNameChunk
+  );
+  if (sortOrder === "line-number") {
+    // It's safe to mutate as we just made a copy with `filter` above.
+    nonFileNameMatches.sort(
+      (
+        { contentStart: { byteOffset: a } },
+        { contentStart: { byteOffset: b } }
+      ) => a - b
+    );
+  } // Nothing to do otherwise; matches are already sorted by score.
+
+  // Groups of contiguous lines in the file; contiguous matches are merged into
+  // a single group.
+  const lineGroups: Array<
+    Array<{ lineNumber: number; lineTokens: LineToken[] }>
+  > = [];
+  let numMatchesInFileSections = 0;
+  // The goal is to produce the minimal number of lineGroups that exceed the
+  // cutoff. We don't want to cut a file section in half to make the exact
+  // cutoff (nor can we, if the cutoff is exceeded in the middle of a single
+  // line).
+  const [fileMatchesCutoff] = useFileMatchesCutoff();
+  // This state var is only used if we have actually exceeded the cutoff.
+  const [expandedBy, setExpandedBy] = useState<number>();
+  // That being said, we do special case a 0-cutoff by simply rendering no
+  // lineGroups.
+  if (fileMatchesCutoff !== 0 || expandedBy) {
+    for (const {
+      contentBase64,
+      contentStart: { byteOffset: baseByteOffset, lineNumber: startLineNumber },
+      matchRanges,
+    } of nonFileNameMatches) {
+      const contiguous =
+        lineGroups.at(-1)?.at(-1)?.lineNumber === startLineNumber + 1;
+
+      if (
+        !contiguous &&
+        numMatchesInFileSections >= fileMatchesCutoff &&
+        !expandedBy
+      ) {
+        break;
+      }
+
+      const chunkLines = parseIntoLines(
+        contentBase64,
+        baseByteOffset,
+        matchRanges
+      ).map((lineTokens, lineOffset) => ({
+        lineNumber: startLineNumber + lineOffset,
+        lineTokens,
+      }));
+      numMatchesInFileSections += matchRanges.length;
+
+      if (contiguous) {
+        // By the definition of `contiguous` we know this exists.
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        lineGroups.at(-1)!.push(...chunkLines);
+      } else {
+        lineGroups.push(chunkLines);
+      }
+    }
+  }
+
+  const numTotalMatches = chunks.reduce(
+    (count, { matchRanges }) => count + matchRanges.length,
+    0
+  );
+  const numHiddenMatches =
+    numTotalMatches -
+    numMatchesInFileSections -
+    fileNameChunks.reduce((a, { matchRanges }) => a + matchRanges.length, 0);
+
   // TODO could put branch here if we care
   const metadata = [
-    `${matches.length} ${matches.length === 1 ? "match" : "matches"}`,
+    `${numTotalMatches} ${numTotalMatches === 1 ? "match" : "matches"}`,
     language,
     `№${rank}`,
   ];
 
-  const nonFileNameMatches = matches.filter(
-    ({ isFileNameMatch }) => !isFileNameMatch
-  );
-
-  // Groups of contiguous lines in the file; contiguous matches are merged into
-  // a single group.
-  //
-  // TODO we need to cut off these sections after a certain number of matches are
-  // rendered, making them invisible by default. Users don't want to see a
-  // thousand matches in a single file, generally. We should have an
-  // expand/collapse UI for the remainder.
-  const fileSections = nonFileNameMatches
-    .map(
-      ({
-        contentBase64,
-        contentStart: {
-          byteOffset: baseByteOffset,
-          lineNumber: startLineNumber,
-        },
-        ranges,
-      }) => {
-        const matchLines = parseIntoLines(
-          contentBase64,
-          baseByteOffset,
-          ranges
-        );
-
-        return matchLines.map((lineTokens, lineOffset) => ({
-          lineNumber: startLineNumber + lineOffset,
-          lineTokens,
-        }));
-      }
-    )
-    // Instead of simply flattening the matchLines to create the fileLines, we
-    // do this reduction so that we can identify discontinuities between lines.
-    .reduce<Array<Array<{ lineNumber: number; lineTokens: LineToken[] }>>>(
-      (acc, matchLines) => {
-        if (
-          acc.length === 0 ||
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          acc.at(-1)!.at(-1)!.lineNumber !== matchLines[0].lineNumber - 1
-        ) {
-          acc.push(Array.from(matchLines));
-        } else {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          acc.at(-1)!.push(...matchLines);
-        }
-        return acc;
-      },
-      []
-    );
-
   return (
     <section className="my-2 p-1 border-2 flex flex-col gap-1">
-      <h2 className="px-2 py-1 text-sm items-center sticky flex bg-slate-100 top-0 whitespace-pre-wrap">
+      <h2 className="px-2 py-1 text-sm items-center sticky top-0 flex bg-slate-100 whitespace-pre-wrap">
         {/* ideally we could hyperlink the repository but there is no such
         URL in search results - either we do dumb stuff to the file template URL
         or we make a separate API request for each repo
@@ -410,17 +434,17 @@ const SearchResultsFile = ({
         </span>
         <span className="ml-auto">{metadata.join(" | ")}</span>
       </h2>
-      {fileSections.length > 0 ? (
+      {lineGroups.length > 0 ? (
         <div className="font-mono text-xs divide-y">
-          {fileSections.map((section) => (
+          {lineGroups.map((lines) => (
             // minmax because we don't want the line number column to slide left and
             // right as you scroll down through sections with different `min-content`s'
             // worth of line numbers. 2rem is enough for 4 digits.
             <div
-              key={section[0].lineNumber}
+              key={lines[0].lineNumber}
               className="py-1 grid grid-cols-[minmax(2rem,_min-content)_1fr] gap-x-2"
             >
-              {section.map(({ lineNumber, lineTokens }) => {
+              {lines.map(({ lineNumber, lineTokens }) => {
                 const linkedLineNumber =
                   fileUrl && lineNumberTemplate ? (
                     <a
@@ -449,6 +473,28 @@ const SearchResultsFile = ({
             </div>
           ))}
         </div>
+      ) : null}
+      {numHiddenMatches > 0 && !expandedBy ? (
+        <button
+          type="button"
+          onClick={() => setExpandedBy(numHiddenMatches)}
+          className="bg-slate-100 text-sm py-1"
+        >
+          Show {numHiddenMatches} more{" "}
+          {numHiddenMatches === 1 ? "match" : "matches"}
+        </button>
+      ) : null}
+      {expandedBy ? (
+        <button
+          type="button"
+          // TODO we should scroll top into view before collapsing.
+          // Sequencing that with a smooth scroll is challenging, probably
+          // need an intersection observer.
+          onClick={() => setExpandedBy(undefined)}
+          className="bg-slate-100 text-sm py-1 sticky bottom-0"
+        >
+          Show {expandedBy} fewer {expandedBy === 1 ? "match" : "matches"}
+        </button>
       ) : null}
     </section>
   );

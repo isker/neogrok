@@ -91,8 +91,8 @@ const searchResultSchema = z.object({
                   .transform(({ Content, ContentStart, FileName, Ranges }) => ({
                     contentBase64: Content,
                     contentStart: ContentStart,
-                    isFileNameMatch: FileName,
-                    ranges: Ranges,
+                    isFileNameChunk: FileName,
+                    matchRanges: Ranges,
                   }))
               ),
             })
@@ -102,15 +102,7 @@ const searchResultSchema = z.object({
                 fileName: FileName,
                 language: Language,
                 version: Version,
-                // zoekt scores different matches in the same file and sorts
-                // them by score, which is not useful to us. Sort by the order
-                // they appear in the file.
-                matches: ChunkMatches.sort(
-                  (
-                    { contentStart: { byteOffset: a } },
-                    { contentStart: { byteOffset: b } }
-                  ) => a - b
-                ),
+                chunks: ChunkMatches,
               })
             )
         )
@@ -140,6 +132,6 @@ const searchResultSchema = z.object({
 
 export type SearchResult = z.infer<typeof searchResultSchema>["Result"];
 export type ResultFile = SearchResult["files"][number];
-export type FileMatch = ResultFile["matches"][number];
-export type ContentRange = FileMatch["ranges"][number];
+export type Chunks = ResultFile["chunks"][number];
+export type MatchRange = Chunks["matchRanges"][number];
 export type ContentLocation = z.infer<typeof locationSchema>;

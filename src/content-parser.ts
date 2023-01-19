@@ -1,4 +1,4 @@
-import type { ContentRange } from "./search-api";
+import type { MatchRange } from "./search-api";
 
 // TODO consider passing `fatal: true` in the options - it's likely that we want
 // to not render non-UTF-8 files, with the exception signalling to render
@@ -24,7 +24,7 @@ export type LineToken =
 export const parseIntoLines = (
   contentBase64: string,
   baseByteOffset: number,
-  ranges: ReadonlyArray<ContentRange>
+  ranges: ReadonlyArray<MatchRange>
 ) => {
   const contentBytes = base64StringToBytes(contentBase64);
 
@@ -34,7 +34,7 @@ export const parseIntoLines = (
   const rangeIterator = ranges[Symbol.iterator]();
   // The range that we're currently in, or the next upcoming range, or undefined
   // if we've passed the last range.
-  let currentRange: ContentRange | undefined = rangeIterator.next().value;
+  let currentRange: MatchRange | undefined = rangeIterator.next().value;
 
   let currentTokenStart = 0;
   for (let i = 0; i < contentBytes.length; i++) {

@@ -1,7 +1,9 @@
 FROM golang:1.18 as go-builder
 ENV CGO_ENABLED=0
 WORKDIR /zoekt
-# Invalidate on every commit, as that's what we're effectively indexing.
+# Invalidate on every commit, as that's what we're effectively indexing. We
+# still index from github instead of locally so that we get repo metadata in the
+# index.
 COPY .git .git
 # We need to use this fork that has a critical bugfix:
 # https://github.com/sourcegraph/zoekt/pull/506

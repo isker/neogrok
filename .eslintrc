@@ -23,6 +23,7 @@
     "no-plusplus": "off",
     "no-else-return": "off",
     "no-use-before-define": "off",
+    "no-restricted-syntax": "off",
     "jsx-a11y/label-has-associated-control": ["error", { "assert": "either" }],
     "import/extensions": [
       "error",
