@@ -477,3 +477,5 @@ export default SearchPage;
 // FIXME scary bits of context missing with blank lines, like the server isn't sending double newlines
 // http://localhost:1234/?q=test
 // http://localhost:1234/?q=package
+
+// FIXME we need flex wrapping... everywhere.  Form inputs, results header, file headers, etc.
