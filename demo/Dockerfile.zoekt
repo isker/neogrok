@@ -1,9 +1,8 @@
 FROM golang:1.18 as go-builder
-# Because of the static distroless image, disable native comp.
 ENV CGO_ENABLED=0
-# Invalidate on every commit, as that's what we're effectively indexing.
-ENV GITHUB_SHA
 WORKDIR /zoekt
+# Invalidate on every commit, as that's what we're effectively indexing.
+COPY .git .git
 # We need to use this fork that has a critical bugfix:
 # https://github.com/sourcegraph/zoekt/pull/506
 # Might as well use it to index a second repository as well.
