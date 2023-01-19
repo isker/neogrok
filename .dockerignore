@@ -5,7 +5,5 @@
 !.postcssrc
 !tailwind.config.js
 !src/
-# To index our own repo in zoekt.
-!.git
 !Caddyfile
 !demo/
