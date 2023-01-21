@@ -1,4 +1,11 @@
-import { Fragment, memo, startTransition, useEffect, useState } from "react";
+import {
+  Fragment,
+  memo,
+  startTransition,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Link, useLocation } from "react-router-dom";
 import { LineToken, parseIntoLines } from "./content-parser";
 import { useFileMatchesCutoff, useMatchSortOrder } from "./preferences";
@@ -416,87 +423,110 @@ const SearchResultsFile = ({
     `№${rank}`,
   ];
 
+  const topOfList = useRef<HTMLDivElement>(null);
   return (
-    <section className="my-2 p-1 border-2 flex flex-col gap-1">
-      <h2 className="px-2 py-1 text-sm items-center sticky top-0 flex bg-slate-100 whitespace-pre-wrap">
-        {/* ideally we could hyperlink the repository but there is no such
+    <>
+      <span ref={topOfList} />
+      <section className="my-2 p-1 border-2 flex flex-col gap-1">
+        <h2 className="px-2 py-1 text-sm items-center sticky top-0 flex bg-slate-100 whitespace-pre-wrap">
+          {/* ideally we could hyperlink the repository but there is no such
         URL in search results - either we do dumb stuff to the file template URL
         or we make a separate API request for each repo
 
         TODO font-mono for the entire pathname looks pretty lame, but I couldn't find
         a repo/path separator that looked good with non-mono font.  Might need an SVG?
         */}
-        <span className="font-mono">
-          {/* eslint-disable react/jsx-no-comment-textnodes */}
-          {repository}//
-          {/* eslint-enable react/jsx-no-comment-textnodes */}
-          {linkedFilename}
-        </span>
-        <span className="ml-auto">{metadata.join(" | ")}</span>
-      </h2>
-      {lineGroups.length > 0 ? (
-        <div className="font-mono text-xs divide-y">
-          {lineGroups.map((lines) => (
-            // minmax because we don't want the line number column to slide left and
-            // right as you scroll down through sections with different `min-content`s'
-            // worth of line numbers. 2rem is enough for 4 digits.
-            <div
-              key={lines[0].lineNumber}
-              className="py-1 grid grid-cols-[minmax(2rem,_min-content)_1fr] gap-x-2"
-            >
-              {lines.map(({ lineNumber, lineTokens }) => {
-                const linkedLineNumber =
-                  fileUrl && lineNumberTemplate ? (
-                    <a
-                      className="hover:underline decoration-1"
-                      href={`${fileUrl}${lineNumberTemplate.replaceAll(
-                        "{{.LineNumber}}",
-                        lineNumber.toString()
-                      )}`}
-                    >
-                      {lineNumber}
-                    </a>
-                  ) : (
-                    lineNumber
+          <span className="font-mono">
+            {/* eslint-disable react/jsx-no-comment-textnodes */}
+            {repository}//
+            {/* eslint-enable react/jsx-no-comment-textnodes */}
+            {linkedFilename}
+          </span>
+          <span className="ml-auto">{metadata.join(" | ")}</span>
+        </h2>
+        {lineGroups.length > 0 ? (
+          <div className="font-mono text-xs divide-y">
+            {lineGroups.map((lines) => (
+              // minmax because we don't want the line number column to slide left and
+              // right as you scroll down through sections with different `min-content`s'
+              // worth of line numbers. 2rem is enough for 4 digits.
+              <div
+                key={lines[0].lineNumber}
+                className="py-1 grid grid-cols-[minmax(2rem,_min-content)_1fr] gap-x-2"
+              >
+                {lines.map(({ lineNumber, lineTokens }) => {
+                  const linkedLineNumber =
+                    fileUrl && lineNumberTemplate ? (
+                      <a
+                        className="hover:underline decoration-1"
+                        href={`${fileUrl}${lineNumberTemplate.replaceAll(
+                          "{{.LineNumber}}",
+                          lineNumber.toString()
+                        )}`}
+                      >
+                        {lineNumber}
+                      </a>
+                    ) : (
+                      lineNumber
+                    );
+                  return (
+                    <Fragment key={lineNumber}>
+                      <span className="select-none text-gray-600 text-right pr-1">
+                        {linkedLineNumber}
+                      </span>
+                      <code className="whitespace-pre-wrap">
+                        <SearchResultLine lineTokens={lineTokens} />
+                      </code>
+                    </Fragment>
                   );
-                return (
-                  <Fragment key={lineNumber}>
-                    <span className="select-none text-gray-600 text-right pr-1">
-                      {linkedLineNumber}
-                    </span>
-                    <code className="whitespace-pre-wrap">
-                      <SearchResultLine lineTokens={lineTokens} />
-                    </code>
-                  </Fragment>
-                );
-              })}
-            </div>
-          ))}
-        </div>
-      ) : null}
-      {numHiddenMatches > 0 && !expandedBy ? (
-        <button
-          type="button"
-          onClick={() => setExpandedBy(numHiddenMatches)}
-          className="bg-slate-100 text-sm py-1"
-        >
-          Show {numHiddenMatches} more{" "}
-          {numHiddenMatches === 1 ? "match" : "matches"}
-        </button>
-      ) : null}
-      {expandedBy ? (
-        <button
-          type="button"
-          // TODO we should scroll top into view before collapsing.
-          // Sequencing that with a smooth scroll is challenging, probably
-          // need an intersection observer.
-          onClick={() => setExpandedBy(undefined)}
-          className="bg-slate-100 text-sm py-1 sticky bottom-0"
-        >
-          Show {expandedBy} fewer {expandedBy === 1 ? "match" : "matches"}
-        </button>
-      ) : null}
-    </section>
+                })}
+              </div>
+            ))}
+          </div>
+        ) : null}
+        {numHiddenMatches > 0 && !expandedBy ? (
+          <button
+            type="button"
+            onClick={() => setExpandedBy(numHiddenMatches)}
+            className="bg-slate-100 text-sm py-1"
+          >
+            Show {numHiddenMatches} more{" "}
+            {numHiddenMatches === 1 ? "match" : "matches"}
+          </button>
+        ) : null}
+        {expandedBy ? (
+          <button
+            type="button"
+            onClick={async () => {
+              // If we've scrolled down so that the top of the list is not
+              // visible, scroll it back into view. Only after scrolling is
+              // complete do we close the list, to minimize confusion caused by
+              // the motion.
+              if (topOfList.current) {
+                const top = topOfList.current;
+                await new Promise<void>((resolve) => {
+                  const observer = new IntersectionObserver((entries) => {
+                    if (entries.some(({ isIntersecting }) => isIntersecting)) {
+                      observer.disconnect();
+                      resolve();
+                    }
+                  });
+                  observer.observe(top);
+                  top.scrollIntoView({
+                    block: "nearest",
+                    behavior: "smooth",
+                  });
+                });
+              }
+              setExpandedBy(undefined);
+            }}
+            className="bg-slate-100 text-sm py-1 sticky bottom-0"
+          >
+            Hide {expandedBy} {expandedBy === 1 ? "match" : "matches"}
+          </button>
+        ) : null}
+      </section>
+    </>
   );
 };
 
