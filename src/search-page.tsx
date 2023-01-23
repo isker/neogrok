@@ -378,7 +378,7 @@ const SearchResultsFile = ({
       matchRanges,
     } of nonFileNameMatches) {
       const contiguous =
-        lineGroups.at(-1)?.at(-1)?.lineNumber === startLineNumber + 1;
+        lineGroups.at(-1)?.at(-1)?.lineNumber === startLineNumber - 1;
 
       if (
         !contiguous &&
