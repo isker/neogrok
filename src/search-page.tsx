@@ -145,66 +145,67 @@ const SearchForm = () => {
   //   (line number) vs score, limit on number of visible matches per file before
   //   needing to expand.
   return (
-    <div className="flex font-mono items-center whitespace-nowrap">
-      <label
-        htmlFor="query"
-        className="p-1 pr-2 bg-gray-300 border border-gray-400 cursor-help"
-        title="Search query"
-      >
-        $ grok
+    <div className="flex flex-wrap gap-y-2 justify-center font-mono whitespace-nowrap">
+      <label htmlFor="query" title="Search query" className="flex-auto flex">
+        <span className="inline-block p-1 pr-2 bg-gray-300 border border-gray-400 cursor-help">
+          $ grok
+        </span>
+        <input
+          id="query"
+          type="search"
+          // I think autofocusing an element like this, at the top of the page,
+          // is okay for a11y.  Not that half the other things here are.
+          // eslint-disable-next-line jsx-a11y/no-autofocus
+          autoFocus
+          spellCheck={false}
+          autoCorrect="off"
+          autoCapitalize="off"
+          className="p-1 border shadow-sm border-slate-300 focus:outline-none focus:border-sky-500 flex-auto"
+          value={searchQuery.q ?? ""}
+          onChange={(e) => {
+            setQuery(e.target.value);
+          }}
+        />
       </label>
-      <input
-        id="query"
-        type="search"
-        // I think autofocusing an element like this, at the top of the page,
-        // is okay for a11y.  Not that half the other things here are.
-        // eslint-disable-next-line jsx-a11y/no-autofocus
-        autoFocus
-        spellCheck={false}
-        className="w-full p-1 border shadow-sm border-slate-300 focus:outline-none focus:border-sky-500"
-        value={searchQuery.q ?? ""}
-        onChange={(e) => {
-          setQuery(e.target.value);
-        }}
-      />
-      <label
-        htmlFor="context"
-        className="py-1 px-2 bg-gray-300 border border-gray-400 cursor-help"
-        title="Number of lines of context around matches (like grep!)"
-      >
-        -C
-      </label>
-      <input
-        id="context"
-        type="text"
-        inputMode="numeric"
-        pattern="[0-9]+"
-        size={3}
-        className="p-1 border shadow-sm border-slate-300 focus:outline-none valid:focus:border-sky-500 invalid:border-red-500"
-        value={contextString}
-        onChange={(e) => {
-          setContextString(e.target.value);
-        }}
-      />
-      <label
-        htmlFor="files"
-        className="py-1 px-2 bg-gray-300 border border-gray-400 cursor-help"
-        title="Maximum number of files to display"
-      >
-        | head -n
-      </label>
-      <input
-        id="files"
-        type="text"
-        inputMode="numeric"
-        pattern="[0-9]+"
-        size={3}
-        className="p-1 border shadow-sm border-slate-300 focus:outline-none valid:focus:border-sky-500 invalid:border-red-500"
-        value={filesString}
-        onChange={(e) => {
-          setFilesString(e.target.value);
-        }}
-      />
+      <div>
+        <label
+          htmlFor="context"
+          title="Number of lines of context around matches (like grep!)"
+        >
+          <span className="inline-block py-1 px-2 bg-gray-300 border border-gray-400 cursor-help">
+            -C
+          </span>
+          <input
+            id="context"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]+"
+            size={3}
+            className="p-1 border shadow-sm border-slate-300 focus:outline-none valid:focus:border-sky-500 invalid:border-red-500"
+            value={contextString}
+            onChange={(e) => {
+              setContextString(e.target.value);
+            }}
+          />
+        </label>
+        <label htmlFor="files" title="Maximum number of files to display">
+          <span className="inline-block py-1 px-2 bg-gray-300 border border-gray-400 cursor-help">
+            | head -n
+          </span>
+          <input
+            id="files"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]+"
+            size={3}
+            className="p-1 border shadow-sm border-slate-300 focus:outline-none valid:focus:border-sky-500 invalid:border-red-500"
+            value={filesString}
+            onChange={(e) => {
+              setFilesString(e.target.value);
+            }}
+          />
+        </label>
+      </div>
     </div>
   );
 };
@@ -253,7 +254,7 @@ const SearchResults = memo(function SearchResults({
       .reduce((a, { matchRanges }) => a + matchRanges.length, 0);
     return (
       <>
-        <h1 className="text-xs flex pt-2">
+        <h1 className="text-xs flex flex-wrap pt-2">
           <span>
             Backend: {fileCount} {fileCount === 1 ? "file" : "files"} /{" "}
             {matchCount} {matchCount === 1 ? "match" : "matches"} /{" "}
@@ -427,8 +428,8 @@ const SearchResultsFile = ({
   return (
     <>
       <span ref={topOfList} />
-      <section className="my-2 p-1 border-2 flex flex-col gap-1">
-        <h2 className="px-2 py-1 text-sm items-center sticky top-0 flex bg-slate-100 whitespace-pre-wrap">
+      <section className="my-2 p-1 border-2 flex flex-col gap-1 break-all">
+        <h2 className="px-2 py-1 text-sm sticky top-0 flex flex-wrap bg-slate-100 whitespace-pre-wrap">
           {/* ideally we could hyperlink the repository but there is no such
         URL in search results - either we do dumb stuff to the file template URL
         or we make a separate API request for each repo
@@ -553,5 +554,3 @@ export default SearchPage;
 // FIXME scary bits of context missing with blank lines, like the server isn't sending double newlines
 // http://localhost:1234/?q=test
 // http://localhost:1234/?q=package
-
-// FIXME we need flex wrapping... everywhere.  Form inputs, results header, file headers, etc.
