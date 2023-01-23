@@ -428,8 +428,8 @@ const SearchResultsFile = ({
   return (
     <>
       <span ref={topOfList} />
-      <section className="my-2 p-1 border-2 flex flex-col gap-1 break-all">
-        <h2 className="px-2 py-1 text-sm sticky top-0 flex flex-wrap bg-slate-100 whitespace-pre-wrap">
+      <section className="my-2 p-1 border-2 flex flex-col gap-1">
+        <h2 className="px-2 py-1 text-sm sticky top-0 flex flex-wrap bg-slate-100 whitespace-pre-wrap [overflow-wrap:anywhere]">
           {/* ideally we could hyperlink the repository but there is no such
         URL in search results - either we do dumb stuff to the file template URL
         or we make a separate API request for each repo
@@ -453,7 +453,7 @@ const SearchResultsFile = ({
               // worth of line numbers. 2rem is enough for 4 digits.
               <div
                 key={lines[0].lineNumber}
-                className="py-1 grid grid-cols-[minmax(2rem,_min-content)_1fr] gap-x-2"
+                className="py-1 grid grid-cols-[minmax(2rem,_min-content)_1fr] gap-x-2 whitespace-pre overflow-x-auto"
               >
                 {lines.map(({ lineNumber, lineTokens }) => {
                   const linkedLineNumber =
@@ -475,7 +475,7 @@ const SearchResultsFile = ({
                       <span className="select-none text-gray-600 text-right pr-1">
                         {linkedLineNumber}
                       </span>
-                      <code className="whitespace-pre-wrap">
+                      <code>
                         <SearchResultLine lineTokens={lineTokens} />
                       </code>
                     </Fragment>
