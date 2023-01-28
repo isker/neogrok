@@ -5,20 +5,13 @@ WORKDIR /zoekt
 # still index from github instead of locally so that we get repo metadata in the
 # index.
 COPY .git .git
-# We need to use this fork that has a critical bugfix:
-# https://github.com/sourcegraph/zoekt/pull/506
-# Might as well use it to index a second repository as well.
-RUN git clone https://github.com/DylanGriffith/zoekt.git && \
-  cd zoekt && \
-  git checkout -l origin/fix-api-search-json-encoding && \
-  go build -o ../zoekt-webserver cmd/zoekt-webserver/main.go && \
-  go build -o ../zoekt-git-index cmd/zoekt-git-index/main.go && \
-  cd .. && \
-  git clone https://github.com/isker/neogrok.git
-RUN ./zoekt-git-index -index=index neogrok zoekt
+RUN go install github.com/sourcegraph/zoekt/cmd/zoekt-git-index@latest github.com/sourcegraph/zoekt/cmd/zoekt-webserver@latest && \
+  git clone --depth 1 https://github.com/isker/neogrok.git && \
+  git clone --depth 1 https://github.com/sourcegraph/zoekt.git && \
+  zoekt-git-index -index=index neogrok zoekt
 
-FROM gcr.io/distroless/static-debian11:debug as zoekt-webserver
+FROM gcr.io/distroless/static-debian11:latest as zoekt-webserver
 WORKDIR /zoekt
-COPY --from=go-builder /zoekt/zoekt-webserver /zoekt/zoekt-webserver
+COPY --from=go-builder /go/bin/zoekt-webserver /zoekt/zoekt-webserver
 COPY --from=go-builder /zoekt/index /zoekt/index
 ENTRYPOINT ["/zoekt/zoekt-webserver", "-index=/zoekt/index", "-html=false", "-rpc=true", "-listen=:8080"]
