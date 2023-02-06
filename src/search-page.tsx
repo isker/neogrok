@@ -1,71 +1,109 @@
 import {
   Fragment,
   memo,
+  ReactNode,
   startTransition,
+  useContext,
   useEffect,
   useRef,
   useState,
 } from "react";
+import { ChevronDown, ChevronUp, ChevronRight } from "react-feather";
 import { Link, useLocation } from "react-router-dom";
 import { LineToken, parseIntoLines } from "./content-parser";
-import { useFileMatchesCutoff, useMatchSortOrder } from "./preferences";
-import { ResultFile, search, SearchResult } from "./search-api";
+import { Preferences } from "./preferences";
+import {
+  ResultFile,
+  search,
+  SearchResponse,
+  SearchResults as ApiSearchResults,
+} from "./search-api";
 import { useRouteSearchQuery } from "./use-route-search-query";
 
 const SearchPage = () => {
-  const searchState = useSearchState();
+  const searchOutcome = useSearchOutcome();
+
+  let mainContent;
+  if (searchOutcome.kind === "none" && searchOutcome.query) {
+    // Don't flash the lander on initial render if we are just waiting for a
+    // service response.
+    mainContent = <SearchForm />;
+  } else if (searchOutcome.kind === "none") {
+    mainContent = (
+      <>
+        <SearchForm />
+        <Lander />
+      </>
+    );
+  } else if (searchOutcome.kind === "query-error") {
+    mainContent = <SearchForm queryError={searchOutcome.error} />;
+  } else if (searchOutcome.kind === "other-error") {
+    mainContent = (
+      <>
+        <SearchForm />
+        <SearchError error={searchOutcome.error} />
+      </>
+    );
+  } else {
+    mainContent = (
+      <>
+        <SearchForm />
+        <SearchResults results={searchOutcome.results} />
+      </>
+    );
+  }
 
   return (
     <div className="container mx-auto">
       <Nav />
-      <main>
-        <SearchForm />
-        <SearchResults searchState={searchState} />
-      </main>
+      <main>{mainContent}</main>
     </div>
   );
 };
 
-type SearchState =
-  // This state is only used on initial page load so we don't flash the lander
-  // UI. Subsequent queries don't get this state so that the results don't
-  // flash away. This is kind of dumb.
-  | { kind: "querying" }
-  | { kind: "result"; result: SearchResult }
-  | { kind: "error"; error: Error };
+type SearchOutcome =
+  // There is no search outcome; on page load there may be no outcome when there
+  // is a query in the URL parameters, in which case `q` will be set.
+  | { kind: "none"; query?: string }
+  | SearchResponse
+  // Some other error was thrown by the search API.
+  | { kind: "other-error"; error: Error };
 
-const useSearchState = () => {
+const useSearchOutcome = () => {
   const [searchQuery] = useRouteSearchQuery();
-  const [searchState, setSearchState] = useState<SearchState | undefined>(
-    searchQuery.q !== undefined ? { kind: "querying" } : undefined
-  );
+  const [searchOutcome, setSearchOutome] = useState<SearchOutcome>({
+    kind: "none",
+    query: searchQuery.query,
+  });
 
   // eslint-disable-next-line consistent-return
   useEffect(() => {
-    const { q, ...rest } = searchQuery;
-    if (q === undefined) {
+    const { query, ...rest } = searchQuery;
+    if (query === undefined) {
       document.title = "neogrok";
-      setSearchState(undefined);
+      setSearchOutome({ kind: "none" });
     } else {
-      document.title = `${q} - neogrok`;
+      document.title = `${query} - neogrok`;
 
       const abortController = new AbortController();
-      debouncedSearch({ q, ...rest }, abortController.signal)
-        .then((result) => {
-          startTransition(() => setSearchState({ kind: "result", result }));
+      debouncedSearch({ query, ...rest }, abortController.signal)
+        .then((outcome) => {
+          startTransition(() => setSearchOutome(outcome));
         })
         .catch((error) => {
           if (error.name !== "AbortError") {
             // eslint-disable-next-line no-console
             console.error("Search failed", error);
-            startTransition(() => setSearchState({ kind: "error", error }));
+            startTransition(() =>
+              setSearchOutome({ kind: "other-error", error })
+            );
           }
         });
       return () => abortController.abort();
     }
   }, [searchQuery]);
 
-  return searchState;
+  return searchOutcome;
 };
 
 const navLinks = [
@@ -117,176 +155,368 @@ const debounceSearch = (rate: number): typeof search => {
 };
 const debouncedSearch = debounceSearch(100);
 
-const SearchForm = () => {
-  const [searchQuery, { setQuery, setContextLines, setFiles }] =
-    useRouteSearchQuery();
+const SearchForm = ({ queryError }: { queryError?: string }) => {
+  const [
+    { query, contextLines, files, matchesPerShard, totalMatches },
+    updateRouteSearchQuery,
+  ] = useRouteSearchQuery();
+  const {
+    searchType,
+    setSearchType,
+    matchSortOrder,
+    setMatchSortOrder,
+    fileMatchesCutoff,
+    setFileMatchesCutoff,
+  } = useContext(Preferences);
 
-  // For the inputs with validations, we need control states for each that are
-  // separate from the route values, which are typed and have other parsing
-  // validations, meaning that they can't hold the raw form values, making them
-  // unsuitable for controlling inputs.
-  const [contextString, setContextString] = useState<string>(
-    searchQuery.contextLines.toString()
-  );
+  // FIXME this state and effect propgate changes from the form into the route,
+  // but they do not propagate changes from the route into the form.
+  //
+  // This notably happens during back button navigations. I'm not sure how to
+  // make this relationship bidirectional - we only project the route into the
+  // form once, when this state is initialized.
+  const [formQuery, setFormQuery] = useState(query ?? "");
   useEffect(() => {
-    setContextLines(Number.parseInt(contextString, 10));
-  }, [contextString, setContextLines]);
+    if (searchType === "live") {
+      updateRouteSearchQuery({ query: formQuery, replace: true });
+    }
+  }, [formQuery, updateRouteSearchQuery, searchType]);
 
-  const [filesString, setFilesString] = useState<string>(
-    searchQuery.files.toString()
-  );
-  useEffect(() => {
-    setFiles(Number.parseInt(filesString, 10));
-  }, [filesString, setFiles]);
+  const [advancedOptionsExpanded, setAdvancedOptionsExpanded] = useState(false);
 
-  // TODO we need a drawer with advanced query options and UI preferences.
-  // - Advanced options: matches per shard and total matches.
-  // - UI preferences stored in localStorage: live search (y)/n, sort chunks by
-  //   (line number) vs score, limit on number of visible matches per file before
-  //   needing to expand.
+  const formContextLines = useRef(contextLines);
+  const formFiles = useRef(files);
+  const formMatchesPerShard = useRef(matchesPerShard);
+  const formTotalMatches = useRef(totalMatches);
+
   return (
-    <div className="flex flex-wrap gap-y-2 justify-center font-mono whitespace-nowrap">
-      <label htmlFor="query" title="Search query" className="flex-auto flex">
-        <span className="inline-block p-1 pr-2 bg-gray-300 border border-gray-400 cursor-help">
-          $ grok
-        </span>
-        <input
-          id="query"
-          type="search"
-          // I think autofocusing an element like this, at the top of the page,
-          // is okay for a11y.  Not that half the other things here are.
-          // eslint-disable-next-line jsx-a11y/no-autofocus
-          autoFocus
-          spellCheck={false}
-          autoCorrect="off"
-          autoCapitalize="off"
-          className="p-1 border shadow-sm border-slate-300 focus:outline-none focus:border-sky-500 flex-auto"
-          value={searchQuery.q ?? ""}
-          onChange={(e) => {
-            setQuery(e.target.value);
-          }}
-        />
-      </label>
-      <div>
-        <label
-          htmlFor="context"
-          title="Number of lines of context around matches (like grep!)"
-        >
-          <span className="inline-block py-1 px-2 bg-gray-300 border border-gray-400 cursor-help">
-            -C
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (searchType === "manual") {
+          updateRouteSearchQuery({
+            query: formQuery,
+            contextLines: formContextLines.current,
+            files: formFiles.current,
+            matchesPerShard: formMatchesPerShard.current,
+            totalMatches: formTotalMatches.current,
+          });
+        }
+      }}
+    >
+      {/* Make enter key submission work: https://stackoverflow.com/a/35235768 */}
+      <input type="submit" className="hidden" />
+
+      <div className="flex flex-wrap gap-y-2 justify-center font-mono whitespace-nowrap">
+        <label htmlFor="query" title="Search query" className="flex-auto flex">
+          <span className="inline-block p-1 pr-2 bg-gray-300 border border-gray-400 cursor-help">
+            $ grok
           </span>
           <input
+            id="query"
+            type="search"
+            // I think autofocusing an element like this, at the top of the page,
+            // is okay for a11y.  Not that half the other things here are.
+            // eslint-disable-next-line jsx-a11y/no-autofocus
+            autoFocus
+            spellCheck={false}
+            autoCorrect="off"
+            autoCapitalize="off"
+            className={`p-1 border shadow-sm focus:outline-none flex-auto appearance-none ${
+              queryError === undefined
+                ? "border-slate-300 focus:border-sky-500"
+                : "border-red-500"
+            }`}
+            value={formQuery}
+            onChange={(e) => {
+              setFormQuery(e.target.value);
+            }}
+          />
+        </label>
+
+        <div>
+          <NonNegativeIntegerInput
             id="context"
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]+"
-            size={3}
-            className="p-1 border shadow-sm border-slate-300 focus:outline-none valid:focus:border-sky-500 invalid:border-red-500"
-            value={contextString}
-            onChange={(e) => {
-              setContextString(e.target.value);
+            label={
+              <span
+                title="Number of lines of context around matches (like grep!)"
+                className="inline-block py-1 px-2 bg-gray-300 border border-gray-400 cursor-help"
+              >
+                -C
+              </span>
+            }
+            value={contextLines}
+            onValueChange={(newContextLines) => {
+              formContextLines.current = newContextLines;
+              if (searchType === "live") {
+                updateRouteSearchQuery({
+                  contextLines: newContextLines,
+                  replace: true,
+                });
+              }
             }}
           />
-        </label>
-        <label htmlFor="files" title="Maximum number of files to display">
-          <span className="inline-block py-1 px-2 bg-gray-300 border border-gray-400 cursor-help">
-            | head -n
-          </span>
-          <input
+          <NonNegativeIntegerInput
             id="files"
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]+"
-            size={3}
-            className="p-1 border shadow-sm border-slate-300 focus:outline-none valid:focus:border-sky-500 invalid:border-red-500"
-            value={filesString}
-            onChange={(e) => {
-              setFilesString(e.target.value);
+            label={
+              <span
+                title="Maximum number of files to display"
+                className="inline-block py-1 px-2 bg-gray-300 border border-gray-400 cursor-help"
+              >
+                | head -n
+              </span>
+            }
+            value={files}
+            onValueChange={(newFiles) => {
+              formFiles.current = newFiles;
+              if (searchType === "live") {
+                updateRouteSearchQuery({ files: newFiles, replace: true });
+              }
             }}
           />
-        </label>
+        </div>
       </div>
-    </div>
+
+      <div className="flex flex-wrap">
+        {queryError !== undefined ? (
+          <span className="text-sm text-red-500">{queryError} </span>
+        ) : null}
+        <button
+          type="button"
+          className="ml-auto text-xs bg-slate-100 px-2 py-1 rounded-md"
+          onClick={() => setAdvancedOptionsExpanded((current) => !current)}
+        >
+          Advanced options
+          {advancedOptionsExpanded ? (
+            <ChevronUp className="inline" size={16} />
+          ) : (
+            <ChevronDown className="inline" size={16} />
+          )}
+        </button>
+      </div>
+      {/* TODO the advanced options UI is essentially unstyled */}
+      {advancedOptionsExpanded ? (
+        <div className="border flex flex-wrap">
+          <fieldset className="border">
+            <legend>Sort order</legend>
+            <label htmlFor="line-number">
+              Line number
+              <input
+                id="line-number"
+                type="radio"
+                name="sort"
+                checked={matchSortOrder === "line-number"}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setMatchSortOrder("line-number");
+                  }
+                }}
+              />
+            </label>
+            <label htmlFor="score">
+              Score
+              <input
+                id="score"
+                type="radio"
+                name="sort"
+                checked={matchSortOrder === "score"}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setMatchSortOrder("score");
+                  }
+                }}
+              />
+            </label>
+          </fieldset>
+          <fieldset className="border">
+            <legend>Search type</legend>
+            <label htmlFor="live">
+              Live
+              <input
+                id="live"
+                type="radio"
+                name="search-type"
+                checked={searchType === "live"}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setSearchType("live");
+                  }
+                }}
+              />
+            </label>
+            <label htmlFor="manual">
+              Manual
+              <input
+                id="manual"
+                type="radio"
+                name="search-type"
+                checked={searchType === "manual"}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setSearchType("manual");
+                  }
+                }}
+              />
+            </label>
+          </fieldset>
+          <NonNegativeIntegerInput
+            id="file-matches-cutoff"
+            label="Initially shown matches per file"
+            value={fileMatchesCutoff}
+            onValueChange={setFileMatchesCutoff}
+          />
+          <NonNegativeIntegerInput
+            id="matches-per-shard"
+            label="Maximum matches per shard"
+            size={4}
+            value={matchesPerShard}
+            onValueChange={(newMatchesPerShard) => {
+              formMatchesPerShard.current = newMatchesPerShard;
+              if (searchType === "live") {
+                updateRouteSearchQuery({
+                  matchesPerShard: newMatchesPerShard,
+                  replace: true,
+                });
+              }
+            }}
+          />
+          <NonNegativeIntegerInput
+            id="total-matches"
+            label="Total maximum matches"
+            size={5}
+            value={totalMatches}
+            onValueChange={(newTotalMatches) => {
+              formTotalMatches.current = newTotalMatches;
+              if (searchType === "live") {
+                updateRouteSearchQuery({
+                  totalMatches: newTotalMatches,
+                  replace: true,
+                });
+              }
+            }}
+          />
+        </div>
+      ) : null}
+    </form>
   );
 };
+
+const NonNegativeIntegerInput = ({
+  id,
+  label,
+  size = 3,
+  value,
+  onValueChange,
+}: {
+  id: string;
+  label: ReactNode;
+  size?: number;
+  value: number;
+  onValueChange: (v: number) => void;
+}) => {
+  const [stringValue, setStringValue] = useState(value.toString());
+  const [valid, setValid] = useState(true);
+  useEffect(() => {
+    const isNonNegativeInteger = /^\d+$/.test(stringValue);
+    setValid(isNonNegativeInteger);
+    if (isNonNegativeInteger) {
+      const parsed = Number.parseInt(stringValue, 10);
+      if (parsed !== value) {
+        onValueChange(parsed);
+      }
+    }
+  }, [stringValue, setValid, value, onValueChange]);
+  return (
+    <label htmlFor={id}>
+      {label}
+      <input
+        id={id}
+        type="text"
+        inputMode="numeric"
+        size={size}
+        className={`p-1 border shadow-sm focus:outline-none ${
+          valid ? "border-slate-300 focus:border-sky-500" : "border-red-500"
+        }`}
+        value={stringValue}
+        onChange={(e) => {
+          setStringValue(e.target.value);
+        }}
+      />
+    </label>
+  );
+};
+
+const Lander = () => (
+  // This `padding-top: 30dvh` was the least terrible way I found to vertically
+  // center this lander text. Anything involving grid/flexbox requires
+  // cooperation with all our parent dom nodes to achieve a container height as
+  // tall as the page.
+  <div className="text-center pt-[30dvh]">
+    <h1 className="text-4xl tracking-wide">ɴᴇᴏɢʀᴏᴋ</h1>
+    <Link to="/about" className="text-cyan-700">
+      More grok than Grok.
+    </Link>
+  </div>
+);
+
+// TODO needs better UI
+const SearchError = ({ error }: { error: Error }) => (
+  <h2>Error! {error.toString()}</h2>
+);
 
 // We need to memo over `searchState` so that we don't rerender every time a
 // character is typed into the search form; we need our rendering to happen
 // post-debouncing not pre-debouncing.
 // eslint-disable-next-line prefer-arrow-callback
 const SearchResults = memo(function SearchResults({
-  searchState,
+  results: {
+    fileCount,
+    matchCount,
+    duration,
+    files,
+    repoUrls,
+    repoLineNumberFragments,
+  },
 }: {
-  searchState: SearchState | undefined;
+  results: ApiSearchResults;
 }) {
-  if (searchState === undefined) {
-    // This `padding-top: 30dvh` was the least terrible way I found to vertically
-    // center this lander text. Anything involving grid/flexbox requires
-    // cooperation with our parent component. Perhaps these non-results states
-    // should be refactored out of this component anyway.
-    return (
-      <div className="text-center pt-[30dvh]">
-        <h1 className="text-4xl tracking-wide">ɴᴇᴏɢʀᴏᴋ</h1>
-        <Link to="/about" className="text-cyan-700">
-          More grok than Grok.
-        </Link>
-      </div>
-    );
-  } else if (searchState.kind === "querying") {
-    return null;
-  } else if (searchState.kind === "error") {
-    // TODO need a better UI
-    // especially for HTTP 400s, which indicate syntax errors in the query.
-    // We might want to render such errors closer to the inputs, and not in place
-    // of any previously existing content in this component.
-    return <h2>Error! {searchState.error.toString()}</h2>;
-  } else {
-    const {
-      fileCount,
-      matchCount,
-      duration,
-      files,
-      repoUrls,
-      repoLineNumberFragments,
-    } = searchState.result;
-    const frontendMatchCount = files
-      .flatMap(({ chunks }) => chunks)
-      .reduce((a, { matchRanges }) => a + matchRanges.length, 0);
-    return (
-      <>
-        <h1 className="text-xs flex flex-wrap pt-2">
-          <span>
-            Backend: {fileCount} {fileCount === 1 ? "file" : "files"} /{" "}
-            {matchCount} {matchCount === 1 ? "match" : "matches"} /{" "}
-            {
-              // ns -> ms with 2 decimal places
-              Math.floor(duration / 1e4) / 1e2
-            }
-            ms
-          </span>
-          <span className="ml-auto">
-            Frontend: {files.length} {files.length === 1 ? "file" : "files"} /{" "}
-            {frontendMatchCount} {matchCount === 1 ? "match" : "matches"} /{" "}
-            {/* TODO need to have search-api return a timing, and also bake in time spent debouncing.
+  const frontendMatchCount = files
+    .flatMap(({ chunks }) => chunks)
+    .reduce((a, { matchRanges }) => a + matchRanges.length, 0);
+  return (
+    <>
+      <h1 className="text-xs flex flex-wrap pt-2">
+        <span>
+          Backend: {fileCount} {fileCount === 1 ? "file" : "files"} /{" "}
+          {matchCount} {matchCount === 1 ? "match" : "matches"} /{" "}
+          {
+            // ns -> ms with 2 decimal places
+            Math.floor(duration / 1e4) / 1e2
+          }
+          ms
+        </span>
+        <span className="ml-auto">
+          Frontend: {files.length} {files.length === 1 ? "file" : "files"} /{" "}
+          {frontendMatchCount} {matchCount === 1 ? "match" : "matches"} /{" "}
+          {/* TODO need to have search-api return a timing, and also bake in time spent debouncing.
                 Doing render time on top of that sounds too hard. */}
-            TODOms
-          </span>
-        </h1>
-        {files.map((file, i) => {
-          const { repository, fileName } = file;
-          return (
-            <SearchResultsFile
-              key={`${repository}/${fileName}`}
-              file={file}
-              fileUrlTemplate={repoUrls[repository]}
-              lineNumberTemplate={repoLineNumberFragments[repository]}
-              rank={i + 1}
-            />
-          );
-        })}
-      </>
-    );
-  }
+          TODOms
+        </span>
+      </h1>
+      {files.map((file, i) => {
+        const { repository, fileName } = file;
+        return (
+          <SearchResultsFile
+            key={`${repository}/${fileName}`}
+            file={file}
+            fileUrlTemplate={repoUrls[repository]}
+            lineNumberTemplate={repoLineNumberFragments[repository]}
+            rank={i + 1}
+          />
+        );
+      })}
+    </>
+  );
 });
 
 const SearchResultsFile = ({
@@ -342,12 +572,12 @@ const SearchResultsFile = ({
     renderedFileName
   );
 
-  const [sortOrder] = useMatchSortOrder();
+  const { matchSortOrder, fileMatchesCutoff } = useContext(Preferences);
   const nonFileNameMatches = chunks.filter(
     ({ isFileNameChunk }) => !isFileNameChunk
   );
-  if (sortOrder === "line-number") {
-    // It's safe to mutate as we just made a copy with `filter` above.
+  if (matchSortOrder === "line-number") {
+    // It's safe to mutate with `sort` as we just made a copy with `filter` above.
     nonFileNameMatches.sort(
       (
         { contentStart: { byteOffset: a } },
@@ -366,7 +596,6 @@ const SearchResultsFile = ({
   // cutoff. We don't want to cut a file section in half to make the exact
   // cutoff (nor can we, if the cutoff is exceeded in the middle of a single
   // line).
-  const [fileMatchesCutoff] = useFileMatchesCutoff();
   // This state var is only used if we have actually exceeded the cutoff.
   const [expandedBy, setExpandedBy] = useState<number>();
   // That being said, we do special case a 0-cutoff by simply rendering no
@@ -431,22 +660,17 @@ const SearchResultsFile = ({
       <section className="my-2 p-1 border-2 flex flex-col gap-1">
         <h2 className="px-2 py-1 text-sm sticky top-0 flex flex-wrap bg-slate-100 whitespace-pre-wrap [overflow-wrap:anywhere]">
           {/* ideally we could hyperlink the repository but there is no such
-        URL in search results - either we do dumb stuff to the file template URL
-        or we make a separate API request for each repo
-
-        TODO font-mono for the entire pathname looks pretty lame, but I couldn't find
-        a repo/path separator that looked good with non-mono font.  Might need an SVG?
-        */}
-          <span className="font-mono">
-            {/* eslint-disable react/jsx-no-comment-textnodes */}
-            {repository}//
-            {/* eslint-enable react/jsx-no-comment-textnodes */}
+          URL in search results - either we do dumb stuff to the file template URL
+          or we make a separate /list API request for each repo */}
+          <span>
+            {repository}
+            <ChevronRight className="inline" size={16} />
             {linkedFilename}
           </span>
           <span className="ml-auto">{metadata.join(" | ")}</span>
         </h2>
         {lineGroups.length > 0 ? (
-          <div className="font-mono text-xs divide-y">
+          <div className="font-mono text-sm divide-y">
             {lineGroups.map((lines) => (
               // minmax because we don't want the line number column to slide left and
               // right as you scroll down through sections with different `min-content`s'
@@ -550,7 +774,3 @@ const SearchResultLine = ({
 );
 
 export default SearchPage;
-
-// FIXME scary bits of context missing with blank lines, like the server isn't sending double newlines
-// http://localhost:1234/?q=test
-// http://localhost:1234/?q=package

@@ -1,19 +1,29 @@
 import { z } from "zod";
 
 export type SearchQuery = Readonly<{
-  q: string;
+  query: string;
   contextLines: number;
   files: number;
   matchesPerShard: number;
   totalMatches: number;
 }>;
 
+export type SearchResponse =
+  | {
+      kind: "success";
+      results: SearchResults;
+    }
+  | {
+      kind: "query-error";
+      error: string;
+    };
+
 export const search = async (
-  { q, contextLines, files, matchesPerShard, totalMatches }: SearchQuery,
+  { query, contextLines, files, matchesPerShard, totalMatches }: SearchQuery,
   abortSignal: AbortSignal
-): Promise<SearchResult> => {
+): Promise<SearchResponse> => {
   const body = JSON.stringify({
-    q,
+    q: query,
     opts: {
       ChunkMatches: true,
       NumContextLines: contextLines,
@@ -33,15 +43,23 @@ export const search = async (
   });
 
   if (!response.ok) {
-    const responseBody = await response.text();
-    throw new Error(
-      `Search failed, HTTP ${response.status}: ${response.statusText} ${
-        responseBody ? ` - ${responseBody}` : ""
-      }`
-    );
+    if (response.status === 400) {
+      const { Error: error } = await response.json();
+      return { kind: "query-error", error };
+    } else {
+      const responseBody = await response.text();
+      throw new Error(
+        `Search failed, HTTP ${response.status}: ${response.statusText} ${
+          responseBody ? ` - ${responseBody}` : ""
+        }`
+      );
+    }
   }
 
-  return searchResultSchema.parse(await response.json()).Result;
+  return {
+    kind: "success",
+    results: searchResultSchema.parse(await response.json()).Result,
+  };
 };
 
 // All of the properties of the returned JSON are uppercased. Hail Golang. We
@@ -130,8 +148,8 @@ const searchResultSchema = z.object({
     ),
 });
 
-export type SearchResult = z.infer<typeof searchResultSchema>["Result"];
-export type ResultFile = SearchResult["files"][number];
+export type SearchResults = z.infer<typeof searchResultSchema>["Result"];
+export type ResultFile = SearchResults["files"][number];
 export type Chunks = ResultFile["chunks"][number];
 export type MatchRange = Chunks["matchRanges"][number];
 export type ContentLocation = z.infer<typeof locationSchema>;

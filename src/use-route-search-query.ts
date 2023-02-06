@@ -2,31 +2,35 @@ import { useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import type { SearchQuery } from "./search-api";
 
-const defaultQueryOptions: Omit<SearchQuery, "q"> = Object.freeze({
+const defaultQueryOptions: Omit<SearchQuery, "query"> = Object.freeze({
   contextLines: 1,
   files: 50,
   matchesPerShard: 1e6,
   totalMatches: 1e7,
 });
 
-type RouteSearchQuery = Omit<SearchQuery, "q"> & {
-  readonly q: string | undefined;
+type RouteSearchQuery = Omit<SearchQuery, "query"> & {
+  readonly query: string | undefined;
 };
-type RouteSearchQuerySetters = {
-  setQuery(q: string): void;
-  setContextLines(contextLines: number): void;
-  setFiles(files: number): void;
-  setMatchesPerShard(matchesPerShard: number): void;
-  setTotalMatches(totalMatches: number): void;
-};
+
+type UpdateRouteSearchQuery = (updates: {
+  query?: string;
+  contextLines?: number;
+  files?: number;
+  matchesPerShard?: number;
+  totalMatches?: number;
+
+  // replace history entry instead of adding
+  replace?: boolean;
+}) => void;
 
 export const useRouteSearchQuery = (): [
   RouteSearchQuery,
-  RouteSearchQuerySetters
+  UpdateRouteSearchQuery
 ] => {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const routeQ = searchParams.get("q");
+  const routeQuery = searchParams.get("q");
   const routeContextLines = searchParams.get("contextLines");
   const routeFiles = searchParams.get("files");
   const routeMatchesPerShard = searchParams.get("matchesPerShard");
@@ -42,7 +46,7 @@ export const useRouteSearchQuery = (): [
     const parsedTotalMatches = Number.parseInt(routeTotalMatches ?? "", 10);
 
     // coerce empty string to undefined
-    const q = routeQ || undefined;
+    const query = routeQuery || undefined;
     const contextLines =
       parsedContextLines >= 0
         ? parsedContextLines
@@ -57,127 +61,110 @@ export const useRouteSearchQuery = (): [
         ? parsedTotalMatches
         : defaultQueryOptions.totalMatches;
     return {
-      q,
+      query,
       contextLines,
       files,
       matchesPerShard,
       totalMatches,
     };
   }, [
-    routeQ,
+    routeQuery,
     routeContextLines,
     routeFiles,
     routeMatchesPerShard,
     routeTotalMatches,
   ]);
-  const setQuery = useCallback(
-    (q: string) => {
-      if (q !== routeQ) {
+
+  const updateSearchQuery = useCallback(
+    ({
+      query,
+      contextLines,
+      files,
+      matchesPerShard,
+      totalMatches,
+      replace,
+    }: {
+      query?: string;
+      contextLines?: number;
+      files?: number;
+      matchesPerShard?: number;
+      totalMatches?: number;
+      replace?: boolean;
+    }) => {
+      const queryChanged = query !== undefined && query !== searchQuery.query;
+      const contextLinesChanged =
+        contextLines !== undefined &&
+        contextLines >= 0 &&
+        contextLines !== searchQuery.contextLines;
+      const filesChanged =
+        files !== undefined && files >= 0 && files !== searchQuery.files;
+      const matchesPerShardChanged =
+        matchesPerShard !== undefined &&
+        matchesPerShard >= 0 &&
+        matchesPerShard !== searchQuery.matchesPerShard;
+      const totalMatchesChanged =
+        totalMatches !== undefined &&
+        totalMatches >= 0 &&
+        totalMatches !== searchQuery.totalMatches;
+
+      if (
+        queryChanged ||
+        contextLinesChanged ||
+        filesChanged ||
+        matchesPerShardChanged ||
+        totalMatchesChanged
+      ) {
         setSearchParams(
           (previous) => {
             const next = new URLSearchParams(previous);
-            if (q) {
-              next.set("q", q);
-            } else {
+
+            if (queryChanged && query) {
+              next.set("q", query);
+            } else if (queryChanged) {
               next.delete("q");
             }
-            return next;
-          },
-          { replace: true }
-        );
-      }
-    },
-    [routeQ, setSearchParams]
-  );
-  const setContextLines = useCallback(
-    (contextLines: number) => {
-      const stringified = contextLines.toString();
-      if (contextLines >= 0 && stringified !== routeContextLines) {
-        setSearchParams(
-          (previous) => {
-            const next = new URLSearchParams(previous);
-            if (contextLines === defaultQueryOptions.contextLines) {
+
+            if (
+              contextLinesChanged &&
+              contextLines === defaultQueryOptions.contextLines
+            ) {
               next.delete("contextLines");
-            } else {
-              next.set("contextLines", stringified);
+            } else if (contextLinesChanged) {
+              next.set("contextLines", contextLines.toString());
             }
-            return next;
-          },
-          { replace: true }
-        );
-      }
-    },
-    [routeContextLines, setSearchParams]
-  );
-  const setFiles = useCallback(
-    (files: number) => {
-      const stringified = files.toString();
-      if (files >= 0 && stringified !== routeFiles) {
-        setSearchParams(
-          (previous) => {
-            const next = new URLSearchParams(previous);
-            if (files === defaultQueryOptions.files) {
+
+            if (filesChanged && files === defaultQueryOptions.files) {
               next.delete("files");
-            } else {
-              next.set("files", stringified);
+            } else if (filesChanged) {
+              next.set("files", files.toString());
             }
-            return next;
-          },
-          { replace: true }
-        );
-      }
-    },
-    [routeFiles, setSearchParams]
-  );
-  const setMatchesPerShard = useCallback(
-    (matchesPerShard: number) => {
-      const stringified = matchesPerShard.toString();
-      if (matchesPerShard >= 0 && stringified !== routeMatchesPerShard) {
-        setSearchParams(
-          (previous) => {
-            const next = new URLSearchParams(previous);
-            if (matchesPerShard === defaultQueryOptions.matchesPerShard) {
+
+            if (
+              matchesPerShardChanged &&
+              matchesPerShard === defaultQueryOptions.matchesPerShard
+            ) {
               next.delete("matchesPerShard");
-            } else {
-              next.set("matchesPerShard", stringified);
+            } else if (matchesPerShardChanged) {
+              next.set("matchesPerShard", matchesPerShard.toString());
             }
-            return next;
-          },
-          { replace: true }
-        );
-      }
-    },
-    [routeMatchesPerShard, setSearchParams]
-  );
-  const setTotalMatches = useCallback(
-    (totalMatches: number) => {
-      const stringified = totalMatches.toString();
-      if (totalMatches >= 0 && stringified !== routeTotalMatches) {
-        setSearchParams(
-          (previous) => {
-            const next = new URLSearchParams(previous);
-            if (totalMatches === defaultQueryOptions.totalMatches) {
+
+            if (
+              totalMatchesChanged &&
+              totalMatches === defaultQueryOptions.totalMatches
+            ) {
               next.delete("totalMatches");
-            } else {
-              next.set("totalMatches", stringified);
+            } else if (totalMatchesChanged) {
+              next.set("totalMatches", totalMatches.toString());
             }
+
             return next;
           },
-          { replace: true }
+          { replace }
         );
       }
     },
-    [routeTotalMatches, setSearchParams]
+    [searchQuery, setSearchParams]
   );
 
-  return [
-    searchQuery,
-    {
-      setQuery,
-      setContextLines,
-      setFiles,
-      setMatchesPerShard,
-      setTotalMatches,
-    },
-  ];
+  return [searchQuery, updateSearchQuery];
 };

@@ -20,6 +20,7 @@
     "import/prefer-default-export": "off",
     "react/jsx-filename-extension": ["error", { "extensions": [".tsx"] }],
     "react/function-component-definition": "off",
+    "react/require-default-props": "off",
     "no-plusplus": "off",
     "no-else-return": "off",
     "no-use-before-define": "off",
