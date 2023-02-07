@@ -19,13 +19,13 @@ export type LineToken =
  * @param baseByteOffset - The byte index of the entire file contents at which
  * `contentBase64` begins.
  * @param ranges - The ranges of the content which match the query, described by
- * byte ranges into the entire file content.
+ * byte offsets into the entire file content.
  */
 export const parseIntoLines = (
   contentBase64: string,
   baseByteOffset: number,
   ranges: ReadonlyArray<MatchRange>
-) => {
+): LineToken[][] => {
   const contentBytes = base64StringToBytes(contentBase64);
 
   const lines = [];
@@ -122,10 +122,11 @@ export const parseIntoLines = (
     });
   }
 
-  // Conclude the current line, if any.
-  if (currentLineTokens.length > 0) {
-    lines.push(currentLineTokens);
-  }
+  // Conclude the current line. Note that if `currentLineTokens` is length 0,
+  // that is still semantically a line, namely an empty line. `Content` never
+  // naturally has a trailing newline; if there's a newline at the last byte,
+  // this indicates that there is a final line that is empty.
+  lines.push(currentLineTokens);
 
   return lines;
 };
