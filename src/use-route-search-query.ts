@@ -1,5 +1,6 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
+import type { SearchType } from "./preferences";
 import type { SearchQuery } from "./search-api";
 
 const defaultQueryOptions: Omit<SearchQuery, "query"> = Object.freeze({
@@ -20,8 +21,7 @@ type UpdateRouteSearchQuery = (updates: {
   matchesPerShard?: number;
   totalMatches?: number;
 
-  // replace history entry instead of adding
-  replace?: boolean;
+  searchType: SearchType;
 }) => void;
 
 export const useRouteSearchQuery = (): [
@@ -75,6 +75,7 @@ export const useRouteSearchQuery = (): [
     routeTotalMatches,
   ]);
 
+  const lastNavigateTime = useRef(0);
   const updateSearchQuery = useCallback(
     ({
       query,
@@ -82,16 +83,17 @@ export const useRouteSearchQuery = (): [
       files,
       matchesPerShard,
       totalMatches,
-      replace,
+      searchType,
     }: {
       query?: string;
       contextLines?: number;
       files?: number;
       matchesPerShard?: number;
       totalMatches?: number;
-      replace?: boolean;
+      searchType: SearchType;
     }) => {
-      const queryChanged = query !== undefined && query !== searchQuery.query;
+      const queryChanged =
+        query !== undefined && (query || undefined) !== searchQuery.query;
       const contextLinesChanged =
         contextLines !== undefined &&
         contextLines >= 0 &&
@@ -114,6 +116,7 @@ export const useRouteSearchQuery = (): [
         matchesPerShardChanged ||
         totalMatchesChanged
       ) {
+        const now = Date.now();
         setSearchParams(
           (previous) => {
             const next = new URLSearchParams(previous);
@@ -159,8 +162,12 @@ export const useRouteSearchQuery = (): [
 
             return next;
           },
-          { replace }
+          {
+            replace:
+              searchType === "live" && now - lastNavigateTime.current < 2000,
+          }
         );
+        lastNavigateTime.current = now;
       }
     },
     [searchQuery, setSearchParams]

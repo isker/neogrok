@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 import { ChevronDown, ChevronUp, ChevronRight } from "react-feather";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigationType } from "react-router-dom";
 import { LineToken, parseIntoLines } from "./content-parser";
 import { Preferences } from "./preferences";
 import {
@@ -21,33 +21,65 @@ import {
 import { useRouteSearchQuery } from "./use-route-search-query";
 
 const SearchPage = () => {
-  const searchOutcome = useSearchOutcome();
+  // We have some pretty gnarly requirements around the search form. The search
+  // form projects the route into the form UI once upon mount, and then
+  // continuously projects the form UI into the route from there on.
+  //
+  // This works fine, except on `popstate` (i.e. user hitting forward or back
+  // button): suddenly, we need to once again project the route into the UI. To
+  // make this happen, we force an unmount/remount by way of changing the `key`
+  // on the SearchForm.
+  const navigationType = useNavigationType();
+  const { search } = useLocation();
+  const [previousSearch, setPreviousSearch] = useState<string>(search);
+  useEffect(() => setPreviousSearch(search), [search]);
+  const [searchFormKey, setSearchFormKey] = useState<string>();
+  if (navigationType === "POP" && previousSearch !== search) {
+    // This pattern (set state during render, then bail out of render) is in
+    // fact a valid one.
+    //
+    // https://beta.reactjs.org/reference/react/useState#setstate-caveats
+    // "Calling the set function during rendering is only allowed from within
+    // the currently rendering component. React will discard its output and
+    // immediately attempt to render it again with the new state."
 
+    // The actual key we set doesn't much matter; Math.random() would not be
+    // appreciably different.
+    setSearchFormKey(`${previousSearch}->${search}`);
+    // Prevent loops by essentially repeating this state's initializer.
+    setPreviousSearch(search);
+    return null;
+  }
+
+  const searchOutcome = useSearchOutcome();
   let mainContent;
   if (searchOutcome.kind === "none" && searchOutcome.query) {
     // Don't flash the lander on initial render if we are just waiting for a
     // service response.
-    mainContent = <SearchForm />;
+    mainContent = <SearchForm key={searchFormKey} />;
   } else if (searchOutcome.kind === "none") {
     mainContent = (
       <>
-        <SearchForm />
+        <SearchForm key={searchFormKey} />
         <Lander />
       </>
     );
   } else if (searchOutcome.kind === "query-error") {
-    mainContent = <SearchForm queryError={searchOutcome.error} />;
+    mainContent = (
+      <SearchForm key={searchFormKey} queryError={searchOutcome.error} />
+      // TODO query-error should _preserve_ previous search results, if any.
+    );
   } else if (searchOutcome.kind === "other-error") {
     mainContent = (
       <>
-        <SearchForm />
+        <SearchForm key={searchFormKey} />
         <SearchError error={searchOutcome.error} />
       </>
     );
   } else {
     mainContent = (
       <>
-        <SearchForm />
+        <SearchForm key={searchFormKey} />
         <SearchResults results={searchOutcome.results} />
       </>
     );
@@ -169,16 +201,10 @@ const SearchForm = ({ queryError }: { queryError?: string }) => {
     setFileMatchesCutoff,
   } = useContext(Preferences);
 
-  // FIXME this state and effect propgate changes from the form into the route,
-  // but they do not propagate changes from the route into the form.
-  //
-  // This notably happens during back button navigations. I'm not sure how to
-  // make this relationship bidirectional - we only project the route into the
-  // form once, when this state is initialized.
   const [formQuery, setFormQuery] = useState(query ?? "");
   useEffect(() => {
     if (searchType === "live") {
-      updateRouteSearchQuery({ query: formQuery, replace: true });
+      updateRouteSearchQuery({ query: formQuery, searchType });
     }
   }, [formQuery, updateRouteSearchQuery, searchType]);
 
@@ -200,6 +226,7 @@ const SearchForm = ({ queryError }: { queryError?: string }) => {
             files: formFiles.current,
             matchesPerShard: formMatchesPerShard.current,
             totalMatches: formTotalMatches.current,
+            searchType,
           });
         }
       }}
@@ -222,6 +249,7 @@ const SearchForm = ({ queryError }: { queryError?: string }) => {
             spellCheck={false}
             autoCorrect="off"
             autoCapitalize="off"
+            autoComplete="off"
             className={`p-1 border shadow-sm focus:outline-none flex-auto appearance-none ${
               queryError === undefined
                 ? "border-slate-300 focus:border-sky-500"
@@ -251,7 +279,7 @@ const SearchForm = ({ queryError }: { queryError?: string }) => {
               if (searchType === "live") {
                 updateRouteSearchQuery({
                   contextLines: newContextLines,
-                  replace: true,
+                  searchType,
                 });
               }
             }}
@@ -270,7 +298,7 @@ const SearchForm = ({ queryError }: { queryError?: string }) => {
             onValueChange={(newFiles) => {
               formFiles.current = newFiles;
               if (searchType === "live") {
-                updateRouteSearchQuery({ files: newFiles, replace: true });
+                updateRouteSearchQuery({ files: newFiles, searchType });
               }
             }}
           />
@@ -375,7 +403,7 @@ const SearchForm = ({ queryError }: { queryError?: string }) => {
               if (searchType === "live") {
                 updateRouteSearchQuery({
                   matchesPerShard: newMatchesPerShard,
-                  replace: true,
+                  searchType,
                 });
               }
             }}
@@ -390,7 +418,7 @@ const SearchForm = ({ queryError }: { queryError?: string }) => {
               if (searchType === "live") {
                 updateRouteSearchQuery({
                   totalMatches: newTotalMatches,
-                  replace: true,
+                  searchType,
                 });
               }
             }}

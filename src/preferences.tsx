@@ -21,12 +21,12 @@ const useTypedLocalStorageValue = <T,>(
   return [parsedValue, setParsedValue] as const;
 };
 
-type SearchType = "live" | "manual";
+export type SearchType = "live" | "manual";
 const defaultSearchType = "live";
 const searchTypeFromString = (x: string) =>
   x === "live" || x === "manual" ? x : null;
 
-type MatchSortOrder = "line-number" | "score";
+export type MatchSortOrder = "line-number" | "score";
 const defaultMatchSortOrder = "line-number";
 const matchSortOrderFromString = (x: string) =>
   x === "line-number" || x === "score" ? x : null;
