@@ -14,7 +14,7 @@ import { LineToken, parseIntoLines } from "./content-parser";
 import { Preferences } from "./preferences";
 import {
   ResultFile,
-  search,
+  search as executeSearch,
   SearchResponse,
   SearchResults as ApiSearchResults,
 } from "./search-api";
@@ -34,6 +34,7 @@ const SearchPage = () => {
   const [previousSearch, setPreviousSearch] = useState<string>(search);
   useEffect(() => setPreviousSearch(search), [search]);
   const [searchFormKey, setSearchFormKey] = useState<string>();
+  const searchOutcome = useSearchOutcome();
   if (navigationType === "POP" && previousSearch !== search) {
     // This pattern (set state during render, then bail out of render) is in
     // fact a valid one.
@@ -51,7 +52,6 @@ const SearchPage = () => {
     return null;
   }
 
-  const searchOutcome = useSearchOutcome();
   let mainContent;
   if (searchOutcome.kind === "none" && searchOutcome.query) {
     // Don't flash the lander on initial render if we are just waiting for a
@@ -169,13 +169,13 @@ const Nav = () => {
   );
 };
 
-const debounceSearch = (rate: number): typeof search => {
+const debounceSearch = (rate: number): typeof executeSearch => {
   let timeoutId: number | undefined;
   return (...args) => {
     clearTimeout(timeoutId);
     return new Promise((resolve, reject) => {
       const ourTimeoutId = setTimeout(() => {
-        search(...args).then(resolve, reject);
+        executeSearch(...args).then(resolve, reject);
       }, rate);
       const [, signal] = args;
       signal.addEventListener("abort", () => clearTimeout(ourTimeoutId), {
