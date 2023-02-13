@@ -187,7 +187,7 @@ const RepositoriesList = memo(function RepositoriesList({
         {fileCount} files consuming{" "}
         {prettyBytes(indexBytes + contentBytes, { space: false })} of RAM
       </h1>
-      <div className="overflow-x-scroll">
+      <div className="overflow-x-auto">
         <table className="text-sm w-full text-center">
           <thead>
             <tr className="border bg-slate-100">
