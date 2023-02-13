@@ -9,8 +9,9 @@ import {
   useState,
 } from "react";
 import { ChevronDown, ChevronUp, ChevronRight } from "react-feather";
-import { Link, useLocation, useNavigationType } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { LineToken, parseIntoLines } from "./content-parser";
+import { Nav, usePopStateReactKey } from "./nav";
 import { Preferences } from "./preferences";
 import {
   ResultFile,
@@ -21,34 +22,9 @@ import {
 import { useRouteSearchQuery } from "./use-route-search-query";
 
 const SearchPage = () => {
-  // We have some pretty gnarly requirements around the search form. The search
-  // form projects the route into the form UI once upon mount, and then
-  // continuously projects the form UI into the route from there on.
-  //
-  // This works fine, except on `popstate` (i.e. user hitting forward or back
-  // button): suddenly, we need to once again project the route into the UI. To
-  // make this happen, we force an unmount/remount by way of changing the `key`
-  // on the SearchForm.
-  const navigationType = useNavigationType();
-  const { search } = useLocation();
-  const [previousSearch, setPreviousSearch] = useState<string>(search);
-  useEffect(() => setPreviousSearch(search), [search]);
-  const [searchFormKey, setSearchFormKey] = useState<string>();
+  const { key: searchFormKey, keyChanged } = usePopStateReactKey();
   const searchOutcome = useSearchOutcome();
-  if (navigationType === "POP" && previousSearch !== search) {
-    // This pattern (set state during render, then bail out of render) is in
-    // fact a valid one.
-    //
-    // https://beta.reactjs.org/reference/react/useState#setstate-caveats
-    // "Calling the set function during rendering is only allowed from within
-    // the currently rendering component. React will discard its output and
-    // immediately attempt to render it again with the new state."
-
-    // The actual key we set doesn't much matter; Math.random() would not be
-    // appreciably different.
-    setSearchFormKey(`${previousSearch}->${search}`);
-    // Prevent loops by essentially repeating this state's initializer.
-    setPreviousSearch(search);
+  if (keyChanged) {
     return null;
   }
 
@@ -64,17 +40,10 @@ const SearchPage = () => {
         <Lander />
       </>
     );
-  } else if (searchOutcome.kind === "query-error") {
+  } else if (searchOutcome.kind === "error") {
     mainContent = (
       <SearchForm key={searchFormKey} queryError={searchOutcome.error} />
-      // TODO query-error should _preserve_ previous search results, if any.
-    );
-  } else if (searchOutcome.kind === "other-error") {
-    mainContent = (
-      <>
-        <SearchForm key={searchFormKey} />
-        <SearchError error={searchOutcome.error} />
-      </>
+      // TODO error should _preserve_ previous search results, if any.
     );
   } else {
     mainContent = (
@@ -96,10 +65,7 @@ const SearchPage = () => {
 type SearchOutcome =
   // There is no search outcome; on page load there may be no outcome when there
   // is a query in the URL parameters, in which case `q` will be set.
-  | { kind: "none"; query?: string }
-  | SearchResponse
-  // Some other error was thrown by the search API.
-  | { kind: "other-error"; error: Error };
+  { kind: "none"; query?: string } | SearchResponse;
 
 const useSearchOutcome = () => {
   const [searchQuery] = useRouteSearchQuery();
@@ -126,9 +92,7 @@ const useSearchOutcome = () => {
           if (error.name !== "AbortError") {
             // eslint-disable-next-line no-console
             console.error("Search failed", error);
-            startTransition(() =>
-              setSearchOutome({ kind: "other-error", error })
-            );
+            startTransition(() => setSearchOutome({ kind: "error", error }));
           }
         });
       return () => abortController.abort();
@@ -136,37 +100,6 @@ const useSearchOutcome = () => {
   }, [searchQuery]);
 
   return searchOutcome;
-};
-
-const navLinks = [
-  ["/", "Search"],
-  // TODO implement these pages
-  ["/repositories", "Repositories"],
-  ["/syntax", "Query Syntax"],
-  ["/about", "About"],
-] as const;
-const Nav = () => {
-  const { pathname } = useLocation();
-  return (
-    <nav className="pt-2 pb-12">
-      <ul className="flex justify-center text-xs">
-        {navLinks.map(([url, text]) => (
-          <li
-            key={url}
-            className="after:content-['•'] after:px-2 last:after:content-none"
-          >
-            {url === pathname ? (
-              text
-            ) : (
-              <Link className="text-cyan-700" to={url}>
-                {text}
-              </Link>
-            )}
-          </li>
-        ))}
-      </ul>
-    </nav>
-  );
 };
 
 const debounceSearch = (rate: number): typeof executeSearch => {
@@ -485,11 +418,6 @@ const Lander = () => (
       More grok than Grok.
     </Link>
   </div>
-);
-
-// TODO needs better UI
-const SearchError = ({ error }: { error: Error }) => (
-  <h2>Error! {error.toString()}</h2>
 );
 
 // We need to memo over `searchState` so that we don't rerender every time a

@@ -14,7 +14,7 @@ export type SearchResponse =
       results: SearchResults;
     }
   | {
-      kind: "query-error";
+      kind: "error";
       error: string;
     };
 
@@ -45,14 +45,16 @@ export const search = async (
   if (!response.ok) {
     if (response.status === 400) {
       const { Error: error } = await response.json();
-      return { kind: "query-error", error };
+      return { kind: "error", error };
     } else {
       const responseBody = await response.text();
-      throw new Error(
-        `Search failed, HTTP ${response.status}: ${response.statusText} ${
-          responseBody ? ` - ${responseBody}` : ""
-        }`
-      );
+      return {
+        kind: "error",
+        error: `Search failed, HTTP ${response.status}: ${
+          response.statusText
+        } ${responseBody ? ` - ${responseBody}` : ""}
+        `,
+      };
     }
   }
 
