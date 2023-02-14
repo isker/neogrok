@@ -16,7 +16,6 @@ import { Preferences } from "./preferences";
 import {
   ResultFile,
   search as executeSearch,
-  SearchResponse,
   SearchResults as ApiSearchResults,
 } from "./search-api";
 import { useRouteSearchQuery } from "./use-route-search-query";
@@ -42,8 +41,12 @@ const SearchPage = () => {
     );
   } else if (searchOutcome.kind === "error") {
     mainContent = (
-      <SearchForm key={searchFormKey} queryError={searchOutcome.error} />
-      // TODO error should _preserve_ previous search results, if any.
+      <>
+        <SearchForm key={searchFormKey} queryError={searchOutcome.error} />
+        {searchOutcome.previousResults ? (
+          <SearchResults results={searchOutcome.previousResults} />
+        ) : null}
+      </>
     );
   } else {
     mainContent = (
@@ -65,7 +68,18 @@ const SearchPage = () => {
 type SearchOutcome =
   // There is no search outcome; on page load there may be no outcome when there
   // is a query in the URL parameters, in which case `q` will be set.
-  { kind: "none"; query?: string } | SearchResponse;
+  | { kind: "none"; query?: string }
+  | {
+      kind: "success";
+      results: ApiSearchResults;
+    }
+  | {
+      kind: "error";
+      error: string;
+      // Results from the previously successful query, so that we can display them
+      // in addition to the error.
+      previousResults: ApiSearchResults | undefined;
+    };
 
 const useSearchOutcome = () => {
   const [searchQuery] = useRouteSearchQuery();
@@ -82,17 +96,31 @@ const useSearchOutcome = () => {
       setSearchOutome({ kind: "none" });
     } else {
       document.title = `${query} - neogrok`;
-
       const abortController = new AbortController();
       debouncedSearch({ query, ...rest }, abortController.signal)
         .then((outcome) => {
-          startTransition(() => setSearchOutome(outcome));
+          startTransition(() => {
+            if (outcome.kind === "error") {
+              setSearchOutome((previous) => ({
+                ...outcome,
+                previousResults: computePreviousResults(previous),
+              }));
+            } else {
+              setSearchOutome(outcome);
+            }
+          });
         })
         .catch((error) => {
           if (error.name !== "AbortError") {
             // eslint-disable-next-line no-console
             console.error("Search failed", error);
-            startTransition(() => setSearchOutome({ kind: "error", error }));
+            startTransition(() =>
+              setSearchOutome((previous) => ({
+                kind: "error",
+                error,
+                previousResults: computePreviousResults(previous),
+              }))
+            );
           }
         });
       return () => abortController.abort();
@@ -100,6 +128,16 @@ const useSearchOutcome = () => {
   }, [searchQuery]);
 
   return searchOutcome;
+};
+
+const computePreviousResults = (previousOutcome: SearchOutcome) => {
+  if (previousOutcome.kind === "none") {
+    return undefined;
+  } else if (previousOutcome.kind === "error") {
+    return previousOutcome.previousResults;
+  } else {
+    return previousOutcome.results;
+  }
 };
 
 const debounceSearch = (rate: number): typeof executeSearch => {

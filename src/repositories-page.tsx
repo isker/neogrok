@@ -10,7 +10,6 @@ import { useSearchParams } from "react-router-dom";
 import prettyBytes from "pretty-bytes";
 import {
   listRepositories,
-  ListRepositoriesResponse,
   ListResults,
   Repository as ApiRepository,
 } from "./list-repositories-api";
@@ -27,8 +26,14 @@ const Repositories = () => {
   if (listOutcome.kind === "none") {
     mainContent = <SearchForm key={searchFormKey} />;
   } else if (listOutcome.kind === "error") {
-    mainContent = <SearchForm key={searchFormKey} error={listOutcome.error} />;
-    // TODO error should _preserve_ previous search results, if any.
+    mainContent = (
+      <>
+        <SearchForm key={searchFormKey} error={listOutcome.error} />
+        {listOutcome.previousResults ? (
+          <RepositoriesList results={listOutcome.previousResults} />
+        ) : null}
+      </>
+    );
   } else {
     mainContent = (
       <>
@@ -82,8 +87,6 @@ const useRouteListQuery = (): [string | undefined, (query: string) => void] => {
   return [parsedQuery, setRouteQuery];
 };
 
-type ListOutcome = { kind: "none" } | ListRepositoriesResponse;
-
 const debounceListRepositories = (rate: number): typeof listRepositories => {
   let timeoutId: number | undefined;
   return (...args) => {
@@ -102,6 +105,17 @@ const debounceListRepositories = (rate: number): typeof listRepositories => {
 };
 const debouncedListRepositories = debounceListRepositories(100);
 
+type ListOutcome =
+  | { kind: "none" }
+  | {
+      kind: "success";
+      results: ListResults;
+    }
+  | {
+      kind: "error";
+      error: string;
+      previousResults: ListResults | undefined;
+    };
 const useListOutcome = (): ListOutcome => {
   const [listQuery] = useRouteListQuery();
   const [listOutcome, setListOutcome] = useState<ListOutcome>({ kind: "none" });
@@ -113,18 +127,45 @@ const useListOutcome = (): ListOutcome => {
 
     const abortController = new AbortController();
     debouncedListRepositories({ query: listQuery }, abortController.signal)
-      .then((result) => startTransition(() => setListOutcome(result)))
+      .then((result) => {
+        startTransition(() => {
+          if (result.kind === "error") {
+            setListOutcome((previous) => ({
+              ...result,
+              previousResults: computePreviousResults(previous),
+            }));
+          } else {
+            setListOutcome(result);
+          }
+        });
+      })
       .catch((error) => {
         if (error.name !== "AbortError") {
           // eslint-disable-next-line no-console
           console.error("List repositories failed", error);
-          startTransition(() => setListOutcome({ kind: "error", error }));
+          startTransition(() =>
+            setListOutcome((previous) => ({
+              kind: "error",
+              error,
+              previousResults: computePreviousResults(previous),
+            }))
+          );
         }
       });
     return () => abortController.abort();
   }, [listQuery]);
 
   return listOutcome;
+};
+
+const computePreviousResults = (previousOutcome: ListOutcome) => {
+  if (previousOutcome.kind === "none") {
+    return undefined;
+  } else if (previousOutcome.kind === "error") {
+    return previousOutcome.previousResults;
+  } else {
+    return previousOutcome.results;
+  }
 };
 
 const SearchForm = ({ error }: { error?: string }) => {
@@ -135,7 +176,7 @@ const SearchForm = ({ error }: { error?: string }) => {
       <label
         htmlFor="query"
         title="Same query syntax as the main search - use `r:name` to filter repositories by name, otherwise you are filtering them by their content!"
-        className="flex-auto flex"
+        className="flex"
       >
         <span className="inline-block p-1 pr-2 bg-gray-300 border border-gray-400 cursor-help">
           Search repositories
