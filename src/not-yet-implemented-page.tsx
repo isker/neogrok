@@ -1,3 +1,10 @@
-const NotYetImplementedPage = () => <p>Not yet implemented :^)</p>;
+import { Nav } from "./nav";
 
-export default NotYetImplementedPage;
+const NotFoundPage = () => (
+  <div className="container mx-auto">
+    <Nav />
+    <main className="text-center text-xl">Not yet implemented :^)</main>
+  </div>
+);
+
+export default NotFoundPage;
