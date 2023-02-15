@@ -65,20 +65,21 @@ const SearchPage = () => {
   );
 };
 
+type TimedSearchResults = ApiSearchResults & { requestDuration: number };
 type SearchOutcome =
   // There is no search outcome; on page load there may be no outcome when there
   // is a query in the URL parameters, in which case `q` will be set.
   | { kind: "none"; query?: string }
   | {
       kind: "success";
-      results: ApiSearchResults;
+      results: TimedSearchResults;
     }
   | {
       kind: "error";
       error: string;
       // Results from the previously successful query, so that we can display them
       // in addition to the error.
-      previousResults: ApiSearchResults | undefined;
+      previousResults: TimedSearchResults | undefined;
     };
 
 const useSearchOutcome = () => {
@@ -97,6 +98,7 @@ const useSearchOutcome = () => {
     } else {
       document.title = `${query} - neogrok`;
       const abortController = new AbortController();
+      const start = Date.now();
       debouncedSearch({ query, ...rest }, abortController.signal)
         .then((outcome) => {
           startTransition(() => {
@@ -106,7 +108,13 @@ const useSearchOutcome = () => {
                 previousResults: computePreviousResults(previous),
               }));
             } else {
-              setSearchOutome(outcome);
+              setSearchOutome({
+                kind: "success",
+                results: {
+                  ...outcome.results,
+                  requestDuration: Date.now() - start,
+                },
+              });
             }
           });
         })
@@ -470,9 +478,10 @@ const SearchResults = memo(function SearchResults({
     files,
     repoUrls,
     repoLineNumberFragments,
+    requestDuration,
   },
 }: {
-  results: ApiSearchResults;
+  results: TimedSearchResults;
 }) {
   const frontendMatchCount = files
     .flatMap(({ chunks }) => chunks)
@@ -492,9 +501,7 @@ const SearchResults = memo(function SearchResults({
         <span className="ml-auto">
           Frontend: {files.length} {files.length === 1 ? "file" : "files"} /{" "}
           {frontendMatchCount} {matchCount === 1 ? "match" : "matches"} /{" "}
-          {/* TODO need to have search-api return a timing, and also bake in time spent debouncing.
-                Doing render time on top of that sounds too hard. */}
-          TODOms
+          {requestDuration}ms
         </span>
       </h1>
       {files.map((file, i) => {
