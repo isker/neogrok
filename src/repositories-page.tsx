@@ -146,7 +146,7 @@ const useListOutcome = (): ListOutcome => {
           startTransition(() =>
             setListOutcome((previous) => ({
               kind: "error",
-              error,
+              error: error.toString(),
               previousResults: computePreviousResults(previous),
             }))
           );

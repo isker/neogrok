@@ -125,7 +125,7 @@ const useSearchOutcome = () => {
             startTransition(() =>
               setSearchOutome((previous) => ({
                 kind: "error",
-                error,
+                error: error.toString(),
                 previousResults: computePreviousResults(previous),
               }))
             );
