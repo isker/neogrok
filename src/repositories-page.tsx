@@ -13,7 +13,7 @@ import {
   ListResults,
   Repository as ApiRepository,
 } from "./list-repositories-api";
-import { Nav, usePopStateReactKey } from "./nav";
+import { Link, Nav, usePopStateReactKey } from "./nav";
 
 const Repositories = () => {
   const { key: searchFormKey, keyChanged } = usePopStateReactKey();
@@ -264,9 +264,7 @@ const Repository = ({
 }) => (
   <tr className="border">
     <td className="px-1">
-      <a className="text-cyan-700" href={url}>
-        {name}
-      </a>
+      <Link to={url}>{name}</Link>
     </td>
     <td className="px-1">{fileCount}</td>
     <td className="px-1">{prettyBytes(contentBytes, { space: false })}</td>

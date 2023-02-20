@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigationType } from "react-router-dom";
+import {
+  Link as ReactRouterLink,
+  LinkProps,
+  useLocation,
+  useNavigationType,
+} from "react-router-dom";
 
 const navLinks = [
   ["/", "Search"],
@@ -39,6 +44,16 @@ export const Nav = () => {
     </nav>
   );
 };
+
+export const Link = ({ children, ...props }: LinkProps) => (
+  <ReactRouterLink
+    // eslint-disable-next-line react/jsx-props-no-spreading
+    {...props}
+    className="text-cyan-700 hover:underline decoration-1"
+  >
+    {children}
+  </ReactRouterLink>
+);
 
 export const usePopStateReactKey = () => {
   // We have some pretty gnarly requirements around the search form. The search

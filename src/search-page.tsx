@@ -9,9 +9,8 @@ import {
   useState,
 } from "react";
 import { ChevronDown, ChevronUp, ChevronRight } from "react-feather";
-import { Link } from "react-router-dom";
 import { LineToken, parseIntoLines } from "./content-parser";
-import { Nav, usePopStateReactKey } from "./nav";
+import { Link, Nav, usePopStateReactKey } from "./nav";
 import { Preferences } from "./preferences";
 import {
   ResultFile,
@@ -466,16 +465,10 @@ const NonNegativeIntegerInput = ({
   );
 };
 
+// TODO give some TL;DR examples linking to ./query-syntax
 const Lander = () => (
-  // This `padding-top: 30dvh` was the least terrible way I found to vertically
-  // center this lander text. Anything involving grid/flexbox requires
-  // cooperation with all our parent dom nodes to achieve a container height as
-  // tall as the page.
-  <div className="text-center pt-[30dvh]">
+  <div className="text-center pt-10">
     <h1 className="text-4xl tracking-wide">ɴᴇᴏɢʀᴏᴋ</h1>
-    <Link to="/about" className="text-cyan-700">
-      More grok than Grok.
-    </Link>
   </div>
 );
 
@@ -594,9 +587,7 @@ const SearchResultsFile = ({
   }
 
   const linkedFilename = fileUrl ? (
-    <a className="text-cyan-700 hover:underline decoration-1" href={fileUrl}>
-      {renderedFileName}
-    </a>
+    <Link to={fileUrl}>{renderedFileName}</Link>
   ) : (
     renderedFileName
   );
