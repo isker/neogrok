@@ -3,6 +3,9 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { PreferencesProvider } from "./preferences";
 
 const SearchPage = lazy(() => import("./search-page"));
+// It's not clear that small pages with static content like /about should
+// be lazy loaded. Perhaps they could remain lazy loaded but be prefetched.
+const AboutPage = lazy(() => import("./about-page"));
 const RepositoriesPage = lazy(() => import("./repositories-page"));
 const NotYetImplementedPage = lazy(() => import("./not-yet-implemented-page"));
 const NotFoundPage = lazy(() => import("./404-page"));
@@ -14,7 +17,7 @@ export const App = () => (
         {/* TODO implement unimplemented pages */}
         <Routes>
           <Route path="/" element={<SearchPage />} />
-          <Route path="/about" element={<NotYetImplementedPage />} />
+          <Route path="/about" element={<AboutPage />} />
           <Route path="/syntax" element={<NotYetImplementedPage />} />
           <Route path="/repositories" element={<RepositoriesPage />} />
 
