@@ -85,6 +85,7 @@ const searchResultSchema = z.object({
       Duration: z.number(),
       FileCount: z.number(),
       MatchCount: z.number(),
+      FilesSkipped: z.number(),
       Files: z
         .array(
           z
@@ -136,6 +137,7 @@ const searchResultSchema = z.object({
         Duration,
         FileCount,
         MatchCount,
+        FilesSkipped,
         Files,
         RepoURLs,
         LineFragments,
@@ -143,6 +145,7 @@ const searchResultSchema = z.object({
         duration: Duration,
         fileCount: FileCount,
         matchCount: MatchCount,
+        filesSkipped: FilesSkipped,
         files: Files,
         repoUrls: RepoURLs,
         repoLineNumberFragments: LineFragments,

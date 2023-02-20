@@ -474,6 +474,7 @@ const SearchResults = memo(function SearchResults({
   results: {
     fileCount,
     matchCount,
+    filesSkipped,
     duration,
     files,
     repoUrls,
@@ -491,7 +492,21 @@ const SearchResults = memo(function SearchResults({
       <h1 className="text-xs flex flex-wrap pt-2">
         <span>
           Backend: {fileCount} {fileCount === 1 ? "file" : "files"} /{" "}
-          {matchCount} {matchCount === 1 ? "match" : "matches"} /{" "}
+          {matchCount} {matchCount === 1 ? "match" : "matches"}
+          {filesSkipped > 0 ? (
+            <>
+              {" "}
+              (
+              <span
+                title="The number of matches found on the backend exceeded the maximums, which are set to optimize performance in situations with large numbers of matches; they can be increased in the advanced options"
+                className="text-yellow-700 cursor-help"
+              >
+                truncated
+              </span>
+              )
+            </>
+          ) : null}{" "}
+          /{" "}
           {
             // ns -> ms with 2 decimal places
             Math.floor(duration / 1e4) / 1e2

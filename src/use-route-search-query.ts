@@ -6,8 +6,8 @@ import type { SearchQuery } from "./search-api";
 const defaultQueryOptions: Omit<SearchQuery, "query"> = Object.freeze({
   contextLines: 1,
   files: 50,
-  matchesPerShard: 1e6,
-  totalMatches: 1e7,
+  matchesPerShard: 1e4,
+  totalMatches: 1e5,
 });
 
 type RouteSearchQuery = Omit<SearchQuery, "query"> & {
