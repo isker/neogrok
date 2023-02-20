@@ -148,6 +148,16 @@ const computePreviousResults = (previousOutcome: SearchOutcome) => {
   }
 };
 
+// TODO a more intelligent debounce strategy might be possible. Consider:
+// - due to trigram indexing, queries with less than 3 characters are expensive;
+//   debounce longer on short queries and little or not at all on longer ones?
+// - identifying when a search query has fewer than 3 characters is not actually
+//   trivial, due to "meta" expressions like repo/filename filtering
+// - the current 100ms is long enough to feel a bit laggy but short enough that
+//   even during "quick" typing we are still firing queries in the middle; 60wpm
+//   is 1 char every 200ms on average.  so what's the point?
+//
+// All of this applies the same to the repo list debounce.
 const debounceSearch = (rate: number): typeof executeSearch => {
   let timeoutId: number | undefined;
   return (...args) => {
@@ -194,6 +204,9 @@ const SearchForm = ({ queryError }: { queryError?: string }) => {
   const formMatchesPerShard = useRef(matchesPerShard);
   const formTotalMatches = useRef(totalMatches);
 
+  // TODO consider more clearly indicating in the UI:
+  // - when a search query API request is in progress
+  // - in manual search, when there are pending unsubmitted changes to the form
   return (
     <form
       onSubmit={(e) => {
