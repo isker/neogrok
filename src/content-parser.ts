@@ -1,11 +1,8 @@
 import type { MatchRange } from "./search-api";
 
-// TODO consider passing `fatal: true` in the options - it's likely that we want
-// to not render non-UTF-8 files, with the exception signalling to render
-// a message to this effect.
-//
-// Need a repo with binary files, or with files encoded in something like JIS,
-// to test.
+// We don't pass `fatal: true` to this ctor to do things like handle binary or
+// non-utf8 text encodings as the zoekt indexer explicitly skips indexing binary
+// content, and text encodings other than utf-8 are explicitly not supported.
 const utf8Decoder = new TextDecoder();
 
 export type LineToken =
