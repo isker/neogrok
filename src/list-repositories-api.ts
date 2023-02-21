@@ -89,14 +89,25 @@ const listResultSchema = z.object({
                   Rank: z.number(),
                   URL: z.string(),
                   LatestCommitDate: z.coerce.date(),
+                  Branches: z.array(
+                    z
+                      .object({ Name: z.string(), Version: z.string() })
+                      .transform(({ Name, Version }) => ({
+                        name: Name,
+                        version: Version,
+                      }))
+                  ),
                 })
-                .transform(({ Name, ID, Rank, URL, LatestCommitDate }) => ({
-                  name: Name,
-                  id: ID,
-                  rank: Rank,
-                  url: URL,
-                  lastCommit: LatestCommitDate,
-                })),
+                .transform(
+                  ({ Name, ID, Rank, URL, LatestCommitDate, Branches }) => ({
+                    name: Name,
+                    id: ID,
+                    rank: Rank,
+                    url: URL,
+                    lastCommit: LatestCommitDate,
+                    branches: Branches,
+                  })
+                ),
               IndexMetadata: z
                 .object({
                   IndexTime: z.coerce.date(),

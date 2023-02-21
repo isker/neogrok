@@ -542,7 +542,7 @@ const SearchResults = memo(function SearchResults({
 });
 
 const SearchResultsFile = ({
-  file: { repository, fileName, language, chunks, version },
+  file: { repository, fileName, branches, language, chunks, version },
   fileUrlTemplate,
   lineNumberTemplate,
   rank,
@@ -666,9 +666,13 @@ const SearchResultsFile = ({
     numMatchesInFileSections -
     fileNameChunks.reduce((a, { matchRanges }) => a + matchRanges.length, 0);
 
-  // TODO could put branch here if we care
   const metadata = [
     `${numTotalMatches} ${numTotalMatches === 1 ? "match" : "matches"}`,
+    // I don't like every result just yelling HEAD, it's not particularly useful
+    // information.
+    ...(branches.length > 1 || branches[0] !== "HEAD"
+      ? [branches.join(", ")]
+      : []),
     language,
     `№${rank}`,
   ];

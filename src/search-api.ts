@@ -92,6 +92,7 @@ const searchResultSchema = z.object({
             .object({
               Repository: z.string(),
               FileName: z.string(),
+              Branches: z.array(z.string()),
               Language: z.string(),
               Version: z.string(),
               ChunkMatches: z.array(
@@ -118,9 +119,17 @@ const searchResultSchema = z.object({
               ),
             })
             .transform(
-              ({ Repository, FileName, Language, Version, ChunkMatches }) => ({
+              ({
+                Repository,
+                FileName,
+                Branches,
+                Language,
+                Version,
+                ChunkMatches,
+              }) => ({
                 repository: Repository,
                 fileName: FileName,
+                branches: Branches,
                 language: Language,
                 version: Version,
                 chunks: ChunkMatches,

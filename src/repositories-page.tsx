@@ -234,6 +234,7 @@ const RepositoriesList = memo(function RepositoriesList({
             <tr className="border bg-slate-100">
               <th className="px-1">Repository</th>
               <th className="px-1">File count</th>
+              <th className="px-1">Branches</th>
               <th className="px-1">Content size in RAM</th>
               <th className="px-1">Index size in RAM</th>
               <th className="px-1">Last indexed</th>
@@ -257,6 +258,7 @@ const Repository = ({
     url,
     lastIndexed,
     lastCommit,
+    branches,
     stats: { fileCount, indexBytes, contentBytes },
   },
 }: {
@@ -264,9 +266,14 @@ const Repository = ({
 }) => (
   <tr className="border">
     <td className="px-1">
-      <Link to={url}>{name}</Link>
+      {url.length > 0 ? <Link to={url}>{name}</Link> : name}
     </td>
     <td className="px-1">{fileCount}</td>
+    <td className="px-1">
+      {branches
+        .map(({ name: branchName, version }) => `${branchName}@${version}`)
+        .join(" ")}
+    </td>
     <td className="px-1">{prettyBytes(contentBytes, { space: false })}</td>
     <td className="px-1">{prettyBytes(indexBytes, { space: false })}</td>
     <td className="px-1">{toISOStringWithoutMs(lastIndexed)}</td>

@@ -11,8 +11,6 @@ const QuerySyntaxPage = () => {
     document.getElementById(fragment.slice(1))?.scrollIntoView();
   }, [fragment]);
 
-  // TODO need a better, consistent notation for individual expressions here.
-  // Double quotes isn't cutting it in all cases.
   return (
     <div className="container mx-auto">
       <Nav />
