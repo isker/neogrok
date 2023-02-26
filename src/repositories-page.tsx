@@ -229,16 +229,16 @@ const RepositoriesList = memo(function RepositoriesList({
         {prettyBytes(indexBytes + contentBytes, { space: false })} of RAM
       </h1>
       <div className="overflow-x-auto">
-        <table className="text-sm w-full text-center">
+        <table className="border-collapse text-sm w-full text-center">
           <thead>
             <tr className="border bg-slate-100">
-              <th className="px-1">Repository</th>
-              <th className="px-1">File count</th>
-              <th className="px-1">Branches</th>
-              <th className="px-1">Content size in RAM</th>
-              <th className="px-1">Index size in RAM</th>
-              <th className="px-1">Last indexed</th>
-              <th className="px-1">Last commit</th>
+              <th className="p-1">Repository</th>
+              <th className="p-1">File count</th>
+              <th className="p-1">Branches</th>
+              <th className="p-1">Content size in RAM</th>
+              <th className="p-1">Index size in RAM</th>
+              <th className="p-1">Last indexed</th>
+              <th className="p-1">Last commit</th>
             </tr>
           </thead>
           <tbody>
@@ -265,19 +265,19 @@ const Repository = ({
   repository: ApiRepository;
 }) => (
   <tr className="border">
-    <td className="px-1">
+    <td className="p-1">
       {url.length > 0 ? <Link to={url}>{name}</Link> : name}
     </td>
-    <td className="px-1">{fileCount}</td>
-    <td className="px-1">
+    <td className="p-1">{fileCount}</td>
+    <td className="p-1">
       {branches
         .map(({ name: branchName, version }) => `${branchName}@${version}`)
         .join(" ")}
     </td>
-    <td className="px-1">{prettyBytes(contentBytes, { space: false })}</td>
-    <td className="px-1">{prettyBytes(indexBytes, { space: false })}</td>
-    <td className="px-1">{toISOStringWithoutMs(lastIndexed)}</td>
-    <td className="px-1">{toISOStringWithoutMs(lastCommit)}</td>
+    <td className="p-1">{prettyBytes(contentBytes, { space: false })}</td>
+    <td className="p-1">{prettyBytes(indexBytes, { space: false })}</td>
+    <td className="p-1">{toISOStringWithoutMs(lastIndexed)}</td>
+    <td className="p-1">{toISOStringWithoutMs(lastCommit)}</td>
   </tr>
 );
 

@@ -144,24 +144,24 @@ const QuerySyntaxPage = () => {
             There are a few more kinds of prefix expressions than those two.
             They&apos;re all tabulated here:
           </p>
-          <table className="border text-sm w-full text-center">
+          <table className="border border-collapse text-sm w-full text-center">
             <thead>
               <tr className="border bg-slate-100">
-                <th className="px-1">Prefix(es)</th>
-                <th className="px-1">Description</th>
-                <th className="px-1">Examples</th>
+                <th className="p-1">Prefix(es)</th>
+                <th className="p-1">Description</th>
+                <th className="p-1">Examples</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>
+              <tr className="border">
+                <td className="p-1">
                   <code>file:</code>, <code>f:</code>
                 </td>
-                <td>
+                <td className="p-1">
                   Regex match file names only, instead of the default file names
                   and file contents
                 </td>
-                <td>
+                <td className="p-1">
                   <ExampleQuery query="f:README" />
                   <br />
                   <ExampleQuery query="f:README neogrok" />
@@ -169,46 +169,46 @@ const QuerySyntaxPage = () => {
                   <ExampleQuery query='f:"evil file with spaces"' />
                 </td>
               </tr>
-              <tr>
-                <td>
+              <tr className="border">
+                <td className="p-1">
                   <code>content:</code>, <code>c:</code>
                 </td>
-                <td>
+                <td className="p-1">
                   Regex match file contents only, instead of the default file
                   names and file contents
                 </td>
-                <td>
+                <td className="p-1">
                   <ExampleQuery query="c:README" />
                 </td>
               </tr>
-              <tr>
-                <td>
+              <tr className="border">
+                <td className="p-1">
                   <code>repo:</code>, <code>r:</code>
                 </td>
-                <td>
+                <td className="p-1">
                   Regex match repository names; by default all repositories are
                   searched
                 </td>
-                <td>
+                <td className="p-1">
                   <ExampleQuery query="r:linux driver" />
                 </td>
               </tr>
-              <tr>
-                <td>
+              <tr className="border">
+                <td className="p-1">
                   <code>branch:</code>, <code>b:</code>
                 </td>
-                <td>
+                <td className="p-1">
                   Regex match branch names; by default all branches are searched
                 </td>
-                <td>
+                <td className="p-1">
                   <ExampleQuery query="b:prerelease foo" />
                 </td>
               </tr>
-              <tr>
-                <td>
+              <tr className="border">
+                <td className="p-1">
                   <code>lang:</code>
                 </td>
-                <td>
+                <td className="p-1">
                   Constrain files to those in the given language (or language
                   alias) as defined by{" "}
                   <Link to="https://github.com/github/linguist/blob/master/lib/linguist/languages.yml">
@@ -220,21 +220,51 @@ const QuerySyntaxPage = () => {
                   This is <em>not</em> a regex or a substring; each expression
                   can only contain one language.
                 </td>
-                <td>
+                <td className="p-1">
                   <ExampleQuery query="lang:typescript type" />
                 </td>
               </tr>
-              <tr>
-                <td>
+              <tr className="border">
+                <td className="p-1">
                   <code>sym:</code>
                 </td>
-                <td>
+                <td className="p-1">
                   Regex match symbol definitions, as determined by{" "}
                   <Link to="https://ctags.io/">universal ctags</Link> at index
                   time, if it was present during indexing
                 </td>
-                <td>
+                <td className="p-1">
                   <ExampleQuery query="sym:\bmain\b" />
+                </td>
+              </tr>
+              <tr className="border">
+                <td className="p-1">
+                  <code>case:</code>
+                </td>
+                <td className="p-1">
+                  Unlike most other expressions, does not do anything on its
+                  own, but rather modifies other expressions in the query.{" "}
+                  <code>case:yes</code> makes other expressions case-sensitive;{" "}
+                  <code>case:no</code> makes them case-insensitive, and{" "}
+                  <code>case:auto</code> (the default behavior) makes them
+                  case-sensitive if they have any uppercase characters and
+                  case-insensitive otherwise
+                </td>
+                <td className="p-1">
+                  <ExampleQuery query="case:no TEST" />
+                </td>
+              </tr>
+              <tr className="border">
+                <td className="p-1">
+                  <code>archived:</code>
+                </td>
+                <td className="p-1">
+                  <code>archived:no</code> excludes archived repositories while{" "}
+                  <code>archived:yes</code> excludes non-archived repositories.
+                  The default is to exclude neither.
+                </td>
+                <td className="p-1">
+                  <ExampleQuery query="archived:no readme" />
                 </td>
               </tr>
             </tbody>
@@ -245,9 +275,7 @@ const QuerySyntaxPage = () => {
   );
 };
 
-// TODO archived: yes no
-// case:yes no auto
-// type:
+// TODO figure out what type: is for and document it
 
 const Heading = ({ id, children }: { id: string; children: ReactNode }) => (
   <h2 id={id} className="text-xl font-semibold">
