@@ -13,10 +13,10 @@ import {
   ListResults,
   Repository as ApiRepository,
 } from "./list-repositories-api";
-import { Link, Nav, usePopStateReactKey } from "./nav";
+import { Link, Nav, useSearchFormReactKey } from "./nav";
 
 const Repositories = () => {
-  const { key: searchFormKey, keyChanged } = usePopStateReactKey();
+  const { key: searchFormKey, keyChanged } = useSearchFormReactKey();
   const listOutcome = useListOutcome();
   if (keyChanged) {
     return null;

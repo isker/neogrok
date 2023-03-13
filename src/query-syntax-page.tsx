@@ -1,5 +1,6 @@
 import { ReactNode, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { ExampleQuery } from "./example-query";
 import { Nav, Link } from "./nav";
 
 const QuerySyntaxPage = () => {
@@ -8,7 +9,10 @@ const QuerySyntaxPage = () => {
     document.title = "Query syntax - neogrok";
   });
   useEffect(() => {
-    document.getElementById(fragment.slice(1))?.scrollIntoView();
+    const scrollTarget = fragment.slice(1);
+    if (scrollTarget) {
+      document.getElementById(scrollTarget)?.scrollIntoView();
+    }
   }, [fragment]);
 
   return (
@@ -283,12 +287,6 @@ const Heading = ({ id, children }: { id: string; children: ReactNode }) => (
       {children}
     </a>
   </h2>
-);
-
-const ExampleQuery = ({ query }: { query: string }) => (
-  <Link to={`/?${new URLSearchParams({ q: query }).toString()}`}>
-    <code className="bg-gray-200 p-1 whitespace-nowrap text-sm">{query}</code>
-  </Link>
 );
 
 const Expression = ({ children }: { children: string }) => (

@@ -55,7 +55,7 @@ export const Link = ({ children, ...props }: LinkProps) => (
   </ReactRouterLink>
 );
 
-export const usePopStateReactKey = () => {
+export const useSearchFormReactKey = () => {
   // We have some pretty gnarly requirements around the search form. The search
   // form projects the route into the form UI once upon mount, and then
   // continuously projects the form UI into the route from there on.
@@ -65,8 +65,8 @@ export const usePopStateReactKey = () => {
   // make this happen, we force an unmount/remount by way of changing the `key`
   // on the SearchForm.
   const navigationType = useNavigationType();
-  const { search } = useLocation();
-  const [previousSearch, setPreviousSearch] = useState<string>(search);
+  const { search, state } = useLocation();
+  const [previousSearch, setPreviousSearch] = useState(search);
   useEffect(() => setPreviousSearch(search), [search]);
   const [key, setKey] = useState<string>();
   if (navigationType === "POP" && previousSearch !== search) {
@@ -82,6 +82,14 @@ export const usePopStateReactKey = () => {
     // appreciably different.
     setKey(`${previousSearch}->${search}`);
     // Prevent loops by repeating this state's initializer.
+    setPreviousSearch(search);
+    return { key, keyChanged: true };
+  } else if (
+    navigationType === "PUSH" &&
+    state?.searchForm === "reset" &&
+    previousSearch !== search
+  ) {
+    setKey(search);
     setPreviousSearch(search);
     return { key, keyChanged: true };
   }
