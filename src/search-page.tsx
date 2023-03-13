@@ -58,7 +58,7 @@ const SearchPage = () => {
   }
 
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto px-2">
       <Nav />
       <main>{mainContent}</main>
     </div>

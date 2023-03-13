@@ -6,7 +6,7 @@ const AboutPage = () => {
     document.title = "About - neogrok";
   });
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto px-2">
       <Nav />
       <main className="space-y-2">
         <h1 className="text-2xl tracking-wide text-center">ɴᴇᴏɢʀᴏᴋ</h1>
