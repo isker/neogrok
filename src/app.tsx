@@ -33,8 +33,7 @@ export const App = () => (
            * - Can't support `history` search at all as it needs SCM
            *   integration that zoekt does not have.
            * - Can't support pagination.
-           * - Can't support the extreme depths of obscurity of lucene search
-           *   syntax. We'll need some heuristics and otherwise call it a day.
+           * - Can parse lucene queries with https://github.com/bripkens/lucene.
            * - TBD exactly how well defs & refs map to zoekt sym (and others?).
            *   If the semantics are similar, we can rewrite; otherwise,
            *   unsupported.

@@ -3,6 +3,9 @@ import { createContext, ReactNode, useEffect, useMemo, useState } from "react";
 // Preferences are UI controls that do not affect the query itself. They are
 // persisted in localStorage instead of the URL as they affect only UI behavior
 // instead of the actual API request/response.
+//
+// TODO if we introduce SSR, these are going to have to become cookies. Cookies
+// are scary, but they're the only way to implement isomorphic persistent state.
 const useTypedLocalStorageValue = <T,>(
   key: string,
   defaultValue: T,
