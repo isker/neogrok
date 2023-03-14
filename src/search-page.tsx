@@ -11,7 +11,8 @@ import {
 import { ChevronDown, ChevronUp, ChevronRight } from "react-feather";
 import { LineToken, parseIntoLines } from "./content-parser";
 import { ExampleQuery } from "./example-query";
-import { Link, Nav, useSearchFormReactKey } from "./nav";
+import { Link } from "./nav";
+import { useSearchFormReactKey } from "./use-search-form-react-key";
 import { Preferences } from "./preferences";
 import {
   ResultFile,
@@ -57,13 +58,10 @@ const SearchPage = () => {
     );
   }
 
-  return (
-    <div className="container mx-auto px-2">
-      <Nav />
-      <main>{mainContent}</main>
-    </div>
-  );
+  return mainContent;
 };
+
+export { SearchPage as Component };
 
 type TimedSearchResults = ApiSearchResults & { requestDuration: number };
 type SearchOutcome =
@@ -899,5 +897,3 @@ const SearchResultLine = ({
     )}
   </>
 );
-
-export default SearchPage;

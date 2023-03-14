@@ -13,7 +13,8 @@ import {
   ListResults,
   Repository as ApiRepository,
 } from "./list-repositories-api";
-import { Link, Nav, useSearchFormReactKey } from "./nav";
+import { Link } from "./nav";
+import { useSearchFormReactKey } from "./use-search-form-react-key";
 
 const Repositories = () => {
   const { key: searchFormKey, keyChanged } = useSearchFormReactKey();
@@ -43,13 +44,10 @@ const Repositories = () => {
     );
   }
 
-  return (
-    <div className="container mx-auto px-2">
-      <Nav />
-      {mainContent}
-    </div>
-  );
+  return mainContent;
 };
+
+export { Repositories as Component };
 
 const useRouteListQuery = (): [string | undefined, (query: string) => void] => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -284,5 +282,3 @@ const Repository = ({
 // Trying to make these strings less obnoxiously long.
 const toISOStringWithoutMs = (d: Date) =>
   d.toISOString().replace(/\.\d{3}Z$/, "Z");
-
-export default Repositories;

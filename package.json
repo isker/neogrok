@@ -35,7 +35,7 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-feather": "2.0.10",
-    "react-router-dom": "6.8.1",
+    "react-router-dom": "6.9.0",
     "zod": "3.20.6",
     "pretty-bytes": "6.1.0"
   }
