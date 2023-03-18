@@ -24,56 +24,57 @@ type UpdateRouteSearchQuery = (updates: {
   searchType: SearchType;
 }) => void;
 
+export const parseSearchParams = (
+  searchParams: URLSearchParams
+): RouteSearchQuery => {
+  const parsedContextLines = Number.parseInt(
+    searchParams.get("contextLines") ?? "",
+    10
+  );
+  const parsedFiles = Number.parseInt(searchParams.get("files") ?? "", 10);
+  const parsedMatchesPerShard = Number.parseInt(
+    searchParams.get("matchesPerShard") ?? "",
+    10
+  );
+  const parsedTotalMatches = Number.parseInt(
+    searchParams.get("totalMatches") ?? "",
+    10
+  );
+
+  // coerce empty string to undefined
+  const query = searchParams.get("q") || undefined;
+  const contextLines =
+    parsedContextLines >= 0
+      ? parsedContextLines
+      : defaultQueryOptions.contextLines;
+  const files = parsedFiles > 0 ? parsedFiles : defaultQueryOptions.files;
+  const matchesPerShard =
+    parsedMatchesPerShard >= 0
+      ? parsedMatchesPerShard
+      : defaultQueryOptions.matchesPerShard;
+  const totalMatches =
+    parsedTotalMatches >= 0
+      ? parsedTotalMatches
+      : defaultQueryOptions.totalMatches;
+  return {
+    query,
+    contextLines,
+    files,
+    matchesPerShard,
+    totalMatches,
+  };
+};
+
 export const useRouteSearchQuery = (): [
   RouteSearchQuery,
   UpdateRouteSearchQuery
 ] => {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const routeQuery = searchParams.get("q");
-  const routeContextLines = searchParams.get("contextLines");
-  const routeFiles = searchParams.get("files");
-  const routeMatchesPerShard = searchParams.get("matchesPerShard");
-  const routeTotalMatches = searchParams.get("totalMatches");
-
-  const searchQuery = useMemo(() => {
-    const parsedContextLines = Number.parseInt(routeContextLines ?? "", 10);
-    const parsedFiles = Number.parseInt(routeFiles ?? "", 10);
-    const parsedMatchesPerShard = Number.parseInt(
-      routeMatchesPerShard ?? "",
-      10
-    );
-    const parsedTotalMatches = Number.parseInt(routeTotalMatches ?? "", 10);
-
-    // coerce empty string to undefined
-    const query = routeQuery || undefined;
-    const contextLines =
-      parsedContextLines >= 0
-        ? parsedContextLines
-        : defaultQueryOptions.contextLines;
-    const files = parsedFiles >= 0 ? parsedFiles : defaultQueryOptions.files;
-    const matchesPerShard =
-      parsedMatchesPerShard >= 0
-        ? parsedMatchesPerShard
-        : defaultQueryOptions.matchesPerShard;
-    const totalMatches =
-      parsedTotalMatches >= 0
-        ? parsedTotalMatches
-        : defaultQueryOptions.totalMatches;
-    return {
-      query,
-      contextLines,
-      files,
-      matchesPerShard,
-      totalMatches,
-    };
-  }, [
-    routeQuery,
-    routeContextLines,
-    routeFiles,
-    routeMatchesPerShard,
-    routeTotalMatches,
-  ]);
+  const searchQuery = useMemo(
+    () => parseSearchParams(searchParams),
+    [searchParams]
+  );
 
   const lastNavigateTime = useRef(0);
   const updateSearchQuery = useCallback(

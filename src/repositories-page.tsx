@@ -1,12 +1,10 @@
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import {
-  memo,
-  startTransition,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-import { useSearchParams } from "react-router-dom";
+  useSearchParams,
+  LoaderFunction,
+  json,
+  useLoaderData,
+} from "react-router-dom";
 import prettyBytes from "pretty-bytes";
 import {
   listRepositories,
@@ -18,43 +16,75 @@ import { useSearchFormReactKey } from "./use-search-form-react-key";
 
 const Repositories = () => {
   const { key: searchFormKey, keyChanged } = useSearchFormReactKey();
-  const listOutcome = useListOutcome();
+  // @ts-expect-error remix has a better typing system for loaders so that we
+  // won't need to cast.
+  const listOutcome: ListOutcome = useLoaderData();
+  const [previousResults, setPreviousResults] = useState<ListResults>();
+
   if (keyChanged) {
     return null;
   }
 
-  let mainContent;
-  if (listOutcome.kind === "none") {
-    mainContent = <SearchForm key={searchFormKey} />;
-  } else if (listOutcome.kind === "error") {
-    mainContent = (
+  if (
+    listOutcome.kind === "success" &&
+    listOutcome.results !== previousResults
+  ) {
+    setPreviousResults(listOutcome.results);
+    return null;
+  }
+
+  if (listOutcome.kind === "error") {
+    return (
       <>
         <SearchForm key={searchFormKey} error={listOutcome.error} />
-        {listOutcome.previousResults ? (
-          <RepositoriesList results={listOutcome.previousResults} />
+        {previousResults ? (
+          <RepositoriesList results={previousResults} />
         ) : null}
       </>
     );
   } else {
-    mainContent = (
+    return (
       <>
         <SearchForm key={searchFormKey} />
         <RepositoriesList results={listOutcome.results} />
       </>
     );
   }
-
-  return mainContent;
 };
 
 export { Repositories as Component };
 
+type ListOutcome =
+  | { kind: "success"; results: ListResults }
+  | { kind: "error"; error: string };
+export const loader: LoaderFunction = async ({ request }) => {
+  const { query } = parseSearchParams(new URL(request.url).searchParams);
+  try {
+    return json<ListOutcome>(await listRepositories({ query }, request.signal));
+  } catch (error) {
+    if (
+      !(
+        error &&
+        typeof error === "object" &&
+        "name" in error &&
+        error.name === "AbortError"
+      )
+    ) {
+      // eslint-disable-next-line no-console
+      console.error("List repositories failed", error);
+    }
+    return json<ListOutcome>({ kind: "error", error: String(error) });
+  }
+};
+
+const parseSearchParams = (searchParams: URLSearchParams) => ({
+  // coerce the empty string to undefined
+  query: searchParams.get("q") || undefined,
+});
+
 const useRouteListQuery = (): [string | undefined, (query: string) => void] => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const routeQuery = searchParams.get("q");
-
-  // coerce the empty string to undefined
-  const parsedQuery = routeQuery || undefined;
+  const { query: parsedQuery } = parseSearchParams(searchParams);
 
   const lastNavigateTime = useRef(0);
   const setRouteQuery = useCallback(
@@ -85,89 +115,14 @@ const useRouteListQuery = (): [string | undefined, (query: string) => void] => {
   return [parsedQuery, setRouteQuery];
 };
 
-const debounceListRepositories = (rate: number): typeof listRepositories => {
-  let timeoutId: number | undefined;
-  return (...args) => {
-    clearTimeout(timeoutId);
-    return new Promise((resolve, reject) => {
-      const ourTimeoutId = setTimeout(() => {
-        listRepositories(...args).then(resolve, reject);
-      }, rate);
-      const [, signal] = args;
-      signal.addEventListener("abort", () => clearTimeout(ourTimeoutId), {
-        once: true,
-      });
-      timeoutId = ourTimeoutId;
-    });
-  };
-};
-const debouncedListRepositories = debounceListRepositories(100);
-
-type ListOutcome =
-  | { kind: "none" }
-  | {
-      kind: "success";
-      results: ListResults;
-    }
-  | {
-      kind: "error";
-      error: string;
-      previousResults: ListResults | undefined;
-    };
-const useListOutcome = (): ListOutcome => {
-  const [listQuery] = useRouteListQuery();
-  const [listOutcome, setListOutcome] = useState<ListOutcome>({ kind: "none" });
+const SearchForm = ({ error }: { error?: string }) => {
+  const [listQuery, setListQuery] = useRouteListQuery();
 
   useEffect(() => {
     document.title = `${
       listQuery ? `${listQuery} - ` : ""
     }neogrok/repositories`;
-
-    const abortController = new AbortController();
-    debouncedListRepositories({ query: listQuery }, abortController.signal)
-      .then((result) => {
-        startTransition(() => {
-          if (result.kind === "error") {
-            setListOutcome((previous) => ({
-              ...result,
-              previousResults: computePreviousResults(previous),
-            }));
-          } else {
-            setListOutcome(result);
-          }
-        });
-      })
-      .catch((error) => {
-        if (error.name !== "AbortError") {
-          // eslint-disable-next-line no-console
-          console.error("List repositories failed", error);
-          startTransition(() =>
-            setListOutcome((previous) => ({
-              kind: "error",
-              error: error.toString(),
-              previousResults: computePreviousResults(previous),
-            }))
-          );
-        }
-      });
-    return () => abortController.abort();
   }, [listQuery]);
-
-  return listOutcome;
-};
-
-const computePreviousResults = (previousOutcome: ListOutcome) => {
-  if (previousOutcome.kind === "none") {
-    return undefined;
-  } else if (previousOutcome.kind === "error") {
-    return previousOutcome.previousResults;
-  } else {
-    return previousOutcome.results;
-  }
-};
-
-const SearchForm = ({ error }: { error?: string }) => {
-  const [listQuery, setListQuery] = useRouteListQuery();
 
   return (
     <>
@@ -214,10 +169,6 @@ const RepositoriesList = memo(function RepositoriesList({
     stats: { fileCount, indexBytes, contentBytes },
     repositories,
   } = results;
-  const sorted = Array.from(repositories)
-    .sort(({ name: a }, { name: b }) => a.localeCompare(b))
-    .sort(({ id: a }, { id: b }) => a - b)
-    .sort(({ rank: a }, { rank: b }) => a - b);
   return (
     <>
       <h1 className="text-xs py-1">
@@ -240,7 +191,7 @@ const RepositoriesList = memo(function RepositoriesList({
             </tr>
           </thead>
           <tbody>
-            {sorted.map((repo) => (
+            {repositories.map((repo) => (
               <Repository key={repo.name} repository={repo} />
             ))}
           </tbody>
@@ -274,11 +225,7 @@ const Repository = ({
     </td>
     <td className="p-1">{prettyBytes(contentBytes, { space: false })}</td>
     <td className="p-1">{prettyBytes(indexBytes, { space: false })}</td>
-    <td className="p-1">{toISOStringWithoutMs(lastIndexed)}</td>
-    <td className="p-1">{toISOStringWithoutMs(lastCommit)}</td>
+    <td className="p-1">{lastIndexed}</td>
+    <td className="p-1">{lastCommit}</td>
   </tr>
 );
-
-// Trying to make these strings less obnoxiously long.
-const toISOStringWithoutMs = (d: Date) =>
-  d.toISOString().replace(/\.\d{3}Z$/, "Z");

@@ -48,31 +48,15 @@ export const listRepositories = async (
 
 const statsSchema = z
   .object({
-    // Not the number of total repositories, perhaps the number of git repositories?
-    Repos: z.number(),
-    Shards: z.number(),
     Documents: z.number(),
     IndexBytes: z.number(),
     ContentBytes: z.number(),
-    NewLinesCount: z.number(),
   })
-  .transform(
-    ({
-      Repos,
-      Shards,
-      Documents,
-      IndexBytes,
-      ContentBytes,
-      NewLinesCount,
-    }) => ({
-      repoCount: Repos,
-      shardCount: Shards,
-      fileCount: Documents,
-      indexBytes: IndexBytes,
-      contentBytes: ContentBytes,
-      lines: NewLinesCount,
-    })
-  );
+  .transform(({ Documents, IndexBytes, ContentBytes }) => ({
+    fileCount: Documents,
+    indexBytes: IndexBytes,
+    contentBytes: ContentBytes,
+  }));
 
 const listResultSchema = z.object({
   List: z
@@ -104,7 +88,7 @@ const listResultSchema = z.object({
                     id: ID,
                     rank: Rank,
                     url: URL,
-                    lastCommit: LatestCommitDate,
+                    lastCommit: toISOStringWithoutMs(LatestCommitDate),
                     branches: Branches,
                   })
                 ),
@@ -113,7 +97,7 @@ const listResultSchema = z.object({
                   IndexTime: z.coerce.date(),
                 })
                 .transform(({ IndexTime }) => ({
-                  lastIndexed: IndexTime,
+                  lastIndexed: toISOStringWithoutMs(IndexTime),
                 })),
               Stats: statsSchema,
             })
@@ -130,9 +114,16 @@ const listResultSchema = z.object({
     })
     .transform(({ Stats, Repos }) => ({
       stats: Stats,
-      repositories: Repos,
+      repositories: Repos.sort(({ name: a }, { name: b }) => a.localeCompare(b))
+        .sort(({ id: a }, { id: b }) => a - b)
+        .sort(({ rank: a }, { rank: b }) => a - b)
+        .map(({ id, rank, ...rest }) => rest),
     })),
 });
+
+// Trying to make these strings less obnoxiously long.
+const toISOStringWithoutMs = (d: Date) =>
+  d.toISOString().replace(/\.\d{3}Z$/, "Z");
 
 export type ListResults = z.infer<typeof listResultSchema>["List"];
 export type Repository = ListResults["repositories"][number];

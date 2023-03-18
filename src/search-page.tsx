@@ -2,14 +2,14 @@ import {
   Fragment,
   memo,
   ReactNode,
-  startTransition,
   useContext,
   useEffect,
   useRef,
   useState,
 } from "react";
+import { json, LoaderFunction, useLoaderData } from "react-router-dom";
 import { ChevronDown, ChevronUp, ChevronRight } from "react-feather";
-import { LineToken, parseIntoLines } from "./content-parser";
+import type { LineToken } from "./content-parser";
 import { ExampleQuery } from "./example-query";
 import { Link } from "./nav";
 import { useSearchFormReactKey } from "./use-search-form-react-key";
@@ -19,160 +19,102 @@ import {
   search as executeSearch,
   SearchResults as ApiSearchResults,
 } from "./search-api";
-import { useRouteSearchQuery } from "./use-route-search-query";
+import {
+  parseSearchParams,
+  useRouteSearchQuery,
+} from "./use-route-search-query";
 
 const SearchPage = () => {
   const { key: searchFormKey, keyChanged } = useSearchFormReactKey();
-  const searchOutcome = useSearchOutcome();
+  // @ts-expect-error remix has a better typing system for loaders so that we
+  // won't need to cast.
+  const searchOutcome: SearchOutcome = useLoaderData();
+  const [previousResults, setPreviousResults] = useState<TimedSearchResults>();
+
   if (keyChanged) {
     return null;
   }
 
-  let mainContent;
-  if (searchOutcome.kind === "none" && searchOutcome.query) {
-    // Don't flash the lander on initial render if we are just waiting for a
-    // service response.
-    mainContent = <SearchForm key={searchFormKey} />;
-  } else if (searchOutcome.kind === "none") {
-    mainContent = (
+  if (
+    searchOutcome.kind === "success" &&
+    searchOutcome.results !== previousResults
+  ) {
+    setPreviousResults(searchOutcome.results);
+    return null;
+  }
+
+  if (searchOutcome.kind === "none") {
+    return (
       <>
         <SearchForm key={searchFormKey} />
         <Lander />
       </>
     );
   } else if (searchOutcome.kind === "error") {
-    mainContent = (
+    return (
       <>
         <SearchForm key={searchFormKey} queryError={searchOutcome.error} />
-        {searchOutcome.previousResults ? (
-          <SearchResults results={searchOutcome.previousResults} />
-        ) : null}
+        {previousResults ? (
+          <SearchResults results={previousResults} />
+        ) : (
+          <Lander />
+        )}
       </>
     );
   } else {
-    mainContent = (
+    return (
       <>
         <SearchForm key={searchFormKey} />
         <SearchResults results={searchOutcome.results} />
       </>
     );
   }
-
-  return mainContent;
 };
 
 export { SearchPage as Component };
 
-type TimedSearchResults = ApiSearchResults & { requestDuration: number };
 type SearchOutcome =
-  // There is no search outcome; on page load there may be no outcome when there
-  // is a query in the URL parameters, in which case `q` will be set.
-  | { kind: "none"; query?: string }
-  | {
-      kind: "success";
-      results: TimedSearchResults;
-    }
-  | {
-      kind: "error";
-      error: string;
-      // Results from the previously successful query, so that we can display them
-      // in addition to the error.
-      previousResults: TimedSearchResults | undefined;
-    };
+  | { kind: "none" }
+  // TODO for long searches, we should consider a `pending` outcome with
+  // `defer`/`Suspense`/`Await`.  Needs benchmarking to determine just how
+  // slow a zoekt backend can get with large repositories.
+  | { kind: "success"; results: TimedSearchResults }
+  | { kind: "error"; error: string };
+type TimedSearchResults = ApiSearchResults & { requestDuration: number };
+export const loader: LoaderFunction = async ({ request }) => {
+  const start = Date.now();
+  const { query, ...rest } = parseSearchParams(
+    new URL(request.url).searchParams
+  );
+  if (query === undefined) {
+    return json<SearchOutcome>({ kind: "none" });
+  }
 
-const useSearchOutcome = () => {
-  const [searchQuery] = useRouteSearchQuery();
-  const [searchOutcome, setSearchOutome] = useState<SearchOutcome>({
-    kind: "none",
-    query: searchQuery.query,
-  });
-
-  // eslint-disable-next-line consistent-return
-  useEffect(() => {
-    const { query, ...rest } = searchQuery;
-    if (query === undefined) {
-      document.title = "neogrok";
-      setSearchOutome({ kind: "none" });
+  try {
+    const response = await executeSearch({ query, ...rest }, request.signal);
+    if (response.kind === "success") {
+      return json<SearchOutcome>({
+        kind: "success",
+        results: { ...response.results, requestDuration: Date.now() - start },
+      });
     } else {
-      document.title = `${query} - neogrok`;
-      const abortController = new AbortController();
-      const start = Date.now();
-      debouncedSearch({ query, ...rest }, abortController.signal)
-        .then((outcome) => {
-          startTransition(() => {
-            if (outcome.kind === "error") {
-              setSearchOutome((previous) => ({
-                ...outcome,
-                previousResults: computePreviousResults(previous),
-              }));
-            } else {
-              setSearchOutome({
-                kind: "success",
-                results: {
-                  ...outcome.results,
-                  requestDuration: Date.now() - start,
-                },
-              });
-            }
-          });
-        })
-        .catch((error) => {
-          if (error.name !== "AbortError") {
-            // eslint-disable-next-line no-console
-            console.error("Search failed", error);
-            startTransition(() =>
-              setSearchOutome((previous) => ({
-                kind: "error",
-                error: error.toString(),
-                previousResults: computePreviousResults(previous),
-              }))
-            );
-          }
-        });
-      return () => abortController.abort();
+      return json<SearchOutcome>(response);
     }
-  }, [searchQuery]);
-
-  return searchOutcome;
-};
-
-const computePreviousResults = (previousOutcome: SearchOutcome) => {
-  if (previousOutcome.kind === "none") {
-    return undefined;
-  } else if (previousOutcome.kind === "error") {
-    return previousOutcome.previousResults;
-  } else {
-    return previousOutcome.results;
+  } catch (error) {
+    if (
+      !(
+        error &&
+        typeof error === "object" &&
+        "name" in error &&
+        error.name === "AbortError"
+      )
+    ) {
+      // eslint-disable-next-line no-console
+      console.error("Search failed", error);
+    }
+    return json<SearchOutcome>({ kind: "error", error: String(error) });
   }
 };
-
-// TODO a more intelligent debounce strategy might be possible. Consider:
-// - due to trigram indexing, queries with less than 3 characters are expensive;
-//   debounce longer on short queries and little or not at all on longer ones?
-// - identifying when a search query has fewer than 3 characters is not actually
-//   trivial, due to "meta" expressions like repo/filename filtering
-// - the current 100ms is long enough to feel a bit laggy but short enough that
-//   even during "quick" typing we are still firing queries in the middle; 60wpm
-//   is 1 char every 200ms on average.  so what's the point?
-//
-// All of this applies the same to the repo list debounce.
-const debounceSearch = (rate: number): typeof executeSearch => {
-  let timeoutId: number | undefined;
-  return (...args) => {
-    clearTimeout(timeoutId);
-    return new Promise((resolve, reject) => {
-      const ourTimeoutId = setTimeout(() => {
-        executeSearch(...args).then(resolve, reject);
-      }, rate);
-      const [, signal] = args;
-      signal.addEventListener("abort", () => clearTimeout(ourTimeoutId), {
-        once: true,
-      });
-      timeoutId = ourTimeoutId;
-    });
-  };
-};
-const debouncedSearch = debounceSearch(100);
 
 const SearchForm = ({ queryError }: { queryError?: string }) => {
   const [
@@ -188,12 +130,15 @@ const SearchForm = ({ queryError }: { queryError?: string }) => {
     setFileMatchesCutoff,
   } = useContext(Preferences);
 
-  const [formQuery, setFormQuery] = useState(query ?? "");
   useEffect(() => {
-    if (searchType === "live") {
-      updateRouteSearchQuery({ query: formQuery, searchType });
+    if (query) {
+      document.title = `${query} - neogrok`;
+    } else {
+      document.title = "neogrok";
     }
-  }, [formQuery, updateRouteSearchQuery, searchType]);
+  }, [query]);
+
+  const [formQuery, setFormQuery] = useState(query ?? "");
 
   const [advancedOptionsExpanded, setAdvancedOptionsExpanded] = useState(false);
 
@@ -248,12 +193,15 @@ const SearchForm = ({ queryError }: { queryError?: string }) => {
             value={formQuery}
             onChange={(e) => {
               setFormQuery(e.target.value);
+              if (searchType === "live") {
+                updateRouteSearchQuery({ query: e.target.value, searchType });
+              }
             }}
           />
         </label>
 
         <div>
-          <NonNegativeIntegerInput
+          <IntegerInput
             id="context"
             label={
               <span
@@ -274,8 +222,9 @@ const SearchForm = ({ queryError }: { queryError?: string }) => {
               }
             }}
           />
-          <NonNegativeIntegerInput
+          <IntegerInput
             id="files"
+            kind="positive"
             label={
               <span
                 title="Maximum number of files to display"
@@ -377,13 +326,13 @@ const SearchForm = ({ queryError }: { queryError?: string }) => {
               />
             </label>
           </fieldset>
-          <NonNegativeIntegerInput
+          <IntegerInput
             id="file-matches-cutoff"
             label="Initially shown matches per file"
             value={fileMatchesCutoff}
             onValueChange={setFileMatchesCutoff}
           />
-          <NonNegativeIntegerInput
+          <IntegerInput
             id="matches-per-shard"
             label="Maximum matches per shard"
             size={4}
@@ -398,7 +347,7 @@ const SearchForm = ({ queryError }: { queryError?: string }) => {
               }
             }}
           />
-          <NonNegativeIntegerInput
+          <IntegerInput
             id="total-matches"
             label="Total maximum matches"
             size={5}
@@ -419,31 +368,23 @@ const SearchForm = ({ queryError }: { queryError?: string }) => {
   );
 };
 
-const NonNegativeIntegerInput = ({
+const IntegerInput = ({
   id,
   label,
+  kind = "nonnegative",
   size = 3,
   value,
   onValueChange,
 }: {
   id: string;
   label: ReactNode;
+  kind?: "nonnegative" | "positive";
   size?: number;
   value: number;
   onValueChange: (v: number) => void;
 }) => {
   const [stringValue, setStringValue] = useState(value.toString());
   const [valid, setValid] = useState(true);
-  useEffect(() => {
-    const isNonNegativeInteger = /^\d+$/.test(stringValue);
-    setValid(isNonNegativeInteger);
-    if (isNonNegativeInteger) {
-      const parsed = Number.parseInt(stringValue, 10);
-      if (parsed !== value) {
-        onValueChange(parsed);
-      }
-    }
-  }, [stringValue, setValid, value, onValueChange]);
   return (
     <label htmlFor={id}>
       {label}
@@ -458,6 +399,16 @@ const NonNegativeIntegerInput = ({
         value={stringValue}
         onChange={(e) => {
           setStringValue(e.target.value);
+          const isValid =
+            /^\d+$/.test(e.target.value) &&
+            (kind === "nonnegative" || e.target.value !== "0");
+          setValid(isValid);
+          if (isValid) {
+            const parsed = Number.parseInt(e.target.value, 10);
+            if (parsed !== value) {
+              onValueChange(parsed);
+            }
+          }
         }}
       />
     </label>
@@ -536,7 +487,7 @@ const Lander = () => (
           <h3 className="text-lg">Automatic case sensitivity</h3>
           <p className="text-xs">
             If a query is all-lowercase, it is case insensitive by default;
-            otherwise it$apos;s case-sensitive by default. Change that with{" "}
+            otherwise it&apos;s case-sensitive by default. Change that with{" "}
             <code>case:</code>.
           </p>
           <ul className="space-y-1">
@@ -573,27 +524,21 @@ const Lander = () => (
     </div>
   </>
 );
+
 // We need to memo over `searchState` so that we don't rerender every time a
 // character is typed into the search form; we need our rendering to happen
 // post-debouncing not pre-debouncing.
 // eslint-disable-next-line prefer-arrow-callback
 const SearchResults = memo(function SearchResults({
   results: {
-    fileCount,
-    matchCount,
-    filesSkipped,
-    duration,
+    backendStats: { fileCount, matchCount, filesSkipped, duration },
     files,
-    repoUrls,
-    repoLineNumberFragments,
     requestDuration,
   },
 }: {
   results: TimedSearchResults;
 }) {
-  const frontendMatchCount = files
-    .flatMap(({ chunks }) => chunks)
-    .reduce((a, { matchRanges }) => a + matchRanges.length, 0);
+  const frontendMatchCount = files.reduce((n, { matchCount: m }) => n + m, 0);
   return (
     <>
       <h1 className="text-xs flex flex-wrap pt-2">
@@ -630,10 +575,10 @@ const SearchResults = memo(function SearchResults({
         const { repository, fileName } = file;
         return (
           <SearchResultsFile
-            key={`${repository}/${fileName}`}
+            key={`${repository}/${fileName.tokens
+              .map(({ text }) => text)
+              .join()}`}
             file={file}
-            fileUrlTemplate={repoUrls[repository]}
-            lineNumberTemplate={repoLineNumberFragments[repository]}
             rank={i + 1}
           />
         );
@@ -643,50 +588,22 @@ const SearchResults = memo(function SearchResults({
 });
 
 const SearchResultsFile = ({
-  file: { repository, fileName, branches, language, chunks, version },
-  fileUrlTemplate,
-  lineNumberTemplate,
+  file: {
+    repository,
+    fileName,
+    matchCount: fileMatchCount,
+    branches,
+    language,
+    chunks,
+    fileUrl,
+    lineNumberTemplate,
+  },
   rank,
 }: {
   file: ResultFile;
-  fileUrlTemplate: string | undefined;
-  lineNumberTemplate: string | undefined;
   rank: number;
 }) => {
-  // Search results may match not only on file contents but also the filename itself.
-  // We have to especially handle such matches to render them properly.
-  const fileNameChunks = chunks.filter(
-    ({ isFileNameChunk }) => isFileNameChunk
-  );
-  if (fileNameChunks.length > 1) {
-    // Should only ever be one match, with one or more ranges.  Check just to be sure.
-    throw new Error(
-      `Unreachable: received ${fileNameChunks.length} file name matches`
-    );
-  }
-
-  const fileUrl = fileUrlTemplate
-    ?.replaceAll("{{.Version}}", version)
-    .replaceAll("{{.Path}}", fileName);
-
-  let renderedFileName;
-  if (fileNameChunks.length === 1) {
-    const [
-      {
-        contentBase64,
-        contentStart: { byteOffset },
-        matchRanges,
-      },
-    ] = fileNameChunks;
-    // If you put newlines in your filenames, you deserve this to be broken.
-    const [lineTokens] = parseIntoLines(contentBase64, byteOffset, matchRanges);
-    renderedFileName = (
-      <SearchResultLine key={fileName} lineTokens={lineTokens} />
-    );
-  } else {
-    renderedFileName = fileName;
-  }
-
+  const renderedFileName = <SearchResultLine lineTokens={fileName.tokens} />;
   const linkedFilename = fileUrl ? (
     <Link to={fileUrl}>{renderedFileName}</Link>
   ) : (
@@ -694,18 +611,14 @@ const SearchResultsFile = ({
   );
 
   const { matchSortOrder, fileMatchesCutoff } = useContext(Preferences);
-  const nonFileNameMatches = chunks.filter(
-    ({ isFileNameChunk }) => !isFileNameChunk
-  );
-  if (matchSortOrder === "line-number") {
-    // It's safe to mutate with `sort` as we just made a copy with `filter` above.
-    nonFileNameMatches.sort(
-      (
-        { contentStart: { byteOffset: a } },
-        { contentStart: { byteOffset: b } }
-      ) => a - b
-    );
-  } // Nothing to do otherwise; matches are already sorted by score.
+  const sortedChunks =
+    matchSortOrder === "line-number"
+      ? [...chunks].sort(
+          ({ lines: [{ lineNumber: a }] }, { lines: [{ lineNumber: b }] }) =>
+            a - b
+        )
+      : // Nothing to do otherwise; matches are already sorted by score.
+        chunks;
 
   // Groups of contiguous lines in the file; contiguous matches are merged into
   // a single group.
@@ -718,15 +631,15 @@ const SearchResultsFile = ({
   // cutoff (nor can we, if the cutoff is exceeded in the middle of a single
   // line).
   // This state var is only used if we have actually exceeded the cutoff.
+  //
+  // FIXME the value of `expandedBy` is wrong if the sort order changes while
+  // it's non-undefined. That will not be a trivial fix.
   const [expandedBy, setExpandedBy] = useState<number>();
   // That being said, we do special case a 0-cutoff by simply rendering no
   // lineGroups.
   if (fileMatchesCutoff !== 0 || expandedBy) {
-    for (const {
-      contentBase64,
-      contentStart: { byteOffset: baseByteOffset, lineNumber: startLineNumber },
-      matchRanges,
-    } of nonFileNameMatches) {
+    for (const { matchCount, lines } of sortedChunks) {
+      const [{ lineNumber: startLineNumber }] = lines;
       const contiguous =
         lineGroups.at(-1)?.at(-1)?.lineNumber === startLineNumber - 1;
 
@@ -738,37 +651,24 @@ const SearchResultsFile = ({
         break;
       }
 
-      const chunkLines = parseIntoLines(
-        contentBase64,
-        baseByteOffset,
-        matchRanges
-      ).map((lineTokens, lineOffset) => ({
-        lineNumber: startLineNumber + lineOffset,
-        lineTokens,
-      }));
-      numMatchesInFileSections += matchRanges.length;
+      numMatchesInFileSections += matchCount;
 
       if (contiguous) {
         // By the definition of `contiguous` we know this exists.
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        lineGroups.at(-1)!.push(...chunkLines);
+        lineGroups.at(-1)!.push(...lines);
       } else {
-        lineGroups.push(chunkLines);
+        // Make a copy. We will be mutating it.
+        lineGroups.push([...lines]);
       }
     }
   }
 
-  const numTotalMatches = chunks.reduce(
-    (count, { matchRanges }) => count + matchRanges.length,
-    0
-  );
   const numHiddenMatches =
-    numTotalMatches -
-    numMatchesInFileSections -
-    fileNameChunks.reduce((a, { matchRanges }) => a + matchRanges.length, 0);
+    fileMatchCount - numMatchesInFileSections - fileName.matchCount;
 
   const metadata = [
-    `${numTotalMatches} ${numTotalMatches === 1 ? "match" : "matches"}`,
+    `${fileMatchCount} ${fileMatchCount === 1 ? "match" : "matches"}`,
     // I don't like every result just yelling HEAD, it's not particularly useful
     // information.
     ...(branches.length > 1 || branches[0] !== "HEAD"
@@ -809,8 +709,7 @@ const SearchResultsFile = ({
                     fileUrl && lineNumberTemplate ? (
                       <a
                         className="hover:underline decoration-1"
-                        href={`${fileUrl}${lineNumberTemplate.replaceAll(
-                          "{{.LineNumber}}",
+                        href={`${fileUrl}${lineNumberTemplate.join(
                           lineNumber.toString()
                         )}`}
                       >
