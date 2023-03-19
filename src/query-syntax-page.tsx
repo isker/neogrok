@@ -268,6 +268,32 @@ const QuerySyntaxPage = () => {
                 <ExampleQuery query="archived:no readme" />
               </td>
             </tr>
+            <tr className="border">
+              <td className="p-1">
+                <code>fork:</code>
+              </td>
+              <td className="p-1">
+                <code>fork:no</code> excludes repositories that are forks of
+                another while <code>fork:yes</code> excludes repositories that
+                are not forks of another. The default is to exclude neither.
+              </td>
+              <td className="p-1">
+                <ExampleQuery query="fork:no readme" />
+              </td>
+            </tr>
+            <tr className="border">
+              <td className="p-1">
+                <code>public:</code>
+              </td>
+              <td className="p-1">
+                <code>public:no</code> excludes public repositories while{" "}
+                <code>public:yes</code> excludes private repositories. The
+                default is to exclude neither.
+              </td>
+              <td className="p-1">
+                <ExampleQuery query="public:no readme" />
+              </td>
+            </tr>
           </tbody>
         </table>
       </section>
