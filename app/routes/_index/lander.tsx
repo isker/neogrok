@@ -1,5 +1,5 @@
-import { ExampleQuery } from "./example-query";
-import { Link } from "./nav";
+import { ExampleQuery } from "app/example-query";
+import { Link } from "app/link";
 
 export const Lander = () => (
   <>

@@ -22,6 +22,7 @@
       { "ignoreRestSiblings": true }
     ],
     "import/prefer-default-export": "off",
+    "import/no-unresolved": "off",
     "react/jsx-filename-extension": ["error", { "extensions": [".tsx"] }],
     "react/function-component-definition": "off",
     "react/require-default-props": "off",

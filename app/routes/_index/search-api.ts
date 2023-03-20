@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zoektUrl } from "app/env";
 import { LineToken, parseIntoLines } from "./content-parser";
 
 export type SearchQuery = Readonly<{
@@ -33,8 +34,7 @@ export const search = async (
       TotalMaxMatchCount: totalMatches,
     },
   });
-
-  const response = await fetch("/api/search", {
+  const response = await fetch(new URL("/api/search", zoektUrl), {
     method: "POST",
     headers: {
       "content-type": "application/json",

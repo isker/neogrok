@@ -1,0 +1,17 @@
+diff --git a/dist/server.js b/dist/server.js
+index 1a756309a91cd2d0864119ace7820e4a32adcd85..8e8f622a38714ce0f7a2006dee22c208441a9d6f 100644
+--- a/dist/server.js
++++ b/dist/server.js
+@@ -81,10 +81,8 @@ function createRemixRequest(req, res) {
+ async function sendRemixResponse(res, nodeResponse) {
+   res.statusMessage = nodeResponse.statusText;
+   res.status(nodeResponse.status);
+-  for (let [key, values] of Object.entries(nodeResponse.headers.raw())) {
+-    for (let value of values) {
+-      res.append(key, value);
+-    }
++  for (let [key, value] of nodeResponse.headers) {
++    res.append(key, value);
+   }
+   if (nodeResponse.body) {
+     await node.writeReadableStreamToWritable(nodeResponse.body, res);

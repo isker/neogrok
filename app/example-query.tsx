@@ -1,4 +1,4 @@
-import { Link } from "./nav";
+import { Link } from "./link";
 
 export const ExampleQuery = ({ query }: { query: string }) => (
   <Link

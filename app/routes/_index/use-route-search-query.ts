@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef } from "react";
-import { useSearchParams } from "react-router-dom";
-import type { SearchType } from "./preferences";
+import { useSearchParams } from "@remix-run/react";
+import type { SearchType } from "app/preferences";
 import type { SearchQuery } from "./search-api";
 
 const defaultQueryOptions: Omit<SearchQuery, "query"> = Object.freeze({

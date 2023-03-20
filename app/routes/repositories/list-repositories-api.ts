@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zoektUrl } from "app/env";
 
 export type ListRepositoriesResponse =
   | {
@@ -16,7 +17,7 @@ export const listRepositories = async (
 ): Promise<ListRepositoriesResponse> => {
   const body = JSON.stringify({ q: query });
 
-  const response = await fetch("/api/list", {
+  const response = await fetch(new URL("/api/list", zoektUrl), {
     method: "POST",
     headers: {
       "content-type": "application/json",

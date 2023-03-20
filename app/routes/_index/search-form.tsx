@@ -1,6 +1,6 @@
-import { ReactNode, useContext, useEffect, useRef, useState } from "react";
+import { ReactNode, useContext, useRef, useState } from "react";
 import { ChevronDown, ChevronUp } from "react-feather";
-import { Preferences } from "./preferences";
+import { Preferences } from "app/preferences";
 import { useRouteSearchQuery } from "./use-route-search-query";
 
 export const SearchForm = ({ queryError }: { queryError?: string }) => {
@@ -16,14 +16,6 @@ export const SearchForm = ({ queryError }: { queryError?: string }) => {
     fileMatchesCutoff,
     setFileMatchesCutoff,
   } = useContext(Preferences);
-
-  useEffect(() => {
-    if (query) {
-      document.title = `${query} - neogrok`;
-    } else {
-      document.title = "neogrok";
-    }
-  }, [query]);
 
   const [formQuery, setFormQuery] = useState(query ?? "");
 
@@ -70,7 +62,8 @@ export const SearchForm = ({ queryError }: { queryError?: string }) => {
             autoFocus
             spellCheck={false}
             autoCorrect="off"
-            autoCapitalize="off"
+            // TODO
+            // autoCapitalize="off"
             autoComplete="off"
             className={`p-1 border shadow-sm focus:outline-none flex-auto appearance-none ${
               queryError === undefined

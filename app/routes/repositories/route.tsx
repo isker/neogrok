@@ -1,24 +1,29 @@
-import { memo, useCallback, useEffect, useRef, useState } from "react";
-import {
-  useSearchParams,
-  LoaderFunction,
-  json,
-  useLoaderData,
-} from "react-router-dom";
+import { memo, useCallback, useRef, useState } from "react";
+import { useSearchParams, useLoaderData } from "@remix-run/react";
+import { json, LoaderFunction, MetaFunction } from "@remix-run/node";
 import prettyBytes from "pretty-bytes";
-import {
-  listRepositories,
+import { Link } from "app/link";
+import { useSearchFormReactKey } from "app/use-search-form-react-key";
+
+// Important for tree shaking that this remains a type-only import.
+import type {
   ListResults,
   Repository as ApiRepository,
 } from "./list-repositories-api";
-import { Link } from "./nav";
-import { useSearchFormReactKey } from "./use-search-form-react-key";
+
+export const meta: MetaFunction = ({ location: { search } }) => {
+  const { query } = parseSearchParams(new URLSearchParams(search));
+  const title = query
+    ? `${query} - neogrok/repositories`
+    : "neogrok/repositories";
+  return {
+    title,
+  };
+};
 
 const Repositories = () => {
   const { key: searchFormKey, keyChanged } = useSearchFormReactKey();
-  // @ts-expect-error remix has a better typing system for loaders so that we
-  // won't need to cast.
-  const listOutcome: ListOutcome = useLoaderData();
+  const listOutcome = useLoaderData<typeof loader>();
   const [previousResults, setPreviousResults] = useState<ListResults>();
 
   if (keyChanged) {
@@ -52,12 +57,14 @@ const Repositories = () => {
   }
 };
 
-export { Repositories as Component };
+export default Repositories;
 
 type ListOutcome =
   | { kind: "success"; results: ListResults }
   | { kind: "error"; error: string };
 export const loader: LoaderFunction = async ({ request }) => {
+  // Dynamic import to ensure tree shaking, such that the client does not get zod.
+  const { listRepositories } = await import("./list-repositories-api");
   const { query } = parseSearchParams(new URL(request.url).searchParams);
   try {
     return json<ListOutcome>(await listRepositories({ query }, request.signal));
@@ -118,12 +125,6 @@ const useRouteListQuery = (): [string | undefined, (query: string) => void] => {
 const SearchForm = ({ error }: { error?: string }) => {
   const [listQuery, setListQuery] = useRouteListQuery();
 
-  useEffect(() => {
-    document.title = `${
-      listQuery ? `${listQuery} - ` : ""
-    }neogrok/repositories`;
-  }, [listQuery]);
-
   return (
     <>
       <label
@@ -139,7 +140,8 @@ const SearchForm = ({ error }: { error?: string }) => {
           type="search"
           spellCheck={false}
           autoCorrect="off"
-          autoCapitalize="off"
+          // TODO
+          // autoCapitalize="off"
           autoComplete="off"
           className={`p-1 border shadow-sm focus:outline-none flex-auto appearance-none ${
             error === undefined

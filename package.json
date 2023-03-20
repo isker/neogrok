@@ -4,15 +4,30 @@
   "description": "A snappier frontend for zoekt",
   "source": "src/index.html",
   "scripts": {
-    "start": "parcel",
-    "build": "parcel build",
-    "lint": "prettier -c src/ && tsc -b && eslint --report-unused-disable-directives src/"
+    "build": "remix build",
+    "lint": "prettier -c app/ && tsc -b && eslint --report-unused-disable-directives app/",
+    "dev": "remix dev",
+    "start": "remix-serve build"
   },
-  "author": "",
+  "author": "Ian Kerins <npm@isk.haus>",
   "license": "MIT",
+  "dependencies": {
+    "@remix-run/node": "1.14.3",
+    "@remix-run/react": "1.14.3",
+    "@remix-run/serve": "1.14.3",
+    "@types/cookie": "0.5.1",
+    "@types/js-cookie": "3.0.3",
+    "cookie": "0.5.0",
+    "isbot": "latest",
+    "js-cookie": "3.0.1",
+    "pretty-bytes": "6.1.0",
+    "react": "18.3.0-next-47cf4e578-20230315",
+    "react-dom": "18.3.0-next-47cf4e578-20230315",
+    "react-feather": "2.0.10",
+    "zod": "3.20.6"
+  },
   "devDependencies": {
-    "@parcel/reporter-bundle-analyzer": "2.8.3",
-    "@parcel/validator-typescript": "2.8.3",
+    "@remix-run/dev": "1.14.3",
     "@types/react": "18.0.28",
     "@types/react-dom": "18.0.10",
     "@typescript-eslint/eslint-plugin": "5.52.0",
@@ -24,19 +39,14 @@
     "eslint-plugin-jsx-a11y": "6.7.1",
     "eslint-plugin-react": "7.32.0",
     "eslint-plugin-react-hooks": "4.6.0",
-    "parcel": "2.8.3",
     "postcss": "8.4.21",
     "prettier": "2.8.4",
     "process": "0.11.10",
     "tailwindcss": "3.2.6",
     "typescript": "4.9.5"
   },
-  "dependencies": {
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "react-feather": "2.0.10",
-    "react-router-dom": "6.9.0",
-    "zod": "3.20.6",
-    "pretty-bytes": "6.1.0"
+  "resolutions": {
+    "@remix-run/node@1.14.3": "patch:@remix-run/node@npm%3A1.14.3#./.yarn/patches/@remix-run-node-npm-1.14.3-8b6c3ada80.patch",
+    "@remix-run/express@1.14.3": "patch:@remix-run/express@npm%3A1.14.3#./.yarn/patches/@remix-run-express-npm-1.14.3-d4dd9f5937.patch"
   }
 }

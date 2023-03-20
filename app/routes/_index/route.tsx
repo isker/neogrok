@@ -1,24 +1,31 @@
 import { Fragment, memo, useContext, useRef, useState } from "react";
-import { json, LoaderFunction, useLoaderData } from "react-router-dom";
+import { useLoaderData } from "@remix-run/react";
+import { json, LoaderFunction, MetaFunction } from "@remix-run/node";
 import { ChevronRight } from "react-feather";
+import { Link } from "app/link";
+import { useSearchFormReactKey } from "app/use-search-form-react-key";
+import { Preferences } from "app/preferences";
 import type { LineToken } from "./content-parser";
-import { Link } from "./nav";
-import { useSearchFormReactKey } from "./use-search-form-react-key";
-import { Preferences } from "./preferences";
-import {
+// Important for tree shaking that this remains a type-only import.
+import type {
   ResultFile,
-  search as executeSearch,
   SearchResults as ApiSearchResults,
 } from "./search-api";
 import { parseSearchParams } from "./use-route-search-query";
 import { Lander } from "./lander";
 import { SearchForm } from "./search-form";
 
+export const meta: MetaFunction = ({ location: { search } }) => {
+  const { query } = parseSearchParams(new URLSearchParams(search));
+  const title = query ? `${query} - neogrok` : "neogrok";
+  return {
+    title,
+  };
+};
+
 const SearchPage = () => {
   const { key: searchFormKey, keyChanged } = useSearchFormReactKey();
-  // @ts-expect-error remix has a better typing system for loaders so that we
-  // won't need to cast.
-  const searchOutcome: SearchOutcome = useLoaderData();
+  const searchOutcome = useLoaderData<typeof loader>();
   const [previousResults, setPreviousResults] = useState<TimedSearchResults>();
 
   if (keyChanged) {
@@ -61,7 +68,7 @@ const SearchPage = () => {
   }
 };
 
-export { SearchPage as Component };
+export default SearchPage;
 
 type SearchOutcome =
   | { kind: "none" }
@@ -80,6 +87,8 @@ export const loader: LoaderFunction = async ({ request }) => {
     return json<SearchOutcome>({ kind: "none" });
   }
 
+  // Dynamic import to ensure tree shaking, such that the client does not get zod.
+  const { search: executeSearch } = await import("./search-api");
   try {
     const response = await executeSearch({ query, ...rest }, request.signal);
     if (response.kind === "success") {

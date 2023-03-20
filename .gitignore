@@ -6,3 +6,8 @@ dist/
 *.tsbuildinfo
 .npm
 .parcel-cache
+
+build
+public
+.cache
+.yarn/install-state.gz

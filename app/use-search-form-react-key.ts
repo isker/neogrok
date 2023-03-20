@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigationType } from "react-router-dom";
+import { useLocation, useNavigationType } from "@remix-run/react";
 
 export const useSearchFormReactKey = () => {
   // We have some pretty gnarly requirements around the search form. The search

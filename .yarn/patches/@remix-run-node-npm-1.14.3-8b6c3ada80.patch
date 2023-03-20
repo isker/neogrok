@@ -1,0 +1,395 @@
+diff --git a/dist/base64.d.ts b/dist/base64.d.ts
+deleted file mode 100644
+index dcce33661e063431d1939c991c38d70a66f0ccad..0000000000000000000000000000000000000000
+--- a/dist/base64.d.ts
++++ /dev/null
+@@ -1,2 +0,0 @@
+-export declare function atob(a: string): string;
+-export declare function btoa(b: string): string;
+diff --git a/dist/base64.js b/dist/base64.js
+deleted file mode 100644
+index afd3fbd886d484200d86caa943c30badd1e766a5..0000000000000000000000000000000000000000
+--- a/dist/base64.js
++++ /dev/null
+@@ -1,23 +0,0 @@
+-/**
+- * @remix-run/node v1.14.3
+- *
+- * Copyright (c) Remix Software Inc.
+- *
+- * This source code is licensed under the MIT license found in the
+- * LICENSE.md file in the root directory of this source tree.
+- *
+- * @license MIT
+- */
+-'use strict';
+-
+-Object.defineProperty(exports, '__esModule', { value: true });
+-
+-function atob(a) {
+-  return Buffer.from(a, "base64").toString("binary");
+-}
+-function btoa(b) {
+-  return Buffer.from(b, "binary").toString("base64");
+-}
+-
+-exports.atob = atob;
+-exports.btoa = btoa;
+diff --git a/dist/fetch.d.ts b/dist/fetch.d.ts
+deleted file mode 100644
+index cec89199036d7cd4bb48c5cd66a497679d7d3031..0000000000000000000000000000000000000000
+--- a/dist/fetch.d.ts
++++ /dev/null
+@@ -1,23 +0,0 @@
+-/// <reference types="node" />
+-import type { Readable } from "stream";
+-import { fetch as webFetch, Headers as WebHeaders, Request as WebRequest, Response as WebResponse } from "@remix-run/web-fetch";
+-export { FormData } from "@remix-run/web-fetch";
+-export { File, Blob } from "@remix-run/web-file";
+-type NodeHeadersInit = ConstructorParameters<typeof WebHeaders>[0];
+-type NodeResponseInit = NonNullable<ConstructorParameters<typeof WebResponse>[1]>;
+-type NodeRequestInfo = ConstructorParameters<typeof WebRequest>[0] | NodeRequest;
+-type NodeRequestInit = Omit<NonNullable<ConstructorParameters<typeof WebRequest>[1]>, "body"> & {
+-    body?: NonNullable<ConstructorParameters<typeof WebRequest>[1]>["body"] | Readable;
+-};
+-export type { NodeHeadersInit as HeadersInit, NodeRequestInfo as RequestInfo, NodeRequestInit as RequestInit, NodeResponseInit as ResponseInit, };
+-declare class NodeRequest extends WebRequest {
+-    constructor(info: NodeRequestInfo, init?: NodeRequestInit);
+-    get headers(): WebHeaders;
+-    clone(): NodeRequest;
+-}
+-declare class NodeResponse extends WebResponse {
+-    get headers(): WebHeaders;
+-    clone(): NodeResponse;
+-}
+-export { WebHeaders as Headers, NodeRequest as Request, NodeResponse as Response, };
+-export declare const fetch: typeof webFetch;
+diff --git a/dist/fetch.js b/dist/fetch.js
+deleted file mode 100644
+index a1e8397347b7a9c303035ca90fe517217b1aabfd..0000000000000000000000000000000000000000
+--- a/dist/fetch.js
++++ /dev/null
+@@ -1,65 +0,0 @@
+-/**
+- * @remix-run/node v1.14.3
+- *
+- * Copyright (c) Remix Software Inc.
+- *
+- * This source code is licensed under the MIT license found in the
+- * LICENSE.md file in the root directory of this source tree.
+- *
+- * @license MIT
+- */
+-'use strict';
+-
+-Object.defineProperty(exports, '__esModule', { value: true });
+-
+-var webFetch = require('@remix-run/web-fetch');
+-var webFile = require('@remix-run/web-file');
+-
+-class NodeRequest extends webFetch.Request {
+-  constructor(info, init) {
+-    super(info, init);
+-  }
+-  get headers() {
+-    return super.headers;
+-  }
+-  clone() {
+-    return super.clone();
+-  }
+-}
+-class NodeResponse extends webFetch.Response {
+-  get headers() {
+-    return super.headers;
+-  }
+-  clone() {
+-    return super.clone();
+-  }
+-}
+-const fetch = (info, init) => {
+-  init = {
+-    // Disable compression handling so people can return the result of a fetch
+-    // directly in the loader without messing with the Content-Encoding header.
+-    compress: false,
+-    ...init
+-  };
+-  return webFetch.fetch(info, init);
+-};
+-
+-Object.defineProperty(exports, 'FormData', {
+-  enumerable: true,
+-  get: function () { return webFetch.FormData; }
+-});
+-Object.defineProperty(exports, 'Headers', {
+-  enumerable: true,
+-  get: function () { return webFetch.Headers; }
+-});
+-Object.defineProperty(exports, 'Blob', {
+-  enumerable: true,
+-  get: function () { return webFile.Blob; }
+-});
+-Object.defineProperty(exports, 'File', {
+-  enumerable: true,
+-  get: function () { return webFile.File; }
+-});
+-exports.Request = NodeRequest;
+-exports.Response = NodeResponse;
+-exports.fetch = fetch;
+diff --git a/dist/globals.d.ts b/dist/globals.d.ts
+index 2e98eb68acaab894a7827de7afd09acbbf04693b..4d75c4579bd81c9e70e2a836a52ccf6a7c2f52f0 100644
+--- a/dist/globals.d.ts
++++ b/dist/globals.d.ts
+@@ -1,23 +1 @@
+-import { atob, btoa } from "./base64";
+-declare global {
+-    namespace NodeJS {
+-        interface ProcessEnv {
+-            NODE_ENV: "development" | "production" | "test";
+-        }
+-        interface Global {
+-            atob: typeof atob;
+-            btoa: typeof btoa;
+-            Blob: typeof Blob;
+-            File: typeof File;
+-            Headers: typeof Headers;
+-            Request: typeof Request;
+-            Response: typeof Response;
+-            fetch: typeof fetch;
+-            FormData: typeof FormData;
+-            ReadableStream: typeof ReadableStream;
+-            WritableStream: typeof WritableStream;
+-            AbortController: typeof AbortController;
+-        }
+-    }
+-}
+ export declare function installGlobals(): void;
+diff --git a/dist/globals.js b/dist/globals.js
+index a8d03785b675a50976d37919c3d5ee3b42fa45e6..30a3f1b9650b4070dae54a5667e269e04952c399 100644
+--- a/dist/globals.js
++++ b/dist/globals.js
+@@ -12,26 +12,7 @@
+ 
+ Object.defineProperty(exports, '__esModule', { value: true });
+ 
+-var webStream = require('@remix-run/web-stream');
+-var abortController = require('abort-controller');
+-var base64 = require('./base64.js');
+-var fetch = require('./fetch.js');
+-var webFile = require('@remix-run/web-file');
+-var webFetch = require('@remix-run/web-fetch');
+-
+ function installGlobals() {
+-  global.atob = base64.atob;
+-  global.btoa = base64.btoa;
+-  global.Blob = webFile.Blob;
+-  global.File = webFile.File;
+-  global.Headers = webFetch.Headers;
+-  global.Request = fetch.Request;
+-  global.Response = fetch.Response;
+-  global.fetch = fetch.fetch;
+-  global.FormData = webFetch.FormData;
+-  global.ReadableStream = webStream.ReadableStream;
+-  global.WritableStream = webStream.WritableStream;
+-  global.AbortController = global.AbortController || abortController.AbortController;
+ }
+ 
+ exports.installGlobals = installGlobals;
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index a74508108c197d9ce93a748881076e3da6ee9569..0562135b5f75742d00e758c9125da5d11393d969 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -1,6 +1,3 @@
+-export { AbortController } from "abort-controller";
+-export type { HeadersInit, RequestInfo, RequestInit, ResponseInit, } from "./fetch";
+-export { fetch, FormData, Headers, Request, Response } from "./fetch";
+ export { installGlobals } from "./globals";
+ export { createFileSessionStorage } from "./sessions/fileStorage";
+ export { createFileUploadHandler as unstable_createFileUploadHandler, NodeOnDiskFile, } from "./upload/fileUploadHandler";
+diff --git a/dist/index.js b/dist/index.js
+index 5e277b68a70364d6c87875d1a5a19d74982f6c1d..a233434324b00bef3d75005ed90a3b76738d9531 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -12,30 +12,19 @@
+ 
+ Object.defineProperty(exports, '__esModule', { value: true });
+ 
+-var sourceMapSupport = require('source-map-support');
+-var abortController = require('abort-controller');
+-var fetch = require('./fetch.js');
+ var globals = require('./globals.js');
+ var fileStorage = require('./sessions/fileStorage.js');
+ var fileUploadHandler = require('./upload/fileUploadHandler.js');
+ var implementations = require('./implementations.js');
+ var stream = require('./stream.js');
+ var serverRuntime = require('@remix-run/server-runtime');
+-var webFetch = require('@remix-run/web-fetch');
+ 
+ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
+ 
+-var sourceMapSupport__default = /*#__PURE__*/_interopDefaultLegacy(sourceMapSupport);
+-
+-sourceMapSupport__default["default"].install();
+-
+-Object.defineProperty(exports, 'AbortController', {
+-  enumerable: true,
+-  get: function () { return abortController.AbortController; }
+-});
+-exports.Request = fetch.Request;
+-exports.Response = fetch.Response;
+-exports.fetch = fetch.fetch;
++exports.AbortController = AbortController;
++exports.Request = Request;
++exports.Response = Response;
++exports.fetch = fetch;
+ exports.installGlobals = globals.installGlobals;
+ exports.createFileSessionStorage = fileStorage.createFileSessionStorage;
+ exports.NodeOnDiskFile = fileUploadHandler.NodeOnDiskFile;
+@@ -92,11 +77,5 @@ Object.defineProperty(exports, 'unstable_parseMultipartFormData', {
+   enumerable: true,
+   get: function () { return serverRuntime.unstable_parseMultipartFormData; }
+ });
+-Object.defineProperty(exports, 'FormData', {
+-  enumerable: true,
+-  get: function () { return webFetch.FormData; }
+-});
+-Object.defineProperty(exports, 'Headers', {
+-  enumerable: true,
+-  get: function () { return webFetch.Headers; }
+-});
++exports.FormData = FormData;
++exports.Headers = Headers;
+diff --git a/dist/stream.js b/dist/stream.js
+index 8c69ed6b0a1d2322cd45747b87b5ba72d72bedbc..500ea9bc866c3b13102ec9c2a0dead8953634836 100644
+--- a/dist/stream.js
++++ b/dist/stream.js
+@@ -71,79 +71,8 @@ async function readableStreamToString(stream, encoding) {
+   return Buffer.concat(chunks).toString(encoding);
+ }
+ const createReadableStreamFromReadable = source => {
+-  let pump = new StreamPump(source);
+-  let stream = new ReadableStream(pump, pump);
+-  return stream;
++  return stream.Readable.toWeb(source);
+ };
+-class StreamPump {
+-  constructor(stream$1) {
+-    this.highWaterMark = stream$1.readableHighWaterMark || new stream.Stream.Readable().readableHighWaterMark;
+-    this.accumalatedSize = 0;
+-    this.stream = stream$1;
+-    this.enqueue = this.enqueue.bind(this);
+-    this.error = this.error.bind(this);
+-    this.close = this.close.bind(this);
+-  }
+-  size(chunk) {
+-    return (chunk === null || chunk === void 0 ? void 0 : chunk.byteLength) || 0;
+-  }
+-  start(controller) {
+-    this.controller = controller;
+-    this.stream.on("data", this.enqueue);
+-    this.stream.once("error", this.error);
+-    this.stream.once("end", this.close);
+-    this.stream.once("close", this.close);
+-  }
+-  pull() {
+-    this.resume();
+-  }
+-  cancel(reason) {
+-    if (this.stream.destroy) {
+-      this.stream.destroy(reason);
+-    }
+-    this.stream.off("data", this.enqueue);
+-    this.stream.off("error", this.error);
+-    this.stream.off("end", this.close);
+-    this.stream.off("close", this.close);
+-  }
+-  enqueue(chunk) {
+-    if (this.controller) {
+-      try {
+-        let bytes = chunk instanceof Uint8Array ? chunk : Buffer.from(chunk);
+-        let available = (this.controller.desiredSize || 0) - bytes.byteLength;
+-        this.controller.enqueue(bytes);
+-        if (available <= 0) {
+-          this.pause();
+-        }
+-      } catch (error) {
+-        this.controller.error(new Error("Could not create Buffer, chunk must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object"));
+-        this.cancel();
+-      }
+-    }
+-  }
+-  pause() {
+-    if (this.stream.pause) {
+-      this.stream.pause();
+-    }
+-  }
+-  resume() {
+-    if (this.stream.readable && this.stream.resume) {
+-      this.stream.resume();
+-    }
+-  }
+-  close() {
+-    if (this.controller) {
+-      this.controller.close();
+-      delete this.controller;
+-    }
+-  }
+-  error(error) {
+-    if (this.controller) {
+-      this.controller.error(error);
+-      delete this.controller;
+-    }
+-  }
+-}
+ 
+ exports.createReadableStreamFromReadable = createReadableStreamFromReadable;
+ exports.readableStreamToString = readableStreamToString;
+diff --git a/dist/upload/fileUploadHandler.d.ts b/dist/upload/fileUploadHandler.d.ts
+index 9baf8a720439015195302fd7b915ffa55c38da91..e55f1e713cd1cebd793df61861f47953c17cbc65 100644
+--- a/dist/upload/fileUploadHandler.d.ts
++++ b/dist/upload/fileUploadHandler.d.ts
+@@ -44,7 +44,7 @@ export type FileUploadHandlerOptions = {
+     filter?(args: FileUploadHandlerFilterArgs): boolean | Promise<boolean>;
+ };
+ export declare function createFileUploadHandler({ directory, avoidFileConflicts, file, filter, maxPartSize, }?: FileUploadHandlerOptions): UploadHandler;
+-export declare class NodeOnDiskFile implements File {
++export declare class NodeOnDiskFile extends File {
+     private filepath;
+     type: string;
+     private slicer?;
+diff --git a/globals.d.ts b/globals.d.ts
+deleted file mode 100644
+index ba42c7d8d9d4fba0cdb3da6565a2677255547d82..0000000000000000000000000000000000000000
+--- a/globals.d.ts
++++ /dev/null
+@@ -1 +0,0 @@
+-export * from './dist/globals';
+\ No newline at end of file
+diff --git a/package.json b/package.json
+index 06ff57e752d735fa23d698448554d5922725b93d..cc3ec740a45c4dc41b3a3808fe514acd52d60e3f 100644
+--- a/package.json
++++ b/package.json
+@@ -16,21 +16,13 @@
+   "sideEffects": false,
+   "dependencies": {
+     "@remix-run/server-runtime": "1.14.3",
+-    "@remix-run/web-fetch": "^4.3.2",
+-    "@remix-run/web-file": "^3.0.2",
+-    "@remix-run/web-stream": "^1.0.3",
+-    "@web3-storage/multipart-parser": "^1.0.0",
+-    "abort-controller": "^3.0.0",
+-    "cookie-signature": "^1.1.0",
+-    "source-map-support": "^0.5.21",
+-    "stream-slice": "^0.1.2"
++    "cookie-signature": "^1.1.0"
+   },
+   "devDependencies": {
+-    "@types/cookie-signature": "^1.0.3",
+-    "@types/source-map-support": "^0.5.4"
++    "@types/cookie-signature": "^1.0.3"
+   },
+   "engines": {
+-    "node": ">=14"
++    "node": ">=18"
+   },
+   "files": [
+     "dist/",
