@@ -10,7 +10,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body><nav>nav!</nav>{children}</body>
+      <body><nav>nav! ${Date.now()}</nav>{children}</body>
     </html>
   )
 }
