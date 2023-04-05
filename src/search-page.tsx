@@ -148,8 +148,8 @@ const SearchResults = memo(function SearchResults({
         </span>
         <span className="ml-auto">
           Frontend: {files.length} {files.length === 1 ? "file" : "files"} /{" "}
-          {frontendMatchCount} {matchCount === 1 ? "match" : "matches"} /{" "}
-          {requestDuration}ms
+          {frontendMatchCount} {frontendMatchCount === 1 ? "match" : "matches"}{" "}
+          / {requestDuration}ms
         </span>
       </h1>
       {files.map((file, i) => {
@@ -158,7 +158,7 @@ const SearchResults = memo(function SearchResults({
           <SearchResultsFile
             key={`${repository}/${fileName.tokens
               .map(({ text }) => text)
-              .join()}`}
+              .join()}@${file.branches.join(";")}`}
             file={file}
             rank={i + 1}
           />
