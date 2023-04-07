@@ -31,6 +31,9 @@ const SearchPage = () => {
   ) {
     setPreviousResults(searchOutcome.results);
     return null;
+  } else if (searchOutcome.kind === "none" && previousResults !== undefined) {
+    setPreviousResults(undefined);
+    return null;
   }
 
   if (searchOutcome.kind === "none") {
