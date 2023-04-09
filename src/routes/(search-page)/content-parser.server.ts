@@ -1,4 +1,4 @@
-import type { MatchRange } from "./search-api";
+import type { MatchRange } from "./search-api.server";
 
 // We don't pass `fatal: true` to this ctor to do things like handle binary or
 // non-utf8 text encodings as the zoekt indexer explicitly skips indexing binary

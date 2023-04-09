@@ -1,7 +1,7 @@
 <script lang="ts">
   import prettyBytes from "pretty-bytes";
   import Link from "$lib/link.svelte";
-  import type { Repository } from "./list-repositories-api";
+  import type { Repository } from "./list-repositories-api.server";
 
   export let repository: Repository;
 

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ZOEKT_URL } from "$env/static/private";
-import { type ContentToken, parseIntoLines } from "./content-parser";
+import { type ContentToken, parseIntoLines } from "./content-parser.server";
 
 export type SearchQuery = Readonly<{
   query: string;

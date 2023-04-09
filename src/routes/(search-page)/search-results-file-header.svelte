@@ -2,7 +2,7 @@
   import { ChevronRight } from "lucide-svelte";
   import Link from "$lib/link.svelte";
   import RenderedContent from "./rendered-content.svelte";
-  import type { ResultFile } from "./search-api";
+  import type { ResultFile } from "./search-api.server";
 
   export let file: ResultFile;
   export let rank: number;

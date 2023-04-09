@@ -1,6 +1,9 @@
 import { loadPreferences } from "$lib/preferences";
 import { parseSearchParams } from "./route-search-query";
-import { search, type SearchResults as ApiSearchResults } from "./search-api";
+import {
+  search,
+  type SearchResults as ApiSearchResults,
+} from "./search-api.server";
 
 export type SearchOutcome =
   | { kind: "none" }

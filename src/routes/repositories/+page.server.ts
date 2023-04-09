@@ -1,4 +1,7 @@
-import { listRepositories, type ListResults } from "./list-repositories-api";
+import {
+  listRepositories,
+  type ListResults,
+} from "./list-repositories-api.server";
 import { parseSearchParams } from "./route-list-query";
 
 export const load: import("./$types").PageServerLoad = async ({
