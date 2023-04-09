@@ -16,7 +16,7 @@
     // Groups of contiguous lines in the file; contiguous matches are merged into
     // a single group.
     const lineGroups: Array<
-      Array<{ lineNumber: number; lineTokens: ContentToken[] }>
+      Array<{ lineNumber: number; lineTokens: ReadonlyArray<ContentToken> }>
     > = [];
     let preCutoffMatchCount = 0;
 

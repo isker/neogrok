@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ZOEKT_URL } from "$env/static/private";
+import type { ReadonlyDeep } from "type-fest";
 import { type ContentToken, parseIntoLines } from "./content-parser.server";
 
 export type SearchQuery = Readonly<{
@@ -80,7 +81,7 @@ const locationSchema = z
     lineNumber: LineNumber,
     column: Column,
   }));
-export type ContentLocation = z.infer<typeof locationSchema>;
+export type ContentLocation = ReadonlyDeep<z.infer<typeof locationSchema>>;
 
 const matchRangeSchema = z
   .object({ Start: locationSchema, End: locationSchema })
@@ -88,10 +89,8 @@ const matchRangeSchema = z
     start,
     end,
   }));
-export type MatchRange = z.infer<typeof matchRangeSchema>;
+export type MatchRange = ReadonlyDeep<z.infer<typeof matchRangeSchema>>;
 
-// TODO readonly when zod supports it
-// https://github.com/colinhacks/zod/pull/1432
 const searchResultSchema = z.object({
   Result: z
     .object({
@@ -277,6 +276,8 @@ const searchResultSchema = z.object({
 const numMatches = (tokens: Array<ContentToken>) =>
   tokens.filter((t) => t.kind === "match").length;
 
-export type SearchResults = z.infer<typeof searchResultSchema>["Result"];
+export type SearchResults = ReadonlyDeep<
+  z.infer<typeof searchResultSchema>["Result"]
+>;
 export type ResultFile = SearchResults["files"][number];
 export type Chunks = ResultFile["chunks"][number];

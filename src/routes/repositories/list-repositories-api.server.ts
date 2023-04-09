@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { ReadonlyDeep } from "type-fest";
 import { ZOEKT_URL } from "$env/static/private";
 
 export type ListRepositoriesResponse =
@@ -126,5 +127,7 @@ const listResultSchema = z.object({
 const toISOStringWithoutMs = (d: Date) =>
   d.toISOString().replace(/\.\d{3}Z$/, "Z");
 
-export type ListResults = z.infer<typeof listResultSchema>["List"];
+export type ListResults = ReadonlyDeep<
+  z.infer<typeof listResultSchema>["List"]
+>;
 export type Repository = ListResults["repositories"][number];
