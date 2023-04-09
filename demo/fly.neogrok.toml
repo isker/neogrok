@@ -7,6 +7,8 @@ processes = []
 
 [build]
   dockerfile = "Dockerfile.neogrok"
+[build.args]
+  ZOEKT_URL = "http://neogrok-demo-zoekt.internal:8080"
 
 [env]
 
