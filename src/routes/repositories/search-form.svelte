@@ -1,9 +1,21 @@
 <script lang="ts">
-  import { updateRouteListQuery } from "./route-list-query";
+  import { onDestroy } from "svelte";
+  import { navigating } from "$app/stores";
+  import { routeListQuery, updateRouteListQuery } from "./route-list-query";
 
   export let queryError: string | null;
 
   let query: string | undefined;
+  const unsubscribe = routeListQuery.subscribe((rq) => {
+    // Sync form values with route state whenever a navigation _not_ related to
+    // direct user interactions with the form.  Those are inherently already
+    // covered by the relevant input bindings, and the resulting navigations
+    // can conflict with those bindings.
+    if ($navigating?.type !== "goto") {
+      ({ query } = rq);
+    }
+  });
+  onDestroy(unsubscribe);
 </script>
 
 <!-- TODO this should integrate with preferences. -->

@@ -29,7 +29,7 @@
     // direct user interactions with the form.  Those are inherently already
     // covered by the relevant input bindings, and the resulting navigations
     // can conflict with those bindings.
-    if (!$navigating || $navigating.type !== "goto") {
+    if ($navigating?.type !== "goto") {
       ({ query, contextLines, files, matchesPerShard, totalMatches } = rq);
     }
   });
