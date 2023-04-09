@@ -1,15 +1,13 @@
 {
-  "include": ["src/**/*"],
+  "extends": "./.svelte-kit/tsconfig.json",
   "compilerOptions": {
-    "module": "es2022",
-    "target": "es2022",
-    "strict": true,
-    "isolatedModules": true,
-    "typeRoots": ["src/@types", "node_modules/@types"],
-    "noEmit": true,
-    "jsx": "react-jsx",
-    "lib": ["ES2022", "dom"],
-    "moduleResolution": "node",
-    "importsNotUsedAsValues": "error"
+    "allowJs": true,
+    "checkJs": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true
   }
 }

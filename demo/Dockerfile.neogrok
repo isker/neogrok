@@ -1,13 +1,14 @@
-# Can't use 18-slim because parcel needs python for native installs... for dev
-# tooling we don't even use ;_;
-FROM node:18 as app-builder
+FROM node:18-slim as app-builder
 WORKDIR /app
-COPY package.json package-lock.json .parcelrc .postcssrc tailwind.config.js .
-COPY src src
-RUN npm install && npm run build
+COPY . .
+ARG ZOEKT_URL
+RUN ZOEKT_URL=$ZOEKT_URL npm install \
+    && npm run build \
+    && npm install --omit=dev
 
-FROM caddy:2.6.2
+FROM gcr.io/distroless/nodejs18-debian11
 WORKDIR /app
-COPY /demo/Caddyfile Caddyfile
-COPY --from=app-builder /app/dist dist
-ENTRYPOINT caddy run
+COPY package.json .
+COPY --from=app-builder /app/build build
+COPY --from=app-builder /app/node_modules node_modules
+ENTRYPOINT ["/nodejs/bin/node", "build"]

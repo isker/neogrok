@@ -1,0 +1,4 @@
+*
+# To index our own repo in zoekt.
+!.git
+!demo/Dockerfile.zoekt*

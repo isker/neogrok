@@ -1,8 +1,8 @@
 .DS_Store
 *.log
 node_modules/
-parcel-bundle-reports/
-dist/
 *.tsbuildinfo
 .npm
-.parcel-cache
+.svelte-kit
+build/
+.env

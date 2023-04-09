@@ -10,10 +10,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl deploy --remote-only --config demo/fly.neogrok.toml
+      - run: flyctl deploy --remote-only --config demo/fly.neogrok.toml --ignorefile demo/Dockerfile.neogrok.dockerignore
   deploy-zoekt:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl deploy --remote-only --config demo/fly.zoekt.toml
+      - run: flyctl deploy --remote-only --config demo/fly.zoekt.toml --ignorefile demo/Dockerfile.zoekt.dockerignore
