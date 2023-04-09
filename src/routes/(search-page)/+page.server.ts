@@ -15,19 +15,19 @@ export type SearchOutcome =
 export type TimedSearchResults = ApiSearchResults & { requestDuration: number };
 
 export const load: import("./$types").PageServerLoad = async ({
-  request,
   url,
   cookies,
+  fetch,
 }) => {
   return {
-    searchOutcome: await executeSearch(request, url),
+    searchOutcome: await executeSearch(url, fetch),
     preferences: loadPreferences(cookies),
   };
 };
 
 const executeSearch = async (
-  request: Request,
-  url: URL
+  url: URL,
+  f: typeof fetch
 ): Promise<SearchOutcome> => {
   const start = Date.now();
   const { query, ...rest } = parseSearchParams(new URL(url).searchParams);
@@ -36,7 +36,7 @@ const executeSearch = async (
   }
 
   try {
-    const response = await search({ query, ...rest }, request.signal);
+    const response = await search({ query, ...rest }, f);
     if (response.kind === "success") {
       return {
         kind: "success",

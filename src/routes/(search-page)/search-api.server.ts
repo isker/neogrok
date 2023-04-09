@@ -23,7 +23,7 @@ export type SearchResponse =
 
 export const search = async (
   { query, contextLines, files, matchesPerShard, totalMatches }: SearchQuery,
-  abortSignal: AbortSignal
+  f: typeof fetch
 ): Promise<SearchResponse> => {
   const body = JSON.stringify({
     q: query,
@@ -36,13 +36,12 @@ export const search = async (
     },
   });
 
-  const response = await fetch(new URL("/api/search", ZOEKT_URL), {
+  const response = await f(new URL("/api/search", ZOEKT_URL), {
     method: "POST",
     headers: {
       "content-type": "application/json",
     },
     body,
-    signal: abortSignal,
   });
 
   if (!response.ok) {

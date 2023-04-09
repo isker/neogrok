@@ -12,19 +12,18 @@ export type ListRepositoriesResponse =
       error: string;
     };
 
-export const listRepositories = async (
+export async function listRepositories(
   { query }: { query?: string },
-  abortSignal: AbortSignal
-): Promise<ListRepositoriesResponse> => {
+  f: typeof fetch
+): Promise<ListRepositoriesResponse> {
   const body = JSON.stringify({ q: query });
 
-  const response = await fetch(new URL("/api/list", ZOEKT_URL), {
+  const response = await f(new URL("/api/list", ZOEKT_URL), {
     method: "POST",
     headers: {
       "content-type": "application/json",
     },
     body,
-    signal: abortSignal,
   });
 
   if (!response.ok) {
@@ -46,7 +45,7 @@ export const listRepositories = async (
     kind: "success",
     results: listResultSchema.parse(await response.json()).List,
   };
-};
+}
 
 const statsSchema = z
   .object({
