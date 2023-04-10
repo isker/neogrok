@@ -3,7 +3,7 @@
   import SearchForm from "./search-form.svelte";
   import Lander from "./lander.svelte";
   import SearchResults from "./search-results.svelte";
-  import type { TimedSearchResults } from "./+page.server";
+  import type { TimedSearchResults } from "./+page";
   import { routeSearchQuery } from "./route-search-query";
 
   export let data: import("./$types").PageData;

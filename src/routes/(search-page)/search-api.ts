@@ -1,7 +1,6 @@
 import { z } from "zod";
-import { ZOEKT_URL } from "$env/static/private";
 import type { ReadonlyDeep } from "type-fest";
-import { type ContentToken, parseIntoLines } from "./content-parser.server";
+import { type ContentToken, parseIntoLines } from "./content-parser";
 
 export type SearchQuery = Readonly<{
   query: string;
@@ -36,7 +35,7 @@ export const search = async (
     },
   });
 
-  const response = await f(new URL("/api/search", ZOEKT_URL), {
+  const response = await f("/api/search", {
     method: "POST",
     headers: {
       "content-type": "application/json",

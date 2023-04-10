@@ -3,8 +3,8 @@
     acquireFileMatchesCutoffStore,
     acquireMatchSortOrderStore,
   } from "$lib/preferences";
-  import type { ResultFile } from "./search-api.server";
-  import type { ContentToken } from "./content-parser.server";
+  import type { ResultFile } from "./search-api";
+  import type { ContentToken } from "./content-parser";
   import SearchResultsFileHeader from "./search-results-file-header.svelte";
   import RenderedContent from "./rendered-content.svelte";
 

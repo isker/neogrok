@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { TimedSearchResults } from "./+page.server";
+  import type { TimedSearchResults } from "./+page";
   import SearchResultsFile from "./search-results-file.svelte";
 
   export let results: TimedSearchResults;
