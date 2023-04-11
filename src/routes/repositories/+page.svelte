@@ -17,11 +17,11 @@
 </script>
 
 <svelte:head>
-  {#if $routeListQuery.query}
-    <title>{$routeListQuery.query} - neogrok/repositories</title>
-  {:else}
-    <title>neogrok/repositories</title>
-  {/if}
+  <title
+    >{$routeListQuery.query
+      ? `${$routeListQuery.query} - `
+      : ""}neogrok/repositories</title
+  >
 </svelte:head>
 
 <!--

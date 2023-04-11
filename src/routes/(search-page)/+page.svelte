@@ -23,11 +23,11 @@
 </script>
 
 <svelte:head>
-  {#if $routeSearchQuery.query}
-    <title>{$routeSearchQuery.query} - neogrok</title>
-  {:else}
-    <title>neogrok</title>
-  {/if}
+  <title
+    >{$routeSearchQuery.query
+      ? `${$routeSearchQuery.query} - `
+      : ""}neogrok</title
+  >
 </svelte:head>
 
 <!--
