@@ -6,7 +6,7 @@ import { goto } from "$app/navigation";
 
 const defaultQueryOptions: Omit<SearchQuery, "query"> = Object.freeze({
   contextLines: 1,
-  files: 50,
+  files: 20,
   matchesPerShard: 1e4,
   totalMatches: 1e5,
 });
