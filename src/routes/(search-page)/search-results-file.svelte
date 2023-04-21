@@ -4,52 +4,9 @@
     acquireMatchSortOrderStore,
   } from "$lib/preferences";
   import type { ResultFile } from "./search-api";
-  import type { ContentToken } from "./content-parser";
   import SearchResultsFileHeader from "./search-results-file-header.svelte";
   import RenderedContent from "./rendered-content.svelte";
-
-  const renderChunksToLineGroups = (
-    chunks: ResultFile["chunks"],
-    cutoff: number,
-    expanded: boolean
-  ) => {
-    // Groups of contiguous lines in the file; contiguous matches are merged into
-    // a single group.
-    const lineGroups: Array<
-      Array<{ lineNumber: number; lineTokens: ReadonlyArray<ContentToken> }>
-    > = [];
-    let preCutoffMatchCount = 0;
-
-    // The goal is to produce the minimal number of lineGroups that exceed the
-    // cutoff. We don't want to cut a file section in half to make the exact
-    // cutoff (nor can we, if the cutoff is exceeded in the middle of a single
-    // line).
-    if (cutoff > 0) {
-      for (const { matchCount, lines } of chunks) {
-        const [{ lineNumber: startLineNumber }] = lines;
-        const contiguous =
-          lineGroups.at(-1)?.at(-1)?.lineNumber === startLineNumber - 1;
-
-        const beyondCutoff = !contiguous && preCutoffMatchCount >= cutoff;
-        if (beyondCutoff && !expanded) {
-          break;
-        } else if (!beyondCutoff) {
-          preCutoffMatchCount += matchCount;
-        }
-
-        if (contiguous) {
-          // By the definition of `contiguous` we know this exists.
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          lineGroups.at(-1)!.push(...lines);
-        } else {
-          // Make a copy. We will be mutating it.
-          lineGroups.push([...lines]);
-        }
-      }
-    }
-
-    return { lineGroups, preCutoffMatchCount };
-  };
+  import { renderChunksToLineGroups } from "./chunk-renderer";
 
   export let file: ResultFile;
   export let rank: number;
