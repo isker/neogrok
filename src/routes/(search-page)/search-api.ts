@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as v from "@badrap/valita";
 import type { ReadonlyDeep } from "type-fest";
 import { type ContentToken, parseIntoLines } from "./content-parser";
 
@@ -61,165 +61,169 @@ export const search = async (
 
   return {
     kind: "success",
-    results: searchResultSchema.parse(await response.json()).Result,
+    results: searchResultSchema.parse(await response.json(), { mode: "strip" })
+      .Result,
   };
 };
 
 // All of the properties of the returned JSON are uppercased. Hail Golang. We
-// laboriously instruct zod to transform them all to lowercase, picking better
+// laboriously instruct valita to transform them all to lowercase, picking better
 // names for some of them along the way.
-const locationSchema = z
+const locationSchema = v
   .object({
-    ByteOffset: z.number(),
-    LineNumber: z.number(),
-    Column: z.number(),
+    ByteOffset: v.number(),
+    LineNumber: v.number(),
+    Column: v.number(),
   })
-  .transform(({ ByteOffset, LineNumber, Column }) => ({
+  .map(({ ByteOffset, LineNumber, Column }) => ({
     byteOffset: ByteOffset,
     lineNumber: LineNumber,
     column: Column,
   }));
-export type ContentLocation = ReadonlyDeep<z.infer<typeof locationSchema>>;
+export type ContentLocation = ReadonlyDeep<v.Infer<typeof locationSchema>>;
 
-const matchRangeSchema = z
+const matchRangeSchema = v
   .object({ Start: locationSchema, End: locationSchema })
-  .transform(({ Start: start, End: end }) => ({
+  .map(({ Start: start, End: end }) => ({
     start,
     end,
   }));
-export type MatchRange = ReadonlyDeep<z.infer<typeof matchRangeSchema>>;
+export type MatchRange = ReadonlyDeep<v.Infer<typeof matchRangeSchema>>;
 
-const searchResultSchema = z.object({
-  Result: z
+const searchResultSchema = v.object({
+  Result: v
     .object({
-      Duration: z.number(),
-      FileCount: z.number(),
-      MatchCount: z.number(),
-      FilesSkipped: z.number(),
-      Files: z
-        .array(
-          z
-            .object({
-              Repository: z.string(),
-              FileName: z.string(),
-              Branches: z.array(z.string()),
-              Language: z.string(),
-              Version: z.string(),
-              ChunkMatches: z.array(
-                z
-                  .object({
-                    Content: z.string(),
-                    ContentStart: locationSchema,
-                    FileName: z.boolean(),
-                    Ranges: z.array(matchRangeSchema),
-                  })
-                  .transform(
-                    ({
-                      Content: contentBase64,
-                      ContentStart: contentStart,
-                      FileName: isFileNameChunk,
-                      Ranges: matchRanges,
-                    }) => ({
-                      contentBase64,
-                      contentStart,
-                      isFileNameChunk,
-                      matchRanges,
+      Duration: v.number(),
+      FileCount: v.number(),
+      MatchCount: v.number(),
+      FilesSkipped: v.number(),
+      Files: v
+        .union(
+          v.null(),
+          v.array(
+            v
+              .object({
+                Repository: v.string(),
+                FileName: v.string(),
+                Branches: v.array(v.string()),
+                Language: v.string(),
+                Version: v.string(),
+                ChunkMatches: v.array(
+                  v
+                    .object({
+                      Content: v.string(),
+                      ContentStart: locationSchema,
+                      FileName: v.boolean(),
+                      Ranges: v.array(matchRangeSchema),
                     })
-                  )
-              ),
-            })
-            .transform(
-              ({
-                Repository: repository,
-                FileName: fileName,
-                Branches: branches,
-                Language: language,
-                Version: version,
-                ChunkMatches: chunkMatches,
-              }) => {
-                // Search results may match not only on file contents but also
-                // the filename itself. We have to especially handle such
-                // matches to render them properly.
-                const fileNameChunks = chunkMatches.filter(
-                  (m) => m.isFileNameChunk
-                );
-                if (fileNameChunks.length > 1) {
-                  // Should only ever be one match, with one or more ranges.
-                  // Check just to be sure.
-                  throw new Error(
-                    `Unreachable: received ${fileNameChunks.length} file name matches`
-                  );
-                }
-                let fileNameTokens: Array<ContentToken>;
-                if (fileNameChunks.length === 1) {
-                  const {
-                    contentBase64,
-                    contentStart: { byteOffset: baseByteOffset },
-                    matchRanges,
-                  } = fileNameChunks[0];
-                  // We only take the first line. If your filename has more
-                  // than one line, you deserve this.
-                  const [firstLine] = parseIntoLines(
-                    contentBase64,
-                    baseByteOffset,
-                    matchRanges
-                  );
-                  fileNameTokens = firstLine;
-                } else {
-                  fileNameTokens = [
-                    { kind: "context", text: fileName, startByteOffset: 0 },
-                  ];
-                }
-
-                return {
-                  repository,
-                  fileName,
-                  fileNameTokens,
-                  branches,
-                  language,
-                  version,
-                  chunks: chunkMatches
-                    .filter(({ isFileNameChunk }) => !isFileNameChunk)
                     .map(
                       ({
+                        Content: contentBase64,
+                        ContentStart: contentStart,
+                        FileName: isFileNameChunk,
+                        Ranges: matchRanges,
+                      }) => ({
                         contentBase64,
-                        contentStart: {
-                          byteOffset: baseByteOffset,
-                          lineNumber: startLineNumber,
-                        },
+                        contentStart,
+                        isFileNameChunk,
                         matchRanges,
-                      }) => {
-                        const lines = parseIntoLines(
+                      })
+                    )
+                ),
+              })
+              .map(
+                ({
+                  Repository: repository,
+                  FileName: fileName,
+                  Branches: branches,
+                  Language: language,
+                  Version: version,
+                  ChunkMatches: chunkMatches,
+                }) => {
+                  // Search results may match not only on file contents but also
+                  // the filename itself. We have to especially handle such
+                  // matches to render them properly.
+                  const fileNameChunks = chunkMatches.filter(
+                    (m) => m.isFileNameChunk
+                  );
+                  if (fileNameChunks.length > 1) {
+                    // Should only ever be one match, with one or more ranges.
+                    // Check just to be sure.
+                    throw new Error(
+                      `Unreachable: received ${fileNameChunks.length} file name matches`
+                    );
+                  }
+                  let fileNameTokens: Array<ContentToken>;
+                  if (fileNameChunks.length === 1) {
+                    const {
+                      contentBase64,
+                      contentStart: { byteOffset: baseByteOffset },
+                      matchRanges,
+                    } = fileNameChunks[0];
+                    // We only take the first line. If your filename has more
+                    // than one line, you deserve this.
+                    const [firstLine] = parseIntoLines(
+                      contentBase64,
+                      baseByteOffset,
+                      matchRanges
+                    );
+                    fileNameTokens = firstLine;
+                  } else {
+                    fileNameTokens = [
+                      { kind: "context", text: fileName, startByteOffset: 0 },
+                    ];
+                  }
+
+                  return {
+                    repository,
+                    fileName,
+                    fileNameTokens,
+                    branches,
+                    language,
+                    version,
+                    chunks: chunkMatches
+                      .filter(({ isFileNameChunk }) => !isFileNameChunk)
+                      .map(
+                        ({
                           contentBase64,
-                          baseByteOffset,
-                          matchRanges
-                        ).map((lineTokens, lineOffset) => ({
-                          lineNumber: startLineNumber + lineOffset,
-                          lineTokens,
-                        }));
+                          contentStart: {
+                            byteOffset: baseByteOffset,
+                            lineNumber: startLineNumber,
+                          },
+                          matchRanges,
+                        }) => {
+                          const lines = parseIntoLines(
+                            contentBase64,
+                            baseByteOffset,
+                            matchRanges
+                          ).map((lineTokens, lineOffset) => ({
+                            lineNumber: startLineNumber + lineOffset,
+                            lineTokens,
+                            // While the frontend could derive this from
+                            // lineTokens, counts of matches in a chunk are needed
+                            // so frequently that it's substantially less tedious
+                            // to precompute it.
+                            matchCount: numMatches(lineTokens),
+                          }));
 
-                        // While the frontend could derive this from lines,
-                        // counts of matches in a chunk are needed so frequently
-                        // that it's substantially less tedious to precompute
-                        // it.
-                        const matchCount = lines.reduce(
-                          (n, { lineTokens }) => n + numMatches(lineTokens),
-                          0
-                        );
+                          const matchCount = lines.reduce(
+                            (n, { matchCount }) => n + matchCount,
+                            0
+                          );
 
-                        return { matchCount, lines };
-                      }
-                    ),
-                };
-              }
-            )
+                          return { matchCount, lines };
+                        }
+                      ),
+                  };
+                }
+              )
+          )
         )
-        .nullable()
-        .transform((val) => val ?? []),
-      RepoURLs: z.record(z.union([z.string(), z.undefined()])),
-      LineFragments: z.record(z.union([z.string(), z.undefined()])),
+        .map((val) => val ?? []),
+      RepoURLs: v.record(v.union(v.string(), v.undefined())),
+      LineFragments: v.record(v.union(v.string(), v.undefined())),
     })
-    .transform(
+    .map(
       ({
         Duration: duration,
         FileCount: fileCount,
@@ -275,7 +279,8 @@ const numMatches = (tokens: Array<ContentToken>) =>
   tokens.filter((t) => t.kind === "match").length;
 
 export type SearchResults = ReadonlyDeep<
-  z.infer<typeof searchResultSchema>["Result"]
+  v.Infer<typeof searchResultSchema>["Result"]
 >;
 export type ResultFile = SearchResults["files"][number];
-export type Chunks = ResultFile["chunks"][number];
+export type Chunk = ResultFile["chunks"][number];
+export type ChunkLine = Chunk["lines"][number];

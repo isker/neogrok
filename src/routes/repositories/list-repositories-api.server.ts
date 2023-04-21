@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as v from "@badrap/valita";
 import type { ReadonlyDeep } from "type-fest";
 import { ZOEKT_URL } from "$env/static/private";
 
@@ -43,77 +43,88 @@ export async function listRepositories(
 
   return {
     kind: "success",
-    results: listResultSchema.parse(await response.json()).List,
+    results: listResultSchema.parse(await response.json(), { mode: "strip" })
+      .List,
   };
 }
 
-const statsSchema = z
+const statsSchema = v
   .object({
-    Documents: z.number(),
-    IndexBytes: z.number(),
-    ContentBytes: z.number(),
+    Documents: v.number(),
+    IndexBytes: v.number(),
+    ContentBytes: v.number(),
   })
-  .transform(({ Documents, IndexBytes, ContentBytes }) => ({
+  .map(({ Documents, IndexBytes, ContentBytes }) => ({
     fileCount: Documents,
     indexBytes: IndexBytes,
     contentBytes: ContentBytes,
   }));
 
-const listResultSchema = z.object({
-  List: z
+const dateSchema = v.string().chain((str) => {
+  const date = new Date(str);
+
+  if (isNaN(date.getTime())) {
+    return v.err(`Invalid date "${str}"`);
+  }
+
+  return v.ok(date);
+});
+
+const listResultSchema = v.object({
+  List: v
     .object({
       Stats: statsSchema,
-      Repos: z
-        .array(
-          z
-            .object({
-              Repository: z
-                .object({
-                  Name: z.string(),
-                  ID: z.number(),
-                  Rank: z.number(),
-                  URL: z.string(),
-                  LatestCommitDate: z.coerce.date(),
-                  Branches: z.array(
-                    z
-                      .object({ Name: z.string(), Version: z.string() })
-                      .transform(({ Name, Version }) => ({
-                        name: Name,
-                        version: Version,
-                      }))
-                  ),
-                })
-                .transform(
-                  ({ Name, ID, Rank, URL, LatestCommitDate, Branches }) => ({
-                    name: Name,
-                    id: ID,
-                    rank: Rank,
-                    url: URL,
-                    lastCommit: toISOStringWithoutMs(LatestCommitDate),
-                    branches: Branches,
+      Repos: v
+        .union(
+          v.null(),
+          v.array(
+            v
+              .object({
+                Repository: v
+                  .object({
+                    Name: v.string(),
+                    ID: v.number(),
+                    Rank: v.number(),
+                    URL: v.string(),
+                    LatestCommitDate: dateSchema,
+                    Branches: v.array(
+                      v
+                        .object({ Name: v.string(), Version: v.string() })
+                        .map(({ Name, Version }) => ({
+                          name: Name,
+                          version: Version,
+                        }))
+                    ),
                   })
-                ),
-              IndexMetadata: z
-                .object({
-                  IndexTime: z.coerce.date(),
-                })
-                .transform(({ IndexTime }) => ({
-                  lastIndexed: toISOStringWithoutMs(IndexTime),
-                })),
-              Stats: statsSchema,
-            })
-            .transform(
-              ({ Repository, IndexMetadata: { lastIndexed }, Stats }) => ({
+                  .map(
+                    ({ Name, ID, Rank, URL, LatestCommitDate, Branches }) => ({
+                      name: Name,
+                      id: ID,
+                      rank: Rank,
+                      url: URL,
+                      lastCommit: toISOStringWithoutMs(LatestCommitDate),
+                      branches: Branches,
+                    })
+                  ),
+                IndexMetadata: v
+                  .object({
+                    IndexTime: dateSchema,
+                  })
+                  .map(({ IndexTime }) => ({
+                    lastIndexed: toISOStringWithoutMs(IndexTime),
+                  })),
+                Stats: statsSchema,
+              })
+              .map(({ Repository, IndexMetadata: { lastIndexed }, Stats }) => ({
                 ...Repository,
                 lastIndexed,
                 stats: Stats,
-              })
-            )
+              }))
+          )
         )
-        .nullable()
-        .transform((val) => val ?? []),
+        .map((val) => val ?? []),
     })
-    .transform(({ Stats, Repos }) => ({
+    .map(({ Stats, Repos }) => ({
       stats: Stats,
       repositories: Repos.sort(({ name: a }, { name: b }) => a.localeCompare(b))
         .sort(({ id: a }, { id: b }) => a - b)
@@ -127,6 +138,6 @@ const toISOStringWithoutMs = (d: Date) =>
   d.toISOString().replace(/\.\d{3}Z$/, "Z");
 
 export type ListResults = ReadonlyDeep<
-  z.infer<typeof listResultSchema>["List"]
+  v.Infer<typeof listResultSchema>["List"]
 >;
 export type Repository = ListResults["repositories"][number];
