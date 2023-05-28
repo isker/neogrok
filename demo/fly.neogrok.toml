@@ -1,9 +1,7 @@
 # fly.toml file generated for neogrok-demo-web on 2023-01-17T03:13:51-05:00
 
 app = "neogrok-demo-web"
-kill_signal = "SIGINT"
-kill_timeout = 5
-processes = []
+primary_region = "ewr"
 
 [build]
   dockerfile = "Dockerfile.neogrok"

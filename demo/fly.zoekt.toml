@@ -1,7 +1,5 @@
 app = "neogrok-demo-zoekt"
-kill_signal = "SIGINT"
-kill_timeout = 5
-processes = []
+primary_region = "ewr"
 
 [build]
   dockerfile = "Dockerfile.zoekt"
