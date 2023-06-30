@@ -68,8 +68,7 @@
         class="inline-block p-1 pr-2 bg-gray-300 border border-gray-400 cursor-help"
         >$ grok</span
       >
-      <!-- svelte-ignore a11y-autofocus
-           It's a search page, we're autofocusing. cf. google.com, bing.com, ... -->
+      <!-- svelte-ignore a11y-autofocus -->
       <input
         bind:value={query}
         on:input={() => {
