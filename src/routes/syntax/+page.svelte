@@ -216,8 +216,8 @@
             and computed probabilistically from file name and contents at index time
             by
             <Link to="https://github.com/go-enry/go-enry/">go-enry</Link>. This
-            is <em>not</em> a regex or a substring; each expression can only contain
-            one language.
+            is <em>not</em> a regex or a substring, though it is case-insensitive;
+            each expression can only contain one language.
           </td>
           <td class="p-1">
             <ExampleQuery query="lang:typescript type" />
