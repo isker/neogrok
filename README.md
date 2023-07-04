@@ -18,3 +18,12 @@ neogrok equivalents: simply deploy neogrok at the same origin previously hosting
 your OpenGrok instance, and everything will Just Work™. (Perfect compatibility
 is not possible as the feature sets of each search engine do not map
 one-to-one.)
+
+### Renaming OpenGrok projects to zoekt repository
+
+If your OpenGrok project names are not identical to their equivalent zoekt
+repository names, you can run `neogrok` with an environment variable
+`OPENGROK_PROJECT_MAPPINGS_FILE` that points at a JSON file whose contents are
+an object mapping OpenGrok project names to zoekt repository names. With this
+data provided, neogrok can rewrite OpenGrok queries that include project names
+appropriately.

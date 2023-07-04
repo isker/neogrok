@@ -22,6 +22,7 @@
     "@typescript-eslint/eslint-plugin": "5.60.1",
     "@typescript-eslint/parser": "5.60.1",
     "eslint": "8.43.0",
+    "@types/lucene": "2.1.4",
     "eslint-config-prettier": "8.8.0",
     "eslint-plugin-svelte": "2.31.1",
     "prettier": "2.8.8",
@@ -37,6 +38,7 @@
   "dependencies": {
     "@badrap/valita": "0.2.1",
     "lucide-svelte": "0.256.1",
+    "lucene": "2.1.1",
     "pretty-bytes": "6.1.0"
   }
 }
