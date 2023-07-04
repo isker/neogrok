@@ -69,7 +69,15 @@ describe("toZoekt", () => {
     });
   });
 
-  it("warns on sort and discards", () => {
+  it("accepts relevancy sort", () => {
+    assert.deepEqual(toZoekt({ full: "foobar", sort: "relevancy" }), {
+      luceneQuery: "foobar",
+      zoektQuery: "foobar",
+      warnings: [],
+    });
+  });
+
+  it("warns on non-relevancy sort and discards", () => {
     assert.deepEqual(toZoekt({ full: "foobar", sort: "lastmodtime" }), {
       luceneQuery: "foobar",
       zoektQuery: "foobar",

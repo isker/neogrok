@@ -65,8 +65,11 @@ export const toZoekt = (
   // query.
   const zoektParts: Array<string> = [];
 
-  if (sort) {
-    // TODO silently discard relevancy sort, that's what zoekt is doing.
+  if (
+    sort &&
+    // This being analogous to what zoekt does.
+    sort !== "relevancy"
+  ) {
     warnings.push({ code: "SortOrderNotSupported" });
   }
 
