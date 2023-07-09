@@ -1,25 +1,37 @@
 import { describe, it, assert } from "vitest";
-import { toZoekt } from "./opengrok-lucene.server";
+import {
+  toZoekt as toZoektWithDependencies,
+  type OpenGrokSearchParams,
+  type ConversionDependencies,
+} from "./opengrok-lucene.server";
+
+const toZoekt = (
+  params: OpenGrokSearchParams,
+  dependencies: ConversionDependencies = {
+    projectToRepo: new Map(),
+    queryUnknownRepos: (candidates) => Promise.resolve(candidates),
+  }
+) => toZoektWithDependencies(params, dependencies);
 
 describe("toZoekt", () => {
-  it("handles no data", () => {
-    assert.deepEqual(toZoekt({}), {
+  it("handles no data", async () => {
+    assert.deepEqual(await toZoekt({}), {
       luceneQuery: null,
       zoektQuery: null,
       warnings: [],
     });
   });
 
-  it("converts simple `full` query", () => {
-    assert.deepEqual(toZoekt({ full: "foobar" }), {
+  it("converts simple `full` query", async () => {
+    assert.deepEqual(await toZoekt({ full: "foobar" }), {
       luceneQuery: "foobar",
       zoektQuery: "foobar",
       warnings: [],
     });
   });
 
-  it("converts refs to `full` and warns", () => {
-    assert.deepEqual(toZoekt({ full: "full", refs: "refs" }), {
+  it("converts refs to `full` and warns", async () => {
+    assert.deepEqual(await toZoekt({ full: "full", refs: "refs" }), {
       luceneQuery: "full refs:refs",
       zoektQuery: "full refs",
       warnings: [
@@ -28,8 +40,8 @@ describe("toZoekt", () => {
     });
   });
 
-  it("warns on hist and discards", () => {
-    assert.deepEqual(toZoekt({ full: "full", hist: "hist" }), {
+  it("warns on hist and discards", async () => {
+    assert.deepEqual(await toZoekt({ full: "full", hist: "hist" }), {
       luceneQuery: "full hist:hist",
       zoektQuery: "full",
       warnings: [
@@ -38,16 +50,16 @@ describe("toZoekt", () => {
     });
   });
 
-  it("converts defs to sym:", () => {
-    assert.deepEqual(toZoekt({ full: "full", defs: "defs" }), {
+  it("converts defs to sym:", async () => {
+    assert.deepEqual(await toZoekt({ full: "full", defs: "defs" }), {
       luceneQuery: "full defs:defs",
       zoektQuery: "full sym:defs",
       warnings: [],
     });
   });
 
-  it("converts path to file:", () => {
-    assert.deepEqual(toZoekt({ full: "full", path: "passwd" }), {
+  it("converts path to file:", async () => {
+    assert.deepEqual(await toZoekt({ full: "full", path: "passwd" }), {
       luceneQuery: "full path:passwd",
       zoektQuery: "full file:passwd",
       warnings: [],
@@ -61,41 +73,49 @@ describe("toZoekt", () => {
   // This warning only works when the slashes are in `path` and not in `full`,
   // as we'd need to warn on `full` after parsing, and parsing destroys the
   // information necessary to identify the situation.
-  it("warns when path contains slashes", () => {
-    assert.deepEqual(toZoekt({ full: "full", path: "/etc/passwd" }), {
+  it("warns when path contains slashes", async () => {
+    assert.deepEqual(await toZoekt({ full: "full", path: "/etc/passwd" }), {
       luceneQuery: "full",
       zoektQuery: "full",
       warnings: [{ code: "PathCannotContainSlashes" }],
     });
   });
 
-  it("accepts relevancy sort", () => {
-    assert.deepEqual(toZoekt({ full: "foobar", sort: "relevancy" }), {
+  it("accepts relevancy sort", async () => {
+    assert.deepEqual(await toZoekt({ full: "foobar", sort: "relevancy" }), {
       luceneQuery: "foobar",
       zoektQuery: "foobar",
       warnings: [],
     });
   });
 
-  it("warns on non-relevancy sort and discards", () => {
-    assert.deepEqual(toZoekt({ full: "foobar", sort: "lastmodtime" }), {
+  it("warns on non-relevancy sort and discards", async () => {
+    assert.deepEqual(await toZoekt({ full: "foobar", sort: "lastmodtime" }), {
       luceneQuery: "foobar",
       zoektQuery: "foobar",
-      warnings: [{ code: "SortOrderNotSupported" }],
+      warnings: [{ code: "SortOrderNotSupported", sortOrder: "lastmodtime" }],
     });
   });
 
-  it("converts known type to lang:", () => {
-    assert.deepEqual(toZoekt({ full: "foobar", type: "java" }), {
+  it("warns on pagination and discards", async () => {
+    assert.deepEqual(await toZoekt({ full: "foobar", start: 25 }), {
+      luceneQuery: "foobar",
+      zoektQuery: "foobar",
+      warnings: [{ code: "PaginationNotSupported" }],
+    });
+  });
+
+  it("converts known type to lang:", async () => {
+    assert.deepEqual(await toZoekt({ full: "foobar", type: "java" }), {
       luceneQuery: "foobar",
       zoektQuery: "lang:java foobar",
       warnings: [],
     });
   });
 
-  it("warns on unknown type and discards", () => {
+  it("warns on unknown type and discards", async () => {
     assert.deepEqual(
-      toZoekt({ full: "foobar", type: "BORLAND TURBO PASCAL" }),
+      await toZoekt({ full: "foobar", type: "BORLAND TURBO PASCAL" }),
       {
         luceneQuery: "foobar",
         zoektQuery: "foobar",
@@ -106,22 +126,54 @@ describe("toZoekt", () => {
     );
   });
 
-  it("converts projects, warning on unknown ones", () => {
+  it("converts projects, warning on unknown ones", async () => {
     assert.deepEqual(
-      toZoekt(
-        { full: "foobar", project: "project1,project2" },
-        { projectToRepo: new Map([["project1", "github.com/user/repo1"]]) }
+      await toZoekt(
+        { full: "foobar", project: "project1,project2,project3,project4" },
+        {
+          projectToRepo: new Map([
+            ["project1", "github.com/user/repo1"],
+            ["project2", "github.com/user/repo2"],
+            ["project3", "github.com/user/repo3"],
+          ]),
+          queryUnknownRepos: async (candidates) => {
+            assert.deepEqual(
+              candidates,
+              new Set([
+                "github.com/user/repo1",
+                "github.com/user/repo2",
+                "github.com/user/repo3",
+                "project4",
+              ])
+            );
+
+            return new Set(["github.com/user/repo2", "github.com/user/repo3"]);
+          },
+        }
       ),
       {
         luceneQuery: "foobar",
-        zoektQuery: "repo:^github\\.com/user/repo1$|^project2$ foobar",
-        warnings: [{ code: "UnknownProjects", projects: ["project2"] }],
+        zoektQuery: "repo:^github\\.com/user/repo1$|^project4$ foobar",
+        warnings: [
+          {
+            code: "ConvertedProjects",
+            conversions: {
+              project1: "github.com/user/repo1",
+              project2: "github.com/user/repo2",
+              project3: "github.com/user/repo3",
+            },
+          },
+          {
+            code: "UnknownRepos",
+            repos: ["github.com/user/repo2", "github.com/user/repo3"],
+          },
+        ],
       }
     );
   });
 
-  it("warns on unknown fields and discards", () => {
-    assert.deepEqual(toZoekt({ full: "foobar foobar:foobar" }), {
+  it("warns on unknown fields and discards", async () => {
+    assert.deepEqual(await toZoekt({ full: "foobar foobar:foobar" }), {
       luceneQuery: "foobar foobar:foobar",
       zoektQuery: "foobar",
       warnings: [
@@ -134,9 +186,9 @@ describe("toZoekt", () => {
     });
   });
 
-  it("handles unsupported lucene term features", () => {
+  it("handles unsupported lucene term features", async () => {
     assert.deepEqual(
-      toZoekt({
+      await toZoekt({
         full: 'foo boost^4 "proxi mity"~10 similarity~ path:{abc TO def]',
       }),
       {
@@ -153,17 +205,17 @@ describe("toZoekt", () => {
     );
   });
 
-  it("regex escapes lucene values", () => {
-    assert.deepEqual(toZoekt({ full: "w*ldc?rd esca.pe" }), {
+  it("regex escapes lucene values", async () => {
+    assert.deepEqual(await toZoekt({ full: "w*ldc?rd esca.pe" }), {
       luceneQuery: "w*ldc?rd esca.pe",
       zoektQuery: "w.*ldc.?rd esca\\.pe",
       warnings: [],
     });
   });
 
-  it("translates boolean logic", () => {
+  it("translates boolean logic", async () => {
     assert.deepEqual(
-      toZoekt({
+      await toZoekt({
         full: "a && (defs:b || +c) OR NOT (d OR (path:-e AND (!f NOT g) h))",
         path: "-i && +j",
       }),
@@ -177,9 +229,9 @@ describe("toZoekt", () => {
     );
   });
 
-  it("pushes down parenthesized fields", () => {
+  it("pushes down parenthesized fields", async () => {
     assert.deepEqual(
-      toZoekt({
+      await toZoekt({
         full: "foobar defs:(a (b OR !c))",
         refs: "-d && +e",
       }),

@@ -1,10 +1,24 @@
 import * as v from "@badrap/valita";
 import fs from "node:fs";
-import { toZoekt, type OpenGrokSearchParams } from "./opengrok-lucene.server";
+import {
+  toZoekt,
+  type OpenGrokSearchParams,
+  renderRepoQuery,
+} from "./opengrok-lucene.server";
 import { redirect } from "@sveltejs/kit";
+import { loadPreferences } from "$lib/preferences";
+import { listRepositories } from "$lib/server/zoekt-list-repositories";
 
-export const load: import("./$types").PageServerLoad = ({ url }) => {
-  const extract = (name: string) => url.searchParams.get(name) ?? undefined;
+export const load: import("./$types").PageServerLoad = async ({
+  url,
+  cookies,
+  setHeaders,
+  fetch,
+}) => {
+  const extract = (name: string) =>
+    // OpenGrok typically generates URLs with query parameter keys present and
+    // values empty, so we really do want || not ??.
+    url.searchParams.get(name) || undefined;
   const params: OpenGrokSearchParams = {
     full: extract("full"),
     defs: extract("defs"),
@@ -14,20 +28,49 @@ export const load: import("./$types").PageServerLoad = ({ url }) => {
     type: extract("type"),
     sort: extract("sort"),
     project: extract("project"),
-    searchall: extract("searchall") === "true",
+    searchall: extract("searchall") === "true" || undefined,
+    start: Number.parseInt(extract("start") ?? "", 10) || undefined,
   };
 
-  const { zoektQuery } = toZoekt(params, {
+  const queryUnknownRepos = async (candidates: Set<string>) => {
+    const reposQuery = renderRepoQuery(Array.from(candidates));
+
+    const repositories = await listRepositories({ query: reposQuery }, fetch);
+
+    if (repositories.kind === "error") {
+      throw new Error(repositories.error);
+    }
+
+    const present = new Set(
+      repositories.results.repositories.map(({ name }) => name)
+    );
+    return new Set(Array.from(candidates).filter((c) => !present.has(c)));
+  };
+
+  const { luceneQuery, zoektQuery, warnings } = await toZoekt(params, {
     projectToRepo,
+    queryUnknownRepos,
   });
 
-  // TODO either render an explanatory page or redirect, based on a cookie that
-  // is configurable on the page.
+  setHeaders({
+    "cache-control": "no-store,must-revalidate",
+  });
 
-  throw redirect(
-    301,
-    zoektQuery ? `/?${new URLSearchParams({ q: zoektQuery }).toString()}` : "/"
-  );
+  const preferences = loadPreferences(cookies);
+  if (preferences.openGrokInstantRedirect && zoektQuery) {
+    throw redirect(
+      301,
+      `/?${new URLSearchParams({ q: zoektQuery }).toString()}`
+    );
+  }
+
+  return {
+    params,
+    luceneQuery,
+    zoektQuery,
+    warnings,
+    preferences,
+  };
 };
 
 /**

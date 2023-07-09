@@ -14,7 +14,7 @@
     </Link>
   </span>
 
-  <ul class="flex flex-wrap gap-4 justify-evenly pb-4">
+  <ul class="flex flex-wrap gap-4 justify-evenly">
     <li class="grow basis-64 max-w-xs">
       <h3 class="text-lg">Every query is regex</h3>
       <ul class="space-y-1">

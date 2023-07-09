@@ -1,6 +1,6 @@
 <script lang="ts">
   import prettyBytes from "pretty-bytes";
-  import type { ListResults } from "./list-repositories-api.server";
+  import type { ListResults } from "$lib/server/zoekt-list-repositories";
   import Repository from "./repository.svelte";
 
   export let results: ListResults;

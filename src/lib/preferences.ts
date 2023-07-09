@@ -22,12 +22,27 @@ const fileMatchesCutoffFromString = (x: string) => {
   return parsed > 0 ? parsed : null;
 };
 
+/**
+ * Whether the user has opted to bypass explanatory OpenGrok compatibility pages
+ * by way of instantly redirecting requests for OpenGrok compatibility URLs to
+ * their neogrok equivalents where possible.
+ */
+export type OpenGrokInstantRedirect = boolean;
+const openGrokInstantRedirectKey = "openGrokInstantRedirect";
+const defaultOpenGrokInstantRedirect = false;
+const openGrokInstantRedirectFromString = (x: string) => x === "true";
+
 export type Preferences = {
   [searchTypeKey]: SearchType;
   [matchSortOrderKey]: MatchSortOrder;
   [fileMatchesCutoffKey]: FileMatchesCutoff;
+  [openGrokInstantRedirectKey]: OpenGrokInstantRedirect;
 };
 
+/**
+ * Called during server load to parse cookies into Preferences, which can then
+ * be used as Data during both SSR and CSR.
+ */
 export const loadPreferences = (cookies: Cookies): Preferences => ({
   [searchTypeKey]: loadPreference(
     cookies,
@@ -47,6 +62,12 @@ export const loadPreferences = (cookies: Cookies): Preferences => ({
     defaultFileMatchesCutoff,
     fileMatchesCutoffFromString
   ),
+  [openGrokInstantRedirectKey]: loadPreference(
+    cookies,
+    openGrokInstantRedirectKey,
+    defaultOpenGrokInstantRedirect,
+    openGrokInstantRedirectFromString
+  ),
 });
 
 const loadPreference = <T>(
@@ -57,7 +78,7 @@ const loadPreference = <T>(
 ) => {
   const s = cookies.get(key);
   const parsed = s ? fromString(s) : null;
-  if (parsed) {
+  if (parsed !== null) {
     return parsed;
   } else {
     cookies.set(key, `${defaultValue}`, {
@@ -70,6 +91,9 @@ const loadPreference = <T>(
   }
 };
 
+/**
+ * Called during page component initialization to create the relevant stores.
+ */
 export const persistInitialPreferences = (preferences: Preferences) => {
   Object.entries(preferences).forEach(([k, v]) =>
     setContext(k, createPreferenceStore(k, v))
@@ -95,9 +119,16 @@ const createPreferenceStore = <T>(
   };
 };
 
+// These are functions that can be called during component initialization to get
+// stores that work on CSR and SSR. We use context for this to mitigate
+// SvelteKit's abominable store semantics on SSR:
+// https://github.com/sveltejs/kit/discussions/4339
 export const acquireSearchTypeStore = (): Writable<SearchType> =>
   getContext(searchTypeKey);
 export const acquireMatchSortOrderStore = (): Writable<MatchSortOrder> =>
   getContext(matchSortOrderKey);
 export const acquireFileMatchesCutoffStore = (): Writable<FileMatchesCutoff> =>
   getContext(fileMatchesCutoffKey);
+export const acquireOpenGrokInstantRedirectStore =
+  (): Writable<OpenGrokInstantRedirect> =>
+    getContext(openGrokInstantRedirectKey);

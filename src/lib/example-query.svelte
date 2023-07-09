@@ -1,8 +1,10 @@
 <script lang="ts">
   import Link from "./link.svelte";
+  import Expression from "./expression.svelte";
   export let query: string;
+  export let wrap = false;
 </script>
 
 <Link to={`/?${new URLSearchParams({ q: query }).toString()}`}>
-  <code class="bg-gray-200 p-1 whitespace-nowrap text-sm">{query}</code>
+  <Expression {wrap}>{query}</Expression>
 </Link>

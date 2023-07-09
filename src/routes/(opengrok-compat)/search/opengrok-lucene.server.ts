@@ -1,4 +1,20 @@
+import * as v from "@badrap/valita";
 import lucene from "lucene";
+import type {
+  QueryLocation,
+  ZoektConversionWarning,
+} from "./conversion-warnings";
+
+const locationSchema = v.object({
+  column: v.number(),
+  line: v.number(),
+  offset: v.number(),
+});
+const syntaxErrorSchema = v.object({
+  name: v.literal("SyntaxError"),
+  message: v.string(),
+  location: v.object({ start: locationSchema, end: locationSchema }),
+});
 
 /**
  * Converts an OpenGrok search query (as described by its /search URL
@@ -10,7 +26,7 @@ import lucene from "lucene";
  * transform them as such. Thankfully, there is a fairly functional lucene
  * parser written in JS that we use to this effect.
  */
-export const toZoekt = (
+export const toZoekt = async (
   {
     full,
     defs,
@@ -21,9 +37,10 @@ export const toZoekt = (
     sort,
     project,
     searchall,
+    start,
   }: OpenGrokSearchParams,
-  dependencies?: ConversionDependencies
-): ZoektConversionResult => {
+  { projectToRepo, queryUnknownRepos }: ConversionDependencies
+): Promise<ZoektConversionResult> => {
   // OpenGrok has the lovely property of allowing you to input a "full" lucene
   // query into the primary search form field, or queries for specific lucene
   // fields in different form fields. It then aggregates these into a single
@@ -57,9 +74,31 @@ export const toZoekt = (
   // Combine those queries, parse them into a lucene AST, and then render that
   // AST into a zoekt string query.
   const luceneQuery = queries.join(" ");
-  const luceneAst = lucene.parse(luceneQuery);
-  const { zoektQuery, warnings: astWarnings } = renderAst(luceneAst);
-  warnings.push(...astWarnings);
+
+  let zoektQuery: string | null;
+  try {
+    const luceneAst = lucene.parse(luceneQuery);
+    const renderResult = renderAst(luceneAst);
+    ({ zoektQuery } = renderResult);
+    warnings.push(...renderResult.warnings);
+  } catch (e) {
+    try {
+      const syntaxError = syntaxErrorSchema.parse(e, { mode: "passthrough" });
+      return {
+        luceneQuery,
+        zoektQuery: null,
+        warnings: [
+          {
+            code: "LuceneParseError",
+            message: syntaxError.message,
+            location: extractQueryLocation(syntaxError.location),
+          },
+        ],
+      };
+    } catch {
+      throw e;
+    }
+  }
 
   // A few other non-lucene OpenGrok fields can affect the resulting Zoekt
   // query.
@@ -70,37 +109,44 @@ export const toZoekt = (
     // This being analogous to what zoekt does.
     sort !== "relevancy"
   ) {
-    warnings.push({ code: "SortOrderNotSupported" });
+    warnings.push({ code: "SortOrderNotSupported", sortOrder: sort });
+  }
+
+  if (start) {
+    warnings.push({ code: "PaginationNotSupported" });
   }
 
   if (!searchall && project) {
-    const projectToRepo = dependencies?.projectToRepo ?? new Map();
-
-    const repos: Array<string> = [];
-    const unmapped: Array<string> = [];
+    const candidateRepos = new Set<string>();
+    const converted = new Map<string, string>();
     project.split(",").forEach((p) => {
-      // TODO make an actual repo list query to zoekt to determine which of
-      // these exist, and use those as the basis for the `repo:` zoekt query and
-      // the UnknownProjects warning.
       const zoektRepo = projectToRepo.get(p);
-      repos.push(zoektRepo ?? p);
-      if (!zoektRepo) {
-        unmapped.push(p);
+      if (zoektRepo) {
+        converted.set(p, zoektRepo);
       }
+      candidateRepos.add(zoektRepo ?? p);
     });
-    if (unmapped.length > 0) {
-      warnings.push({ code: "UnknownProjects", projects: unmapped });
+
+    if (converted.size > 0) {
+      warnings.push({
+        code: "ConvertedProjects",
+        conversions: Object.fromEntries(converted.entries()),
+      });
     }
-    if (repos.length > 0) {
-      zoektParts.push(
-        `repo:${repos
-          // Zoekt interprets `repo` values as regular expressions; escape so
-          // that nothing is unintentionally matched.
-          .map(escapeRegExp)
-          // We want exact matches.
-          .map((escaped) => `^${escaped}$`)
-          .join("|")}`
-      );
+
+    const unknownRepos = await queryUnknownRepos(candidateRepos);
+
+    if (unknownRepos.size > 0) {
+      warnings.push({
+        code: "UnknownRepos",
+        repos: Array.from(unknownRepos),
+      });
+    }
+    const knownRepos = Array.from(candidateRepos).filter(
+      (r) => !unknownRepos.has(r)
+    );
+    if (knownRepos.length > 0) {
+      zoektParts.push(renderRepoQuery(knownRepos));
     }
   }
 
@@ -142,13 +188,15 @@ export type OpenGrokSearchParams = {
   readonly type?: string;
   readonly sort?: string;
   readonly project?: string;
-  readonly searchall?: boolean;
-
-  // TODO count/start? We'd probably just warn on them.
+  readonly searchall?: true;
+  readonly start?: number;
 };
 
 export type ConversionDependencies = {
+  // Maps OpenGrok project names to zoekt repos.
   readonly projectToRepo: ReadonlyMap<string, string>;
+  // Returns which of the given repos are not present in the zoekt instance.
+  readonly queryUnknownRepos: (candidates: Set<string>) => Promise<Set<string>>;
 };
 
 export type ZoektConversionResult = {
@@ -158,47 +206,6 @@ export type ZoektConversionResult = {
   readonly zoektQuery: string | null;
   // Problems with consumption and production.
   readonly warnings: ReadonlyArray<ZoektConversionWarning>;
-};
-
-export type ZoektConversionWarning =
-  | { readonly code: "HistoryNotSupported"; readonly location: QueryLocation }
-  | {
-      readonly code: "ReferencesNotSupported";
-      readonly location: QueryLocation;
-    }
-  | { readonly code: "PathCannotContainSlashes" }
-  | {
-      readonly code: "UnsupportedField";
-      readonly field: string;
-      readonly location: QueryLocation;
-    }
-  | {
-      readonly code: "BoostNotSupported";
-      readonly location: QueryLocation;
-    }
-  | {
-      readonly code: "SimilarityNotSupported";
-      readonly location: QueryLocation;
-    }
-  | {
-      readonly code: "ProximityNotSupported";
-      readonly location: QueryLocation;
-    }
-  | {
-      readonly code: "RangeTermNotSupported";
-      readonly location: QueryLocation;
-    }
-  | { readonly code: "SortOrderNotSupported" }
-  | {
-      readonly code: "UnknownProjects";
-      readonly projects: ReadonlyArray<string>;
-    }
-  | { readonly code: "UnsupportedLanguage"; readonly language: string };
-
-export type QueryLocation = {
-  // these are string indices
-  start: number;
-  end: number;
 };
 
 /** Recursively render an OpenGrok lucene query AST into a Zoekt query. */
@@ -525,6 +532,20 @@ const languageNames: ReadonlyMap<string, string | null> = new Map([
   ["zip", null],
 ]);
 
+// This is a quick heuristic to only parenthesize expressions if it may be
+// necessary, to increase readability. It'll have false positives, but that's
+// okay.
+const maybeParenthesize = (s: string) => (/\s+/.test(s) ? `(${s})` : s);
+
+export const renderRepoQuery = (repos: ReadonlyArray<string>) =>
+  `repo:${repos
+    // Zoekt interprets `repo` values as regular expressions; escape so
+    // that nothing is unintentionally matched.
+    .map(escapeRegExp)
+    // We want exact matches.
+    .map((escaped) => `^${escaped}$`)
+    .join("|")}`;
+
 // https://stackoverflow.com/a/6969486
 const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -535,8 +556,3 @@ const escapeLuceneTerm = (s: string) =>
     // i.e. `.*` or `.?`
     ".$&"
   );
-
-// This is a quick heuristic to only parenthesize expressions if it may be
-// necessary, to increase readability. It'll have false positives, but that's
-// okay.
-const maybeParenthesize = (s: string) => (/\s+/.test(s) ? `(${s})` : s);

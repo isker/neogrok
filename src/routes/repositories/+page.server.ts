@@ -1,7 +1,7 @@
 import {
   listRepositories,
   type ListResults,
-} from "./list-repositories-api.server";
+} from "$lib/server/zoekt-list-repositories";
 import { parseSearchParams } from "./route-list-query";
 
 export const load: import("./$types").PageServerLoad = async ({

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { ListResults } from "./list-repositories-api.server";
+  import type { ListResults } from "$lib/server/zoekt-list-repositories";
   import SearchForm from "./search-form.svelte";
   import RepositoriesList from "./repositories-list.svelte";
   import { routeListQuery } from "./route-list-query";
