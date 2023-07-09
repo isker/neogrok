@@ -36,7 +36,7 @@ export const renderChunksToLineGroups = (
   let preCutoffMatchCount = 0;
 
   const subChunkUnderCutoff = (chunk: Chunk): Chunk => {
-    if (preCutoffMatchCount >= hardCutoff) {
+    if (preCutoffMatchCount >= softCutoff) {
       // We are already beyond the limit.
       return { lines: [], matchCount: 0 };
     } else if (preCutoffMatchCount + chunk.matchCount >= hardCutoff) {
