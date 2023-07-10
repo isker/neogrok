@@ -4,6 +4,7 @@ import type {
   QueryLocation,
   ZoektConversionWarning,
 } from "./conversion-warnings";
+import { escapeRegExp } from "$lib/regexp";
 
 const locationSchema = v.object({
   column: v.number(),
@@ -546,10 +547,8 @@ export const renderRepoQuery = (repos: ReadonlyArray<string>) =>
     .map((escaped) => `^${escaped}$`)
     .join("|")}`;
 
-// https://stackoverflow.com/a/6969486
-const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-// Like the above, but converts Lucene wildcards into their RegExp equivalents.
+// Like `escapeRegExp`, but converts Lucene wildcards into their RegExp
+// equivalents.
 const escapeLuceneTerm = (s: string) =>
   s.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(
     /[?*]/g,

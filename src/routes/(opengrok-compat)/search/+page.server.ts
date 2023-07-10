@@ -1,17 +1,15 @@
-import * as v from "@badrap/valita";
-import fs from "node:fs";
 import {
   toZoekt,
   type OpenGrokSearchParams,
   renderRepoQuery,
 } from "./opengrok-lucene.server";
 import { redirect } from "@sveltejs/kit";
-import { loadPreferences } from "$lib/preferences";
 import { listRepositories } from "$lib/server/zoekt-list-repositories";
+import { projectToRepo } from "$lib/server/opengrok-compat";
 
 export const load: import("./$types").PageServerLoad = async ({
   url,
-  cookies,
+  parent,
   setHeaders,
   fetch,
 }) => {
@@ -56,7 +54,7 @@ export const load: import("./$types").PageServerLoad = async ({
     "cache-control": "no-store,must-revalidate",
   });
 
-  const preferences = loadPreferences(cookies);
+  const { preferences } = await parent();
   if (preferences.openGrokInstantRedirect && zoektQuery) {
     throw redirect(
       301,
@@ -69,25 +67,5 @@ export const load: import("./$types").PageServerLoad = async ({
     luceneQuery,
     zoektQuery,
     warnings,
-    preferences,
   };
 };
-
-/**
- * Users may provide a simple JSON file that maps from OpenGrok project names to
- * Zoekt repo names, in case project names changed.
- */
-const projectToRepo = await (async function () {
-  if (process.env.OPENGROK_PROJECT_MAPPINGS_FILE) {
-    const projectMappingSchema = v.record(v.string());
-    const raw = JSON.parse(
-      await fs.promises.readFile(
-        process.env.OPENGROK_PROJECT_MAPPINGS_FILE,
-        "utf8"
-      )
-    );
-    return new Map(Object.entries(projectMappingSchema.parse(raw)));
-  } else {
-    return new Map();
-  }
-})();

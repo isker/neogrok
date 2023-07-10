@@ -87,6 +87,7 @@ const listResultSchema = v.object({
                     Rank: v.number(),
                     URL: v.string(),
                     LatestCommitDate: dateSchema,
+                    FileURLTemplate: v.string(),
                     Branches: v.array(
                       v
                         .object({ Name: v.string(), Version: v.string() })
@@ -97,12 +98,21 @@ const listResultSchema = v.object({
                     ),
                   })
                   .map(
-                    ({ Name, ID, Rank, URL, LatestCommitDate, Branches }) => ({
+                    ({
+                      Name,
+                      ID,
+                      Rank,
+                      URL,
+                      LatestCommitDate,
+                      FileURLTemplate,
+                      Branches,
+                    }) => ({
                       name: Name,
                       id: ID,
                       rank: Rank,
                       url: URL,
                       lastCommit: toISOStringWithoutMs(LatestCommitDate),
+                      fileUrlTemplate: FileURLTemplate,
                       branches: Branches,
                     })
                   ),

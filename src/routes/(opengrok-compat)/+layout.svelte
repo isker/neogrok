@@ -1,5 +1,14 @@
-<script lang="typescript">
+<script lang="ts">
   import Link from "$lib/link.svelte";
+  import {
+    acquireOpenGrokInstantRedirectStore,
+    persistInitialPreferences,
+  } from "$lib/preferences";
+
+  export let data: import("./$types").LayoutData;
+
+  persistInitialPreferences(data.preferences);
+  const openGrokInstantRedirect = acquireOpenGrokInstantRedirectStore();
 </script>
 
 <svelte:head>
@@ -18,4 +27,13 @@
     </p>
   </section>
   <slot />
+  <section class="space-y-2">
+    <h2 class="text-lg">Want to get instantly redirected next time?</h2>
+    <label class="text-sm">
+      <!-- TODO provide a centralized preferences UI. -->
+      <input type="checkbox" bind:checked={$openGrokInstantRedirect} /> Redirect
+      me from old OpenGrok URLs automatically when possible. (For now, you have to
+      clear cookies to undo this; sorry!)</label
+    >
+  </section>
 </div>
