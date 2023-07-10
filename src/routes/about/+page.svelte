@@ -11,8 +11,8 @@
   <p>
     Neogrok is a frontend for
     <Link to="https://github.com/sourcegraph/zoekt">zoekt</Link>, a fast and
-    scalable code search engine. Neogrok exposes zoekt&quot;s search APIs in the
-    form of a modern, snappy UI.
+    scalable code search engine. Neogrok exposes zoekt's search APIs in the form
+    of a modern, snappy UI.
   </p>
   <p>
     As an added bonus, neogrok can serve as a replacement for existing
