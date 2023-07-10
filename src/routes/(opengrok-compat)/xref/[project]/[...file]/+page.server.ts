@@ -1,0 +1,45 @@
+import { escapeRegExp } from "$lib/regexp";
+import { projectToRepo } from "$lib/server/opengrok-compat";
+import { listRepositories } from "$lib/server/zoekt-list-repositories";
+import { redirect } from "@sveltejs/kit";
+
+export const load: import("./$types").PageServerLoad = async ({
+  url,
+  params: { file, project },
+  parent,
+  setHeaders,
+  fetch,
+}) => {
+  const revision = url.searchParams.get("r");
+  const convertedRepo = projectToRepo.get(project);
+
+  const result = await listRepositories(
+    {
+      query: `repo:^${escapeRegExp(convertedRepo ?? project)}$`,
+    },
+    fetch
+  );
+  if (result.kind === "error") {
+    throw new Error(`Failed to list repositories: ${result.error}`);
+  }
+  const repo = result.results.repositories[0];
+
+  let destinationUrl: string | undefined;
+  if (file) {
+    destinationUrl = repo?.fileUrlTemplate
+      .replaceAll("{{.Version}}", revision ?? repo.branches[0].name)
+      .replaceAll("{{.Path}}", file);
+  } else {
+    destinationUrl = repo?.url;
+  }
+
+  setHeaders({
+    "cache-control": "no-store,must-revalidate",
+  });
+
+  if (destinationUrl && (await parent()).preferences.openGrokInstantRedirect) {
+    throw redirect(301, destinationUrl);
+  }
+
+  return { file, destinationUrl };
+};
