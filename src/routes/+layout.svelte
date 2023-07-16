@@ -8,7 +8,6 @@
     ["/repositories", "Repositories"],
     ["/syntax", "Query Syntax"],
     ["/about", "About"],
-    ["/preferences", "Preferences"],
   ] as const;
 
   export let data: import("./$types").LayoutServerData;
