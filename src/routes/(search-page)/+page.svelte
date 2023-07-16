@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { persistInitialPreferences } from "$lib/preferences";
   import SearchForm from "./search-form.svelte";
   import Lander from "./lander.svelte";
   import SearchResults from "./search-results.svelte";
@@ -7,8 +6,6 @@
   import { routeSearchQuery } from "./route-search-query";
 
   export let data: import("./$types").PageData;
-
-  persistInitialPreferences(data.preferences);
 
   // Represents the last non-erroneous results, so that when we get an error,
   // we can display them instead of taking away all the results.

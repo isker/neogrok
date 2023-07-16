@@ -10,13 +10,8 @@ export type SearchOutcome =
   | { kind: "error"; error: string };
 export type TimedSearchResults = ApiSearchResults & { requestDuration: number };
 
-export const load: import("./$types").PageLoad = async ({
-  url,
-  fetch,
-  data: { preferences },
-}) => ({
+export const load: import("./$types").PageLoad = async ({ url, fetch }) => ({
   searchOutcome: await executeSearch(url, fetch),
-  preferences,
 });
 
 const executeSearch = async (

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { page } from "$app/stores";
+  import { persistInitialPreferences } from "$lib/preferences";
   import "../app.css";
 
   const navLinks = [
@@ -7,7 +8,11 @@
     ["/repositories", "Repositories"],
     ["/syntax", "Query Syntax"],
     ["/about", "About"],
+    ["/preferences", "Preferences"],
   ] as const;
+
+  export let data: import("./$types").LayoutServerData;
+  persistInitialPreferences(data.preferences);
 </script>
 
 <div class="container mx-auto px-2 py-4">

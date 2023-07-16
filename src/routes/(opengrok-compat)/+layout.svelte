@@ -1,13 +1,7 @@
 <script lang="ts">
   import Link from "$lib/link.svelte";
-  import {
-    acquireOpenGrokInstantRedirectStore,
-    persistInitialPreferences,
-  } from "$lib/preferences";
+  import { acquireOpenGrokInstantRedirectStore } from "$lib/preferences";
 
-  export let data: import("./$types").LayoutData;
-
-  persistInitialPreferences(data.preferences);
   const openGrokInstantRedirect = acquireOpenGrokInstantRedirectStore();
 </script>
 
