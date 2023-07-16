@@ -52,13 +52,17 @@
 </script>
 
 <section class="space-y-2">
-  <h2 class="text-xl py-2 text-center font-medium">Search query conversion</h2>
-  <p>
-    While zoekt and OpenGrok have substantially different search input
-    semantics, we've made a best-effort conversion of the search query that
-    brought you to this page from OpenGrok's Lucene syntax to
-    <Link to="/syntax">neogrok's zoekt syntax</Link>.
-  </p>
+  <div class="max-w-prose mx-auto">
+    <h2 class="text-xl pt-2 text-center font-medium">
+      Search query conversion
+    </h2>
+    <p>
+      While zoekt and OpenGrok have substantially different search input
+      semantics, we've made a best-effort conversion of the search query that
+      brought you to this page from OpenGrok's Lucene syntax to
+      <Link to="/syntax">neogrok's zoekt syntax</Link>.
+    </p>
+  </div>
   <div class="flex flex-wrap gap-4 justify-center">
     <div
       class="flex-auto space-y-2 border border-slate-300 rounded-md p-3 max-w-md"

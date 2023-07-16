@@ -6,7 +6,7 @@
   <title>About - neogrok</title>
 </svelte:head>
 
-<div class="space-y-2">
+<div class="space-y-2 max-w-prose mx-auto">
   <h1 class="text-2xl tracking-wide text-center">ɴᴇᴏɢʀᴏᴋ</h1>
   <p>
     Neogrok is a frontend for

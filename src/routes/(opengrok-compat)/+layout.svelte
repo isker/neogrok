@@ -10,7 +10,7 @@
 </svelte:head>
 
 <div class="space-y-2">
-  <section class="space-y-2">
+  <section class="space-y-2 max-w-prose mx-auto">
     <h1 class="text-center text-2xl"><s>OpenGrok</s> ɴᴇᴏɢʀᴏᴋ!</h1>
     <p>
       The OpenGrok instance that previously existed at this domain has been
@@ -21,7 +21,7 @@
     </p>
   </section>
   <slot />
-  <section class="space-y-2">
+  <section class="space-y-2 max-w-prose mx-auto">
     <h2 class="text-lg">Want to get instantly redirected next time?</h2>
     <label class="text-sm">
       <!-- TODO provide a centralized preferences UI. -->

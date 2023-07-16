@@ -9,7 +9,7 @@
   <title>Query syntax - neogrok</title>
 </svelte:head>
 
-<div class="space-y-2">
+<div class="space-y-2 max-w-prose mx-auto">
   <h1 class="text-2xl text-center">Query syntax</h1>
   <p>
     The query syntax of neogrok is controlled by
@@ -139,9 +139,16 @@
     </p>
     <p>
       There are a few more kinds of prefix expressions than those two.
-      They&apos;re all tabulated here:
+      They&apos;re all tabulated below.
     </p>
-    <table class="border border-collapse text-sm w-full text-center">
+  </section>
+</div>
+<section class="max-w-4xl mx-auto pt-2 space-y-2">
+  <div class="text-center">
+    <Heading id="prefix-table">Available prefixes</Heading>
+  </div>
+  <div class="overflow-x-scroll">
+    <table class="border border-collapse text-sm text-center">
       <thead>
         <tr class="border bg-slate-100">
           <th class="p-1">Prefix(es)</th>
@@ -216,8 +223,9 @@
             and computed probabilistically from file name and contents at index time
             by
             <Link to="https://github.com/go-enry/go-enry/">go-enry</Link>. This
-            is <em>not</em> a regex or a substring, though it is case-insensitive;
-            each expression can only contain one language.
+            is
+            <em>not</em> a regex or a substring, though it is case-insensitive; each
+            expression can only contain one language.
           </td>
           <td class="p-1">
             <ExampleQuery query="lang:typescript type" />
@@ -293,5 +301,5 @@
         </tr>
       </tbody>
     </table>
-  </section>
-</div>
+  </div>
+</section>

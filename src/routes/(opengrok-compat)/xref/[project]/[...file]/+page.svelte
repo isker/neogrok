@@ -6,7 +6,7 @@
   export let data: import("./$types").PageData;
 </script>
 
-<section class="space-y-2 pt-2">
+<section class="space-y-2 pt-2 max-w-prose mx-auto">
   <h2 class="text-2xl text-center">File/directory browser</h2>
   <p>
     OpenGrok's file/directory browser that was previously available at this URL
