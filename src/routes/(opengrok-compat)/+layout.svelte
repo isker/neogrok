@@ -24,10 +24,9 @@
   <section class="space-y-2 max-w-prose mx-auto">
     <h2 class="text-lg">Want to get instantly redirected next time?</h2>
     <label class="text-sm">
-      <!-- TODO provide a centralized preferences UI. -->
       <input type="checkbox" bind:checked={$openGrokInstantRedirect} /> Redirect
-      me from old OpenGrok URLs automatically when possible. (For now, you have to
-      clear cookies to undo this; sorry!)</label
+      me from old OpenGrok URLs automatically when possible. (You can undo this
+      on the <Link to="/preferences">preferences page</Link>.)</label
     >
   </section>
 </div>

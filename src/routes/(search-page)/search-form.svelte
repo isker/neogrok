@@ -2,22 +2,16 @@
   import { ChevronUp, ChevronDown } from "lucide-svelte";
   import { onDestroy } from "svelte";
   import { navigating } from "$app/stores";
-  import {
-    acquireFileMatchesCutoffStore,
-    acquireMatchSortOrderStore,
-    acquireSearchTypeStore,
-  } from "$lib/preferences";
+  import { acquireSearchTypeStore } from "$lib/preferences";
+  import IntegerInput from "$lib/integer-input.svelte";
   import {
     routeSearchQuery,
     updateRouteSearchQuery,
   } from "./route-search-query";
-  import IntegerInput from "./integer-input.svelte";
 
   export let queryError: string | null = null;
 
   const searchType = acquireSearchTypeStore();
-  const matchSortOrder = acquireMatchSortOrderStore();
-  const fileMatchesCutoff = acquireFileMatchesCutoffStore();
 
   let query: string | undefined;
   let contextLines: number;
@@ -151,58 +145,11 @@
     </button>
   </div>
 
-  <!-- TODO the advanced options UI is essentially unstyled -->
+  <!-- TODO the advanced options UI is essentially unstyled.  Waiting on a
+  resolution to https://github.com/sourcegraph/zoekt/pull/615 before I do
+  anything serious to the search UI. -->
   {#if advancedOptionsExpanded}
     <div class="border flex flex-wrap">
-      <fieldset class="border">
-        <legend>Sort order</legend>
-        <label for="line-number">
-          Line number
-          <input
-            id="line-number"
-            type="radio"
-            name="sort"
-            bind:group={$matchSortOrder}
-            value="line-number"
-          />
-        </label>
-        <label for="score">
-          Score
-          <input
-            id="score"
-            type="radio"
-            name="sort"
-            bind:group={$matchSortOrder}
-            value="score"
-          />
-        </label>
-      </fieldset>
-      <fieldset class="border">
-        <legend>Search type</legend>
-        <label for="live">
-          Live
-          <input
-            id="live"
-            type="radio"
-            name="search-type"
-            bind:group={$searchType}
-            value="live"
-          />
-        </label>
-        <label for="manual">
-          Manual
-          <input
-            id="manual"
-            type="radio"
-            name="search-type"
-            bind:group={$searchType}
-            value="manual"
-          />
-        </label>
-      </fieldset>
-      <IntegerInput id="file-matches-cutoff" bind:value={$fileMatchesCutoff}>
-        Initially shown matches per file
-      </IntegerInput>
       <IntegerInput
         id="matches-per-shard"
         size={4}
