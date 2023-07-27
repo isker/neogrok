@@ -126,7 +126,17 @@ const searchResultSchema = v.object({
                         contentBase64,
                         contentStart,
                         isFileNameChunk,
-                        matchRanges,
+                        matchRanges: matchRanges.filter(
+                          ({ start, end }) =>
+                            // zoekt can return empty matches for queries that
+                            // can match zero characters, e.g. ".*". This is
+                            // surprising behavior, but similar to that of grep
+                            // et al, so not necessarily a bug. We can't render
+                            // empty matches, and certain things downstream of
+                            // us (like svelte keyed `each`es) are assuming
+                            // non-empty matches, so we filter them here.
+                            start.byteOffset !== end.byteOffset
+                        ),
                       })
                     )
                 ),
