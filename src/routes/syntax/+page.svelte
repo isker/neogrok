@@ -79,8 +79,8 @@
       them with the special expression infix operator
       <code>or</code>. <ExampleQuery query="foo or bar" /> returns all matches for
       <Expression>/foo/</Expression> or
-      <Expression>/bar/</Expression> in all files that have matches for least one
-      of <Expression>/foo/</Expression> <em>or</em>
+      <Expression>/bar/</Expression> in all files that have matches for at least
+      one of <Expression>/foo/</Expression> or
       <Expression>/bar/</Expression>. (To use <code>or</code> as a literal
       expression and not as an operator, double quote it:
       <ExampleQuery query={'foo "or" bar'} /> has three conjunctive expressions.)
