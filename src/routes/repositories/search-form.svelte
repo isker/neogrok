@@ -1,9 +1,14 @@
 <script lang="ts">
   import { onDestroy } from "svelte";
   import { navigating } from "$app/stores";
+  import { acquireSearchTypeStore, type SearchType } from "$lib/preferences";
+  import { computeInputColor } from "$lib/input-colors";
   import { routeListQuery, updateRouteListQuery } from "./route-list-query";
+  import ToggleSearchType from "$lib/toggle-search-type.svelte";
 
   export let queryError: string | null;
+
+  const searchType = acquireSearchTypeStore();
 
   let query: string | undefined;
   const unsubscribe = routeListQuery.subscribe((rq) => {
@@ -16,37 +21,72 @@
     }
   });
   onDestroy(unsubscribe);
+
+  const manualSubmit = () => {
+    updateRouteListQuery({
+      query,
+      searchType: $searchType,
+    });
+  };
+
+  // When switching from manual to live search, submit any pending changes.
+  let previousSearchType: SearchType | undefined;
+  $: {
+    if ($searchType === "live" && previousSearchType === "manual") {
+      manualSubmit();
+    }
+    previousSearchType = $searchType;
+  }
+
+  // These all indicate when form changes with manual search are not yet submitted.
+  $: queryPending =
+    $navigating === null && ($routeListQuery.query ?? "") !== (query ?? "");
 </script>
 
-<!-- TODO this should integrate with preferences. -->
-<label
-  for="query"
-  title="Same query syntax as the main search - use `r:name` to filter repositories by name, otherwise you are filtering them by their content!"
-  class="flex"
+<form
+  on:submit|preventDefault={() => {
+    if ($searchType === "manual") {
+      manualSubmit();
+    }
+  }}
 >
-  <span
-    class="inline-block p-1 pr-2 bg-gray-300 border border-gray-400 cursor-help"
-  >
-    Search repositories
-  </span>
-  <input
-    bind:value={query}
-    on:input={() => {
-      updateRouteListQuery({ query });
-    }}
-    id="query"
-    type="search"
-    spellCheck={false}
-    autoCorrect="off"
-    autoCapitalize="off"
-    autoComplete="off"
-    class={`p-1 border shadow-sm focus:outline-none flex-auto appearance-none ${
-      queryError === null
-        ? "border-slate-300 focus:border-sky-500"
-        : "border-red-500"
-    }`}
-  />
-</label>
+  <!-- Make enter key submission work: https://stackoverflow.com/a/35235768 -->
+  <input type="submit" class="hidden" />
+  <label for="query" class="flex-auto flex flex-col space-y-0.5">
+    <span
+      title="Same query syntax as the main search - use `r:name` to filter repositories by name, otherwise you are filtering them by their content!"
+      class="text-xs px-1 text-gray-500">query</span
+    >
+    <span
+      class={`flex flex-auto p-1 border shadow-sm space-x-1 ${computeInputColor(
+        {
+          error: queryError !== null,
+          pending: queryPending,
+        }
+      )}`}
+    >
+      <!-- It's a search page, a11y be damned. cf. google.com, bing.com, etc. -->
+      <!-- svelte-ignore a11y-autofocus -->
+      <input
+        bind:value={query}
+        on:input={() => {
+          if ($searchType === "live") {
+            updateRouteListQuery({ query, searchType: $searchType });
+          }
+        }}
+        id="query"
+        type="search"
+        autofocus
+        spellcheck={false}
+        autocorrect="off"
+        autocapitalize="off"
+        autocomplete="off"
+        class="font-mono focus:outline-none flex-auto appearance-none"
+      />
+      <ToggleSearchType />
+    </span>
+  </label>
+</form>
 {#if queryError}
   <span class="text-sm text-red-500">{queryError}</span>
 {/if}

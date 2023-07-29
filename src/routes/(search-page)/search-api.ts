@@ -6,8 +6,7 @@ export type SearchQuery = Readonly<{
   query: string;
   contextLines: number;
   files: number;
-  matchesPerShard: number;
-  totalMatches: number;
+  matches: number;
 }>;
 
 export type SearchResponse =
@@ -21,7 +20,7 @@ export type SearchResponse =
     };
 
 export const search = async (
-  { query, contextLines, files, matchesPerShard, totalMatches }: SearchQuery,
+  { query, contextLines, files, matches }: SearchQuery,
   f: typeof fetch
 ): Promise<SearchResponse> => {
   const body = JSON.stringify({
@@ -30,8 +29,13 @@ export const search = async (
       ChunkMatches: true,
       NumContextLines: contextLines,
       MaxDocDisplayCount: files,
-      ShardMaxMatchCount: matchesPerShard,
-      TotalMaxMatchCount: totalMatches,
+      MaxMatchDisplayCount: matches,
+
+      // These are hardcoded because they're really about bounding the amount
+      // of work the zoekt server does, they shouldn't be user configurable.
+      // TODO environment vars.
+      ShardMaxMatchCount: 10_000,
+      TotalMaxMatchCount: 100_000,
     },
   });
 
@@ -135,6 +139,12 @@ const searchResultSchema = v.object({
                             // empty matches, and certain things downstream of
                             // us (like svelte keyed `each`es) are assuming
                             // non-empty matches, so we filter them here.
+                            //
+                            // FIXME this obscures what's happened from the
+                            // user's perspective, as removed matches are not
+                            // present in the "frontend matches" count in the
+                            // UI. Perhaps we can count these separately and
+                            // communicate the count to the user.
                             start.byteOffset !== end.byteOffset
                         ),
                       })

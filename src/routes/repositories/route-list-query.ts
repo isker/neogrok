@@ -1,5 +1,6 @@
 import { goto } from "$app/navigation";
 import { navigating, page } from "$app/stores";
+import type { SearchType } from "$lib/preferences";
 import { derived, get } from "svelte/store";
 
 type RouteListQuery = {
@@ -20,7 +21,13 @@ export const routeListQuery = derived(page, (p) =>
 // This function is only called in the browser, so it's fine to have this be in
 // module state.
 let lastNavigateTime = 0;
-export const updateRouteListQuery = ({ query }: { query?: string }) => {
+export const updateRouteListQuery = ({
+  query,
+  searchType,
+}: {
+  query?: string;
+  searchType: SearchType;
+}) => {
   // SvelteKit "buffers" ongoing navigations - navigations complete, _then_ the
   // URL is updated. This is in contrast to other things like react-router that
   // update the URL ASAP and concurrently effect the navigation. The upshot is
@@ -43,7 +50,7 @@ export const updateRouteListQuery = ({ query }: { query?: string }) => {
     }
 
     goto(next, {
-      replaceState: now - lastNavigateTime < 2000,
+      replaceState: searchType === "live" && now - lastNavigateTime < 2000,
       keepFocus: true,
       noScroll: true,
     });

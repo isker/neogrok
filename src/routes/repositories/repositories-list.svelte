@@ -11,6 +11,8 @@
   } = results);
 </script>
 
+<!-- FIXME the file count/ram size data is for repo shards matching the query,
+but that's not understandable from the UI -->
 <h1 class="text-xs py-1">
   {repositories.length}
   {repositories.length === 1 ? "repository" : "repositories"} containing

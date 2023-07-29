@@ -18,8 +18,8 @@
     {matchCount === 1 ? "match" : "matches"}
     {#if filesSkipped > 0}
       <span
-        title="The number of matches found on the backend exceeded the maximums, which are set to optimize performance in situations with large numbers of matches; they can be increased in the advanced options"
-        class="text-yellow-700 cursor-help"
+        title="The number of matches found on the backend reached the maximum limits, so the search was aborted and these counts are incomplete"
+        class="text-yellow-700 cursor-help underline decoration-dashed"
       >
         (truncated)
       </span>

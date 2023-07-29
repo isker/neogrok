@@ -1,10 +1,12 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
+  import { computeInputColor } from "$lib/input-colors";
 
   export let value: number;
   export let kind: "nonnegative" | "positive" = "nonnegative";
   export let size = 3;
   export let id: string;
+  export let pending: boolean;
 
   const dispatch = createEventDispatcher<{ change: number }>();
 
@@ -25,15 +27,14 @@
   }
 </script>
 
-<label for={id}
-  ><slot /><input
-    {id}
-    type="text"
-    inputmode="numeric"
-    {size}
-    bind:value={stringValue}
-    class={`p-1 border shadow-sm focus:outline-none ${
-      valid ? "border-slate-300 focus:border-sky-500" : "border-red-500"
-    }`}
-  /></label
->
+<input
+  {id}
+  type="text"
+  inputmode="numeric"
+  {size}
+  bind:value={stringValue}
+  class={`p-1 border shadow-sm focus:outline-none ${computeInputColor({
+    error: !valid,
+    pending,
+  })}`}
+/>

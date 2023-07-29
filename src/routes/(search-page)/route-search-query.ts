@@ -7,8 +7,7 @@ import { goto } from "$app/navigation";
 const defaultQueryOptions: Omit<SearchQuery, "query"> = Object.freeze({
   contextLines: 1,
   files: 20,
-  matchesPerShard: 1e4,
-  totalMatches: 1e5,
+  matches: 500,
 });
 
 type RouteSearchQuery = Omit<SearchQuery, "query"> & {
@@ -23,14 +22,7 @@ export const parseSearchParams = (
     10
   );
   const parsedFiles = Number.parseInt(searchParams.get("files") ?? "", 10);
-  const parsedMatchesPerShard = Number.parseInt(
-    searchParams.get("matchesPerShard") ?? "",
-    10
-  );
-  const parsedTotalMatches = Number.parseInt(
-    searchParams.get("totalMatches") ?? "",
-    10
-  );
+  const parsedMatches = Number.parseInt(searchParams.get("matches") ?? "", 10);
 
   // coerce empty string to undefined
   const query = searchParams.get("q") || undefined;
@@ -39,20 +31,13 @@ export const parseSearchParams = (
       ? parsedContextLines
       : defaultQueryOptions.contextLines;
   const files = parsedFiles > 0 ? parsedFiles : defaultQueryOptions.files;
-  const matchesPerShard =
-    parsedMatchesPerShard >= 0
-      ? parsedMatchesPerShard
-      : defaultQueryOptions.matchesPerShard;
-  const totalMatches =
-    parsedTotalMatches >= 0
-      ? parsedTotalMatches
-      : defaultQueryOptions.totalMatches;
+  const matches =
+    parsedMatches >= 0 ? parsedMatches : defaultQueryOptions.matches;
   return {
     query,
     contextLines,
     files,
-    matchesPerShard,
-    totalMatches,
+    matches,
   };
 };
 
@@ -67,15 +52,13 @@ export const updateRouteSearchQuery = ({
   query,
   contextLines,
   files,
-  matchesPerShard,
-  totalMatches,
+  matches,
   searchType,
 }: {
   query?: string;
   contextLines?: number;
   files?: number;
-  matchesPerShard?: number;
-  totalMatches?: number;
+  matches?: number;
   searchType: SearchType;
 }) => {
   // SvelteKit "buffers" ongoing navigations - navigations complete, _then_ the
@@ -95,22 +78,10 @@ export const updateRouteSearchQuery = ({
     contextLines !== searchQuery.contextLines;
   const filesChanged =
     files !== undefined && files >= 0 && files !== searchQuery.files;
-  const matchesPerShardChanged =
-    matchesPerShard !== undefined &&
-    matchesPerShard >= 0 &&
-    matchesPerShard !== searchQuery.matchesPerShard;
-  const totalMatchesChanged =
-    totalMatches !== undefined &&
-    totalMatches >= 0 &&
-    totalMatches !== searchQuery.totalMatches;
+  const matchesChanged =
+    matches !== undefined && matches >= 0 && matches !== searchQuery.matches;
 
-  if (
-    queryChanged ||
-    contextLinesChanged ||
-    filesChanged ||
-    matchesPerShardChanged ||
-    totalMatchesChanged
-  ) {
+  if (queryChanged || contextLinesChanged || filesChanged || matchesChanged) {
     const now = Date.now();
     const next = new URL(baselineUrl);
 
@@ -135,22 +106,10 @@ export const updateRouteSearchQuery = ({
       next.searchParams.set("files", files.toString());
     }
 
-    if (
-      matchesPerShardChanged &&
-      matchesPerShard === defaultQueryOptions.matchesPerShard
-    ) {
-      next.searchParams.delete("matchesPerShard");
-    } else if (matchesPerShardChanged) {
-      next.searchParams.set("matchesPerShard", matchesPerShard.toString());
-    }
-
-    if (
-      totalMatchesChanged &&
-      totalMatches === defaultQueryOptions.totalMatches
-    ) {
-      next.searchParams.delete("totalMatches");
-    } else if (totalMatchesChanged) {
-      next.searchParams.set("totalMatches", totalMatches.toString());
+    if (matchesChanged && matches === defaultQueryOptions.matches) {
+      next.searchParams.delete("matches");
+    } else if (matchesChanged) {
+      next.searchParams.set("matches", matches.toString());
     }
 
     goto(next, {

@@ -79,9 +79,14 @@
       </div>
     </fieldset>
     <div>
-      <IntegerInput id="file-matches-cutoff" bind:value={$fileMatchesCutoff}>
+      <label for="file-matches-cutoff">
         <div class="text-lg">Initially visible matches per file</div>
-      </IntegerInput>
+        <IntegerInput
+          id="file-matches-cutoff"
+          pending={false}
+          bind:value={$fileMatchesCutoff}
+        />
+      </label>
     </div>
   </section>
   <section class="space-y-2">
