@@ -3,7 +3,7 @@
     acquireFileMatchesCutoffStore,
     acquireMatchSortOrderStore,
   } from "$lib/preferences";
-  import type { ResultFile } from "./search-api";
+  import type { ResultFile } from "$lib/server/search-api";
   import SearchResultsFileHeader from "./search-results-file-header.svelte";
   import RenderedContent from "./rendered-content.svelte";
   import { renderChunksToLineGroups } from "./chunk-renderer";

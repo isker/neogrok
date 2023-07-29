@@ -1,6 +1,6 @@
 import { derived, get } from "svelte/store";
 import type { SearchType } from "$lib/preferences";
-import type { SearchQuery } from "./search-api";
+import type { SearchQuery } from "$lib/server/search-api";
 import { page, navigating } from "$app/stores";
 import { goto } from "$app/navigation";
 

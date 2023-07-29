@@ -1,4 +1,4 @@
-import type { MatchRange } from "./search-api";
+import type { MatchRange } from "$lib/server/search-api";
 
 // We don't pass `fatal: true` to this ctor to do things like handle binary or
 // non-utf8 text encodings as the zoekt indexer explicitly skips indexing binary
@@ -26,7 +26,7 @@ export const parseIntoLines = (
   baseByteOffset: number,
   ranges: ReadonlyArray<MatchRange>
 ): ContentToken[][] => {
-  const contentBytes = base64StringToBytes(contentBase64);
+  const contentBytes = Buffer.from(contentBase64, "base64");
 
   const lines = [];
   let currentLineTokens: Array<ContentToken> = [];
@@ -139,13 +139,4 @@ export const parseIntoLines = (
   // trailing newline as inherently unidentifiable.
 
   return lines;
-};
-
-const base64StringToBytes = (base64: string) => {
-  const binaryString = atob(base64);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes;
 };

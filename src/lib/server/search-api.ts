@@ -1,13 +1,15 @@
 import * as v from "@badrap/valita";
 import type { ReadonlyDeep } from "type-fest";
+import { ZOEKT_URL } from "$env/static/private";
 import { type ContentToken, parseIntoLines } from "./content-parser";
 
-export type SearchQuery = Readonly<{
-  query: string;
-  contextLines: number;
-  files: number;
-  matches: number;
-}>;
+export const searchQuerySchema = v.object({
+  query: v.string(),
+  contextLines: v.number(),
+  files: v.number(),
+  matches: v.number(),
+});
+export type SearchQuery = ReadonlyDeep<v.Infer<typeof searchQuerySchema>>;
 
 export type SearchResponse =
   | {
@@ -39,7 +41,7 @@ export const search = async (
     },
   });
 
-  const response = await f("/api/search", {
+  const response = await f(new URL("/api/search", ZOEKT_URL), {
     method: "POST",
     headers: {
       "content-type": "application/json",

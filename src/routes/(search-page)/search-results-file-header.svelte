@@ -1,8 +1,8 @@
 <script lang="ts">
   import { ChevronRight } from "lucide-svelte";
   import Link from "$lib/link.svelte";
+  import type { ResultFile } from "$lib/server/search-api";
   import RenderedContent from "./rendered-content.svelte";
-  import type { ResultFile } from "./search-api";
 
   export let file: ResultFile;
   export let rank: number;

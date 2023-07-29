@@ -1,5 +1,5 @@
-import type { ContentToken } from "./content-parser";
-import type { Chunk, ResultFile } from "./search-api";
+import type { ContentToken } from "$lib/server/content-parser";
+import type { Chunk, ResultFile } from "$lib/server/search-api";
 
 export const renderChunksToLineGroups = (
   chunks: ResultFile["chunks"],

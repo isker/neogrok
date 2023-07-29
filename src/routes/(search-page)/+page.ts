@@ -1,5 +1,8 @@
+import type {
+  SearchResponse,
+  SearchResults as ApiSearchResults,
+} from "$lib/server/search-api";
 import { parseSearchParams } from "./route-search-query";
-import { search, type SearchResults as ApiSearchResults } from "./search-api";
 
 export type SearchOutcome =
   | { kind: "none" }
@@ -25,26 +28,25 @@ const executeSearch = async (
   }
 
   try {
-    const response = await search({ query, ...rest }, f);
-    if (response.kind === "success") {
+    const response = await f("/api/search", {
+      method: "POST",
+      body: JSON.stringify({ query, ...rest }),
+      headers: { "content-type": "application/json" },
+    });
+    const searchResponse: SearchResponse = await response.json();
+    if (searchResponse.kind === "success") {
       return {
         kind: "success",
-        results: { ...response.results, requestDuration: Date.now() - start },
+        results: {
+          ...searchResponse.results,
+          requestDuration: Date.now() - start,
+        },
       };
     } else {
-      return response;
+      return searchResponse;
     }
   } catch (error) {
-    if (
-      !(
-        error &&
-        typeof error === "object" &&
-        "name" in error &&
-        error.name === "AbortError"
-      )
-    ) {
-      console.error("Search failed", error);
-    }
+    console.error("Search failed", error);
     return { kind: "error", error: String(error) };
   }
 };

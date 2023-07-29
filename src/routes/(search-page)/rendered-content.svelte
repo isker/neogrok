@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { ContentToken } from "./content-parser";
+  import type { ContentToken } from "$lib/server/content-parser";
 
   export let tokens: ReadonlyArray<ContentToken>;
 </script>
