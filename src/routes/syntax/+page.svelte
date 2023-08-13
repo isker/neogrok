@@ -147,7 +147,7 @@
   <div class="text-center">
     <Heading id="prefix-table">Available prefixes</Heading>
   </div>
-  <div class="overflow-x-scroll">
+  <div class="overflow-x-auto">
     <table class="border border-collapse text-sm text-center">
       <thead>
         <tr class="border bg-slate-100">
