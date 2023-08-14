@@ -33,7 +33,7 @@ but that's not understandable from the UI -->
       </tr>
     </thead>
     <tbody>
-      {#each repositories as repository (repository.name)}
+      {#each repositories as repository}
         <Repository {repository} />
       {/each}
     </tbody>

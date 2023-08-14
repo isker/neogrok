@@ -1,6 +1,10 @@
 import * as v from "@badrap/valita";
 import fs from "node:fs";
 
+// TODO we should have one environment variable pointing at a single
+// configuration file, so that we can extend the configuration later without
+// introducing new env vars.
+
 /**
  * Users may provide a simple JSON file that maps from OpenGrok project names to
  * Zoekt repo names, in case project names changed.

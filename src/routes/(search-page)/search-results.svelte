@@ -28,12 +28,14 @@
     {Math.floor(duration / 1e4) / 1e2}
     ms
   </span>
+  <!-- TODO indicate when frontend files/matches are limited by the parameters in the search form -->
   <span class="ml-auto">
     Frontend: {files.length}
     {files.length === 1 ? "file" : "files"} / {frontendMatchCount}
     {frontendMatchCount === 1 ? "match" : "matches"} / {requestDuration}ms
   </span>
 </h1>
+<!-- TODO enable removing this key by making SearchResultsFile reset its internal state when props change. -->
 {#each files as file, i (`${file.repository}/${file.fileName.tokens
   .map(({ text }) => text)
   .join()}@${file.branches.join(";")}`)}
