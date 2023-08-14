@@ -4,7 +4,6 @@
   export let tokens: ReadonlyArray<ContentToken>;
 </script>
 
-{#each tokens as { kind, text, startByteOffset } (startByteOffset)}
-  {#if kind === "context"}{text}{:else}<span class="bg-yellow-200">{text}</span
-    >{/if}
+{#each tokens as { text, match }}
+  <span class:bg-yellow-200={match}>{text}</span>
 {/each}

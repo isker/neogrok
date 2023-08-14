@@ -1,124 +1,128 @@
-import type { MatchRange } from "$lib/server/search-api";
+/* Parsed content, as emitted by this module. */
+export type ContentToken = {
+  readonly text: string;
+  // true | undefined for less wasteful JSON serialization
+  readonly match?: true;
+};
 
-// We don't pass `fatal: true` to this ctor to do things like handle binary or
-// non-utf8 text encodings as the zoekt indexer explicitly skips indexing binary
-// content, and text encodings other than utf-8 are explicitly not supported.
-const utf8Decoder = new TextDecoder();
-
-export type ContentToken =
-  // Parts of the content not matching the query, i.e. context to the matches.
-  | { kind: "context"; text: string; startByteOffset: number }
-  // Parts of the content matching a query.
-  | { kind: "match"; text: string; startByteOffset: number };
+type Range = {
+  // inclusive
+  readonly start: number;
+  // exclusive
+  readonly end: number;
+};
 
 /**
- * Parses the given Base64-encoded content into lines suitable for rendering
- * line-by-line, with the parts of each line matching the query, described by
- * the given ranges, distinguished from the rest of the line.
+ * Parses a `FileName` match into ContentTokens.
  *
- * @param baseByteOffset - The byte index of the entire file contents at which
- * `contentBase64` begins.
- * @param ranges - The ranges of the content which match the query, described by
- * byte offsets into the entire file content.
+ * `FileName` matches are much simpler to parse than `Content` matches, as they
+ * contain only one line of text, so we have this separate function for them.
  */
-export const parseIntoLines = (
-  contentBase64: string,
-  baseByteOffset: number,
-  ranges: ReadonlyArray<MatchRange>
-): ContentToken[][] => {
-  const contentBytes = Buffer.from(contentBase64, "base64");
+export const parseFileNameMatch = (
+  content: Buffer,
+  matchRanges: ReadonlyArray<Range>
+): // Needs to be mutable to satisfy valita.
+Array<ContentToken> => {
+  const contentTokens: Array<ContentToken> = [];
 
-  const lines = [];
+  let base = 0;
+  for (const { start: matchStart, end: matchEnd } of matchRanges) {
+    if (matchStart > base) {
+      contentTokens.push({
+        text: content.toString("utf8", base, matchStart),
+      });
+    }
+    contentTokens.push({
+      text: content.toString("utf8", matchStart, matchEnd),
+      match: true,
+    });
+    base = matchEnd;
+  }
+  if (base < content.length) {
+    contentTokens.push({ text: content.toString("utf8", base) });
+  }
+
+  return contentTokens;
+};
+
+/**
+ * Parses the given content into lines of ContentTokens, which will include
+ * `match` tokens for the given ranges.
+ */
+export const parseChunkMatch = (
+  content: Buffer,
+  matchRanges: ReadonlyArray<Range>
+): // Needs to be mutable to satisfy valita.
+Array<Array<ContentToken>> => {
+  const lines: Array<Array<ContentToken>> = [];
   let currentLineTokens: Array<ContentToken> = [];
 
-  const rangeIterator = ranges[Symbol.iterator]();
+  const matchRangeIterator = matchRanges[Symbol.iterator]();
   // The range that we're currently in, or the next upcoming range, or undefined
   // if we've passed the last range.
-  let currentRange: MatchRange | undefined = rangeIterator.next().value;
+  let currentMatchRange: Range | undefined = matchRangeIterator.next().value;
+  // Have we previously handled the start of `currentMatchRange` but not its
+  // end?
+  let inMatch = false;
 
-  let currentTokenStart = 0;
-  for (let i = 0; i < contentBytes.length; i++) {
-    const byte = contentBytes[i];
-    const currentByteOffset = i + baseByteOffset;
+  const newlineIterator = newlines(content);
+  // The next upcoming newline, if any.
+  let currentNewline: number | undefined = newlineIterator.next().value;
 
-    // Handle interactions with ranges at this byte, if any.
-    if (
-      currentRange &&
-      currentByteOffset === currentRange.start.byteOffset &&
-      i !== currentTokenStart
-    ) {
-      // If we've reached the start of a range and there is preceding context,
-      // create a token for it.
-      currentLineTokens.push({
-        kind: "context",
-        text: utf8Decoder.decode(contentBytes.subarray(currentTokenStart, i)),
-        startByteOffset: currentTokenStart,
-      });
-      currentTokenStart = i;
-    } else if (
-      currentRange &&
-      currentByteOffset === currentRange.end.byteOffset
-    ) {
-      // If we've reached the end of a range, create a token for it.
-      currentLineTokens.push({
-        kind: "match",
-        text: utf8Decoder.decode(contentBytes.subarray(currentTokenStart, i)),
-        startByteOffset: currentTokenStart,
-      });
+  // How far into `content` we currently are.
+  let tokenStart = 0;
+  let tokenBoundary: TokenBoundary | undefined;
+  while (
+    (tokenBoundary = findNextBoundary(
+      inMatch,
+      currentMatchRange,
+      currentNewline
+    ))
+  ) {
+    const { index: tokenEnd, match, newline } = tokenBoundary;
 
-      currentTokenStart = i;
-      currentRange = rangeIterator.next().value;
-    }
-
-    // Handle interactions with line endings at this byte, if any.
-    if (byte === 0xa) {
-      // LF. Conclude any ongoing token and the entire line's tokens. We don't
-      // need to exclude newlines from tokens as they are just trailing
-      // whitespace that HTML will ignore. For that reason, we don't need to
-      // handle CR before LF as it's just more whitespace.
-
-      if (currentRange && currentByteOffset >= currentRange.start.byteOffset) {
-        // Ranges can span multiple lines. We need to break this ongoing range
-        // into one range for each line it spans.
+    if (match === "start") {
+      inMatch = true;
+      if (tokenEnd > tokenStart) {
         currentLineTokens.push({
-          kind: "match",
-          text: utf8Decoder.decode(
-            contentBytes.subarray(currentTokenStart, i + 1)
-          ),
-          startByteOffset: currentTokenStart,
-        });
-        currentRange = {
-          ...currentRange,
-          start: {
-            byteOffset: currentByteOffset + 1,
-            lineNumber: currentRange.start.lineNumber + 1,
-            column: 1,
-          },
-        };
-      } else {
-        currentLineTokens.push({
-          kind: "context",
-          text: utf8Decoder.decode(
-            contentBytes.subarray(currentTokenStart, i + 1)
-          ),
-          startByteOffset: currentTokenStart,
+          text: content.toString("utf8", tokenStart, tokenEnd),
         });
       }
+      tokenStart = tokenEnd;
+    } else if (match === "end") {
+      inMatch = false;
+      if (tokenEnd > tokenStart) {
+        currentLineTokens.push({
+          text: content.toString("utf8", tokenStart, tokenEnd),
+          match: true,
+        });
+      }
+      currentMatchRange = matchRangeIterator.next().value;
+      tokenStart = tokenEnd;
+    }
 
-      currentTokenStart = i + 1;
+    if (newline) {
+      // Key observation: we "split" on newlines, such that the \n char itself
+      // is not in the resulting tokens' text. There's no need for it to be,
+      // as lines are visually separated from one another in the UI with
+      // `display: block`.
+      if (tokenEnd > tokenStart) {
+        currentLineTokens.push({
+          text: content.toString("utf8", tokenStart, tokenEnd),
+          ...(inMatch ? { match: true } : {}),
+        });
+      }
       lines.push(currentLineTokens);
       currentLineTokens = [];
+      currentNewline = newlineIterator.next().value;
+      tokenStart = tokenEnd + 1;
     }
   }
 
-  // Conclude the current token, if any.
-  if (currentTokenStart < contentBytes.length) {
+  if (tokenStart < content.length) {
     currentLineTokens.push({
-      kind: currentRange ? "match" : "context",
-      text: utf8Decoder.decode(
-        contentBytes.subarray(currentTokenStart, contentBytes.length)
-      ),
-      startByteOffset: currentTokenStart,
+      text: content.toString("utf8", tokenStart),
+      ...(inMatch ? { match: true } : {}),
     });
   }
 
@@ -139,4 +143,62 @@ export const parseIntoLines = (
   // trailing newline as inherently unidentifiable.
 
   return lines;
+};
+
+const newlines = (content: Buffer): Iterator<number, undefined, undefined> => {
+  let currentIndex = -1;
+  let done = false;
+  return {
+    next: () => {
+      if (done) {
+        return { done: true };
+      }
+      currentIndex = content.indexOf(0xa, currentIndex + 1);
+      done = currentIndex === -1;
+      if (done) {
+        return { done: true };
+      } else {
+        return { done: false, value: currentIndex };
+      }
+    },
+  };
+};
+
+// Describes an index in content at which the current token must end, and a new
+// one with different properties begin.
+type TokenBoundary = {
+  index: number;
+  newline?: boolean;
+  match?: "start" | "end";
+};
+
+// Finds the next boundary, if any.
+const findNextBoundary = (
+  inMatch: boolean,
+  currentMatchRange: Range | undefined,
+  currentNewline: number | undefined
+): TokenBoundary | undefined => {
+  const candidates: Array<TokenBoundary> = [];
+  if (currentNewline !== undefined) {
+    candidates.push({ index: currentNewline, newline: true });
+  }
+
+  if (!inMatch && currentMatchRange) {
+    candidates.push({ index: currentMatchRange.start, match: "start" });
+  } else if (inMatch && currentMatchRange) {
+    candidates.push({ index: currentMatchRange.end, match: "end" });
+  }
+
+  return candidates.reduce<TokenBoundary | undefined>((acc, val) => {
+    if (acc === undefined) {
+      return val;
+    } else if (acc.index < val.index) {
+      return acc;
+    } else if (acc.index > val.index) {
+      return val;
+    } else {
+      // match boundary and newline at the same index; merge
+      return { ...acc, ...val };
+    }
+  }, undefined);
 };
