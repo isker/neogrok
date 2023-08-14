@@ -64,16 +64,23 @@
   <SearchResultsFileHeader {file} {rank} />
   {#if lineGroups.length > 0}
     <div class="font-mono text-sm divide-y">
-      {#each lineGroups as lines (lines[0].lineNumber)}
+      {#each lineGroups as lines}
         <!--
           minmax because we don't want the line number column to slide left and
           right as you scroll down through sections with different `min-content`s'
           worth of line numbers. 2rem is enough for 4 digits.
+
+          TODO grid isn't doing a whole lot for us here, and browsers will
+          reject grids with more than a certain number of rows:
+          https://stackoverflow.com/a/63247486. We can probably simulate the
+          grid minmax calculation ourselves, as we trivially know the number of
+          digits in the maximum line number. Alternatively, a simple small fixed
+          value will probably be acceptable.
         -->
         <div
           class="py-1 grid grid-cols-[minmax(2rem,_min-content)_1fr] gap-x-2 whitespace-pre overflow-x-auto"
         >
-          {#each lines as { lineNumber, lineTokens } (lineNumber)}
+          {#each lines as { lineNumber, lineTokens }}
             <span class="select-none text-gray-600 text-right pr-1">
               {#if file.fileUrl && file.lineNumberTemplate}
                 <a
