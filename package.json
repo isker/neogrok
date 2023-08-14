@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "@badrap/valita": "0.2.1",
+    "@wooorm/starry-night": "2.1.1",
     "lucide-svelte": "0.256.1",
     "lucene": "2.1.1",
     "pretty-bytes": "6.1.0"

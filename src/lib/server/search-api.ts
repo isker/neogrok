@@ -1,7 +1,12 @@
 import * as v from "@badrap/valita";
 import type { ReadonlyDeep } from "type-fest";
 import { ZOEKT_URL } from "$env/static/private";
-import { type ContentToken, parseIntoLines } from "./content-parser";
+import {
+  type ContentToken,
+  parseIntoLines,
+  parseFileNameMatch,
+  convertByteRanges,
+} from "./content-parser";
 
 export const searchQuerySchema = v.object({
   query: v.string(),
@@ -79,22 +84,21 @@ const locationSchema = v
   .object({
     ByteOffset: v.number(),
     LineNumber: v.number(),
-    Column: v.number(),
   })
-  .map(({ ByteOffset, LineNumber, Column }) => ({
-    byteOffset: ByteOffset,
-    lineNumber: LineNumber,
-    column: Column,
+  .map(({ ByteOffset: byteOffset, LineNumber: lineNumber }) => ({
+    byteOffset,
+    lineNumber,
   }));
 export type ContentLocation = ReadonlyDeep<v.Infer<typeof locationSchema>>;
 
 const matchRangeSchema = v
   .object({ Start: locationSchema, End: locationSchema })
-  .map(({ Start: start, End: end }) => ({
+  .map(({ Start: { byteOffset: start }, End: { byteOffset: end } }) => ({
+    // inclusive
     start,
+    // exclusive
     end,
   }));
-export type MatchRange = ReadonlyDeep<v.Infer<typeof matchRangeSchema>>;
 
 const searchResultSchema = v.object({
   Result: v
@@ -125,30 +129,38 @@ const searchResultSchema = v.object({
                     .map(
                       ({
                         Content: contentBase64,
-                        ContentStart: contentStart,
+                        ContentStart: {
+                          lineNumber: startLineNumber,
+                          byteOffset: baseByteOffset,
+                        },
                         FileName: isFileNameChunk,
                         Ranges: matchRanges,
                       }) => ({
-                        contentBase64,
-                        contentStart,
+                        content: Buffer.from(contentBase64, "base64"),
                         isFileNameChunk,
-                        matchRanges: matchRanges.filter(
-                          ({ start, end }) =>
-                            // zoekt can return empty matches for queries that
-                            // can match zero characters, e.g. ".*". This is
-                            // surprising behavior, but similar to that of grep
-                            // et al, so not necessarily a bug. We can't render
-                            // empty matches, and certain things downstream of
-                            // us (like svelte keyed `each`es) are assuming
-                            // non-empty matches, so we filter them here.
-                            //
-                            // FIXME this obscures what's happened from the
-                            // user's perspective, as removed matches are not
-                            // present in the "frontend matches" count in the
-                            // UI. Perhaps we can count these separately and
-                            // communicate the count to the user.
-                            start.byteOffset !== end.byteOffset
-                        ),
+                        startLineNumber,
+                        matchRanges: matchRanges
+                          // zoekt can return empty matches for queries that can
+                          // match zero characters, e.g. ".*". This is
+                          // surprising behavior, but similar to that of grep et
+                          // al, so not necessarily a bug. We can't render empty
+                          // matches, and certain things downstream of us (like
+                          // svelte keyed `each`es) are assuming non-empty
+                          // matches, so we filter them here.
+                          //
+                          // FIXME this obscures what's happened from the user's
+                          // perspective, as removed matches are not present in
+                          // the "frontend matches" count in the UI. Perhaps we
+                          // can count these separately and communicate the
+                          // count to the user.
+                          .filter(({ start, end }) => start !== end)
+                          // The byte offsets given for the match ranges are
+                          // into the entire file's contents, not the match's
+                          // Content. Adjust them.
+                          .map(({ start, end }) => ({
+                            start: start - baseByteOffset,
+                            end: end - baseByteOffset,
+                          })),
                       })
                     )
                 ),
@@ -177,23 +189,10 @@ const searchResultSchema = v.object({
                   }
                   let fileNameTokens: Array<ContentToken>;
                   if (fileNameChunks.length === 1) {
-                    const {
-                      contentBase64,
-                      contentStart: { byteOffset: baseByteOffset },
-                      matchRanges,
-                    } = fileNameChunks[0];
-                    // We only take the first line. If your filename has more
-                    // than one line, you deserve this.
-                    const [firstLine] = parseIntoLines(
-                      contentBase64,
-                      baseByteOffset,
-                      matchRanges
-                    );
-                    fileNameTokens = firstLine;
+                    const { content, matchRanges } = fileNameChunks[0];
+                    fileNameTokens = parseFileNameMatch(content, matchRanges);
                   } else {
-                    fileNameTokens = [
-                      { kind: "context", text: fileName, startByteOffset: 0 },
-                    ];
+                    fileNameTokens = [{ text: fileName }];
                   }
 
                   return {
@@ -207,24 +206,30 @@ const searchResultSchema = v.object({
                       .filter(({ isFileNameChunk }) => !isFileNameChunk)
                       .map(
                         ({
-                          contentBase64,
-                          contentStart: {
-                            byteOffset: baseByteOffset,
-                            lineNumber: startLineNumber,
-                          },
-                          matchRanges,
+                          content: contentBytes,
+                          startLineNumber,
+                          matchRanges: byteRanges,
                         }) => {
+                          const { stringRanges, newlineIndices } =
+                            convertByteRanges(contentBytes, byteRanges);
+
                           const lines = parseIntoLines(
-                            contentBase64,
-                            baseByteOffset,
-                            matchRanges
+                            contentBytes.toString("utf8"),
+                            stringRanges,
+                            newlineIndices,
+                            language
                           ).map((lineTokens, lineOffset) => ({
+                            // TODO this is pretty pointlessly wasteful to put
+                            // in the serialization as it's trivially derivable
+                            // by anything that needs it; remove this and add
+                            // `startLineNumber` to the match serialization
+                            // instead.
                             lineNumber: startLineNumber + lineOffset,
                             lineTokens,
                             // While the frontend could derive this from
-                            // lineTokens, counts of matches in a chunk are needed
-                            // so frequently that it's substantially less tedious
-                            // to precompute it.
+                            // lineTokens, counts of matches in a chunk are
+                            // needed so frequently that it's substantially less
+                            // tedious to precompute it.
                             matchCount: numMatches(lineTokens),
                           }));
 
@@ -298,7 +303,7 @@ const searchResultSchema = v.object({
 });
 
 const numMatches = (tokens: Array<ContentToken>) =>
-  tokens.filter((t) => t.kind === "match").length;
+  tokens.filter((t) => t.match).length;
 
 export type SearchResults = ReadonlyDeep<
   v.Infer<typeof searchResultSchema>["Result"]
