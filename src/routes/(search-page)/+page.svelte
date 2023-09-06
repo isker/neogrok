@@ -1,15 +1,15 @@
 <script lang="ts">
+  import type { SearchResults as ApiSearchResults } from "$lib/server/search-api";
   import SearchForm from "./search-form.svelte";
   import Lander from "./lander.svelte";
   import SearchResults from "./search-results.svelte";
-  import type { TimedSearchResults } from "./+page";
   import { routeSearchQuery } from "./route-search-query";
 
   export let data: import("./$types").PageData;
 
   // Represents the last non-erroneous results, so that when we get an error,
   // we can display them instead of taking away all the results.
-  let previousSearchResults: TimedSearchResults | null = null;
+  let previousSearchResults: ApiSearchResults | null = null;
   $: {
     if (data.searchOutcome.kind === "success") {
       previousSearchResults = data.searchOutcome.results;

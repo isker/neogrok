@@ -1,24 +1,30 @@
 <script lang="ts">
-  import type { TimedSearchResults } from "./+page";
+  import type { SearchResults } from "$lib/server/search-api";
+  import { routeSearchQuery } from "./route-search-query";
   import SearchResultsFile from "./search-results-file.svelte";
 
-  export let results: TimedSearchResults;
+  export let results: SearchResults;
   $: ({
-    backendStats: { fileCount, matchCount, filesSkipped, duration },
+    zoektStats: { fileCount, matchCount, filesSkipped, duration },
     files,
-    requestDuration,
   } = results);
-  $: frontendMatchCount = files.reduce((n, { matchCount: m }) => n + m, 0);
+  $: neogrokMatchCount = files.reduce((n, { matchCount: m }) => n + m, 0);
+
+  $: filesLimited =
+    fileCount > files.length && files.length === $routeSearchQuery.files;
+  $: matchesLimited =
+    matchCount > neogrokMatchCount &&
+    neogrokMatchCount === $routeSearchQuery.matches;
 </script>
 
 <h1 class="text-xs flex flex-wrap pt-2">
   <span>
-    Backend: {fileCount}
+    zoekt: {fileCount}
     {fileCount === 1 ? "file" : "files"} / {matchCount}
     {matchCount === 1 ? "match" : "matches"}
     {#if filesSkipped > 0}
       <span
-        title="The number of matches found on the backend reached the maximum limits, so the search was aborted and these counts are incomplete"
+        title="The number of matches found in zoekt reached the maximum limits, so the search was aborted and these counts are incomplete"
         class="text-yellow-700 cursor-help underline decoration-dashed"
       >
         (truncated)
@@ -28,11 +34,15 @@
     {Math.floor(duration / 1e4) / 1e2}
     ms
   </span>
-  <!-- TODO indicate when frontend files/matches are limited by the parameters in the search form -->
   <span class="ml-auto">
-    Frontend: {files.length}
-    {files.length === 1 ? "file" : "files"} / {frontendMatchCount}
-    {frontendMatchCount === 1 ? "match" : "matches"} / {requestDuration}ms
+    neogrok: <span class:text-yellow-700={filesLimited}
+      >{files.length} {files.length === 1 ? "file" : "files"}</span
+    >
+    /
+    <span class:text-yellow-700={matchesLimited}
+      >{neogrokMatchCount}
+      {neogrokMatchCount === 1 ? "match" : "matches"}</span
+    >
   </span>
 </h1>
 <!-- TODO enable removing this key by making SearchResultsFile reset its internal state when props change. -->

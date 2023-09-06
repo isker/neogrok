@@ -241,7 +241,7 @@ const searchResultSchema = v.object({
         RepoURLs: repoUrls,
         LineFragments: repoLineNumberFragments,
       }) => ({
-        backendStats: {
+        zoektStats: {
           duration,
           fileCount,
           matchCount,
