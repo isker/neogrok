@@ -5,5 +5,9 @@
 </script>
 
 {#each tokens as { text, match }}
-  <span class:bg-yellow-200={match}>{text}</span>
+  {#if match}
+    <mark class="bg-yellow-200">{text}</mark>
+  {:else}
+    {text}
+  {/if}
 {/each}
