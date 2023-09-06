@@ -19,7 +19,10 @@ export const renderChunksToLineGroups = (
   // That being said, we will bail in the middle of a chunk if the greater
   // hardCutoff is exceeded.
   const lineGroups: Array<
-    Array<{ lineNumber: number; lineTokens: ReadonlyArray<ContentToken> }>
+    Array<{
+      readonly lineNumber: number;
+      readonly lineTokens: ReadonlyArray<ContentToken>;
+    }>
   > = [];
 
   // The number of matches beyond which we will actually cut off a chunk early.
@@ -35,10 +38,10 @@ export const renderChunksToLineGroups = (
   // `!expanded` state.
   let preCutoffMatchCount = 0;
 
-  const subChunkUnderCutoff = (chunk: Chunk): Chunk => {
+  const subChunkUnderCutoff = (chunk: Chunk): Chunk | null => {
     if (preCutoffMatchCount >= softCutoff) {
       // We are already beyond the limit.
-      return { lines: [], matchCount: 0 };
+      return null;
     } else if (preCutoffMatchCount + chunk.matchCount >= hardCutoff) {
       // If adding all of these matches would take us past the hard cutoff,
       // iterate line by line until we are just beyond it.
@@ -51,7 +54,7 @@ export const renderChunksToLineGroups = (
           break;
         }
       }
-      return { lines, matchCount };
+      return { lines, matchCount, startLineNumber: chunk.startLineNumber };
     } else {
       // Otherwise, take all of this chunk's lines.
       return chunk;
@@ -61,14 +64,23 @@ export const renderChunksToLineGroups = (
   if (softCutoff > 0) {
     for (const chunk of chunks) {
       const subChunk = subChunkUnderCutoff(chunk);
-      if (!expanded && subChunk.lines.length === 0) {
+      if (!expanded && subChunk === null) {
         // hard cutoff exceeded
         break;
       }
-      preCutoffMatchCount += subChunk.matchCount;
+      preCutoffMatchCount += subChunk?.matchCount ?? 0;
 
-      const lines = expanded ? chunk.lines : subChunk.lines;
-      const [{ lineNumber: startLineNumber }] = lines;
+      const renderedChunk = expanded
+        ? chunk
+        : // The above `break` guarantees this is non-null.
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          subChunk!;
+      const { lines, startLineNumber } = renderedChunk;
+      const numberedLines = lines.map(({ lineTokens }, i) => ({
+        lineNumber: i + startLineNumber,
+        lineTokens,
+      }));
+
       const contiguous =
         lineGroups.at(-1)?.at(-1)?.lineNumber === startLineNumber - 1;
       if (contiguous) {
@@ -76,10 +88,9 @@ export const renderChunksToLineGroups = (
 
         // By the definition of `contiguous` we know this exists.
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        lineGroups.at(-1)!.push(...lines);
+        lineGroups.at(-1)!.push(...numberedLines);
       } else {
-        // Make a copy. We will be mutating it.
-        lineGroups.push([...lines]);
+        lineGroups.push(numberedLines);
       }
 
       if (!expanded && preCutoffMatchCount >= softCutoff) {

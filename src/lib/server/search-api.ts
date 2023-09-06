@@ -205,13 +205,7 @@ const searchResultSchema = v.object({
                       .filter(({ isFileNameChunk }) => !isFileNameChunk)
                       .map(({ content, startLineNumber, matchRanges }) => {
                         const lines = parseChunkMatch(content, matchRanges).map(
-                          (lineTokens, lineOffset) => ({
-                            // TODO this is pretty pointlessly wasteful to put
-                            // in the serialization as it's trivially derivable
-                            // by anything that needs it; remove this and add
-                            // `startLineNumber` to the match serialization
-                            // instead.
-                            lineNumber: startLineNumber + lineOffset,
+                          (lineTokens) => ({
                             lineTokens,
                             // While the frontend could derive this from
                             // lineTokens, counts of matches in a chunk are
@@ -226,7 +220,7 @@ const searchResultSchema = v.object({
                           0
                         );
 
-                        return { matchCount, lines };
+                        return { matchCount, startLineNumber, lines };
                       }),
                   };
                 }

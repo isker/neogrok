@@ -17,8 +17,7 @@
   $: sortedChunks =
     $matchSortOrder === "line-number"
       ? [...file.chunks].sort(
-          ({ lines: [{ lineNumber: a }] }, { lines: [{ lineNumber: b }] }) =>
-            a - b
+          ({ startLineNumber: a }, { startLineNumber: b }) => a - b
         )
       : // Nothing to do otherwise; matches are already sorted by score.
         file.chunks;
