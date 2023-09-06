@@ -67,14 +67,8 @@
         <!--
           minmax because we don't want the line number column to slide left and
           right as you scroll down through sections with different `min-content`s'
-          worth of line numbers. 2rem is enough for 4 digits.
-
-          TODO grid isn't doing a whole lot for us here, and browsers will
-          reject grids with more than a certain number of rows:
-          https://stackoverflow.com/a/63247486. We can probably simulate the
-          grid minmax calculation ourselves, as we trivially know the number of
-          digits in the maximum line number. Alternatively, a simple small fixed
-          value will probably be acceptable.
+          worth of line numbers. 2rem is enough for 3 digits, which should cover
+          the overwhelming majority of cases.
         -->
         <div
           class="py-1 grid grid-cols-[minmax(2rem,_min-content)_1fr] gap-x-2 whitespace-pre overflow-x-auto"
