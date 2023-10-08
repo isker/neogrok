@@ -29,6 +29,12 @@ to the option names tabulated below.
 | `zoektUrl`                | `ZOEKT_URL`               | Y            | The base zoekt URL at which neogrok will make API requests, at e.g. `/api/search` and `/api/list`                                  |
 | `openGrokProjectMappings` | N/A                       | N            | An object mapping OpenGrok project names to zoekt repository names; see [below](#renaming-opengrok-projects-to-zoekt-repositories) |
 
+### SvelteKit environment variables
+
+Note that you can also configure, among other things, which ports/addresses will
+be bound, using SvelteKit's Node environment variables. See the list
+[here](https://kit.svelte.dev/docs/adapter-node#environment-variables).
+
 ## OpenGrok compatibility
 
 As an added bonus, neogrok can serve as a replacement for existing deployments
