@@ -1,15 +1,12 @@
-# fly.toml file generated for neogrok-demo-web on 2023-01-17T03:13:51-05:00
-
 app = "neogrok-demo-web"
 primary_region = "ewr"
 
 [build]
   dockerfile = "Dockerfile.neogrok"
-[build.args]
-  ZOEKT_URL = "http://neogrok-demo-zoekt.internal:8080"
 
 [env]
   PORT = 8080
+  ZOEKT_URL = "http://neogrok-demo-zoekt.internal:8080"
 
 [experimental]
   auto_rollback = true

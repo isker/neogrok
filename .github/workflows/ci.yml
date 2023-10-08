@@ -7,10 +7,6 @@ on:
 jobs:
   build-lint-test:
     runs-on: ubuntu-latest
-    env:
-      # This needs to be defined for the build to succeed, though it is not
-      # actually used for anything.
-      ZOEKT_URL: "https://www.example.com"
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3

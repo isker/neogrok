@@ -5,7 +5,7 @@ import {
 } from "./opengrok-lucene.server";
 import { redirect } from "@sveltejs/kit";
 import { listRepositories } from "$lib/server/zoekt-list-repositories";
-import { projectToRepo } from "$lib/server/opengrok-compat";
+import { configuration } from "$lib/server/configuration";
 
 export const load: import("./$types").PageServerLoad = async ({
   url,
@@ -46,7 +46,7 @@ export const load: import("./$types").PageServerLoad = async ({
   };
 
   const { luceneQuery, zoektQuery, warnings } = await toZoekt(params, {
-    projectToRepo,
+    projectToRepo: configuration.openGrokProjectMappings,
     queryUnknownRepos,
   });
 

@@ -1,6 +1,6 @@
 import * as v from "@badrap/valita";
 import type { ReadonlyDeep } from "type-fest";
-import { ZOEKT_URL } from "$env/static/private";
+import { configuration } from "./configuration";
 
 export type ListRepositoriesResponse =
   | {
@@ -18,7 +18,7 @@ export async function listRepositories(
 ): Promise<ListRepositoriesResponse> {
   const body = JSON.stringify({ q: query });
 
-  const response = await f(new URL("/api/list", ZOEKT_URL), {
+  const response = await f(new URL("/api/list", configuration.zoektUrl), {
     method: "POST",
     headers: {
       "content-type": "application/json",

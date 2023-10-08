@@ -1,5 +1,5 @@
 import { escapeRegExp } from "$lib/regexp";
-import { projectToRepo } from "$lib/server/opengrok-compat";
+import { configuration } from "$lib/server/configuration";
 import { listRepositories } from "$lib/server/zoekt-list-repositories";
 import { error, redirect } from "@sveltejs/kit";
 
@@ -14,7 +14,7 @@ export const load: import("./$types").PageServerLoad = async ({
     throw error(404);
   }
   const revision = url.searchParams.get("r");
-  const convertedRepo = projectToRepo.get(project);
+  const convertedRepo = configuration.openGrokProjectMappings.get(project);
 
   const result = await listRepositories(
     {
