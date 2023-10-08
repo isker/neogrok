@@ -24,10 +24,10 @@ to the option names tabulated below.
 
 ### Configuration options
 
-| Option name               | Environment variable name | Required Y/N | Description                                                                                                                          |
-| :------------------------ | :------------------------ | :----------- | :----------------------------------------------------------------------------------------------------------------------------------- |
-| `zoektUrl`                | `ZOEKT_URL`               | Y            | The base zoekt URL at which neogrok will make API requests, at e.g. `/api/search` and `/api/list`                                    |
-| `openGrokProjectMappings` | N/A                       | N            | An object mapping OpenGrok project names to zoekt repository names; see [below]('#renaming-opengrok-projects-to-zoekt-repositories') |
+| Option name               | Environment variable name | Required Y/N | Description                                                                                                                        |
+| :------------------------ | :------------------------ | :----------- | :--------------------------------------------------------------------------------------------------------------------------------- |
+| `zoektUrl`                | `ZOEKT_URL`               | Y            | The base zoekt URL at which neogrok will make API requests, at e.g. `/api/search` and `/api/list`                                  |
+| `openGrokProjectMappings` | N/A                       | N            | An object mapping OpenGrok project names to zoekt repository names; see [below](#renaming-opengrok-projects-to-zoekt-repositories) |
 
 ## OpenGrok compatibility
 
