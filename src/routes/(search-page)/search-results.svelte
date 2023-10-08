@@ -29,10 +29,7 @@
       >
         (truncated)
       </span>
-    {/if}
-    /
-    {Math.floor(duration / 1e4) / 1e2}
-    ms
+    {/if} / {Math.floor(duration / 1e4) / 1e2}ms
   </span>
   <span class="ml-auto">
     neogrok: <span class:text-yellow-700={filesLimited}

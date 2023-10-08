@@ -60,6 +60,7 @@
 </script>
 
 <!-- TODO more clearly indicate in the UI when a search query API request is in progress -->
+<!-- TODO explore JS-disabled compat.  Should actually be pretty doable with `action="/"`? -->
 <form
   on:submit|preventDefault={() => {
     if ($searchType === "manual") {
@@ -155,7 +156,8 @@
     </label>
   </div>
 
+  <!-- FIXME this shifts the entire page contents down when it's visible, we should have a buffer. -->
   {#if queryError !== null}
-    <span class="text-sm text-red-500">{queryError}</span>
+    <span class="text-xs text-red-500">{queryError}</span>
   {/if}
 </form>
