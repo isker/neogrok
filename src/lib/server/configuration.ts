@@ -34,6 +34,10 @@ type Configuration = {
 // configuration will have to avoid dereferencing it in the module scope.
 export let configuration: Configuration;
 export const resolveConfiguration: () => Promise<void> = async () => {
+  if (configuration !== undefined) {
+    return;
+  }
+
   const configFilePath =
     process.env.NEOGROK_CONFIG_FILE ?? defaultConfigFilePath;
   let fileConfig: FileConfiguration | undefined;

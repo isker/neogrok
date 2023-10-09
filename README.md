@@ -35,6 +35,22 @@ Note that you can also configure, among other things, which ports/addresses will
 be bound, using SvelteKit's Node environment variables. See the list
 [here](https://kit.svelte.dev/docs/adapter-node#environment-variables).
 
+### Prometheus metrics
+
+Neogrok exports some basic [Prometheus](https://prometheus.io/)
+[metrics](./src/lib/server/metrics.ts) on an opt-in basis, by setting a
+`PROMETHEUS_PORT` or `PROMETHEUS_SOCKET_PATH`, plus an optional
+`PROMETHEUS_HOST`. These variables have the exact same semantics as the
+above-described SvelteKit environment variables, but the port/socket must be
+different than those of the main application. When opting in with these
+variables, `/metrics` will be served.
+
+`/metrics` is required to be served with a different port/socket so as to not
+expose it on the main site; serving one port to end users and another to the
+prometheus scraper is the easiest way to ensure proper segmentation of the
+neogrok site from internal infrastructure concerns, without having to run a
+particularly configured HTTP reverse proxy in front of neogrok.
+
 ## OpenGrok compatibility
 
 As an added bonus, neogrok can serve as a replacement for existing deployments

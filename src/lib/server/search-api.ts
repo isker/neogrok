@@ -1,11 +1,11 @@
 import * as v from "@badrap/valita";
 import type { ReadonlyDeep } from "type-fest";
-import { configuration } from "./configuration";
 import {
   type ContentToken,
   parseChunkMatch,
   parseFileNameMatch,
 } from "./content-parser";
+import { makeZoektRequest } from "./zoekt-client";
 
 export const searchQuerySchema = v.object({
   query: v.string(),
@@ -45,13 +45,7 @@ export const search = async (
     },
   });
 
-  const response = await f(new URL("/api/search", configuration.zoektUrl), {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-    },
-    body,
-  });
+  const response = await makeZoektRequest(f, "/api/search", body);
 
   if (!response.ok) {
     if (response.status === 400) {

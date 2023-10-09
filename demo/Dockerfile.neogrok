@@ -1,13 +1,14 @@
-FROM node:18-slim as app-builder
+FROM node:20-slim as app-builder
 WORKDIR /app
 COPY . .
 RUN npm install \
     && npm run build \
     && npm install --omit=dev
 
-FROM gcr.io/distroless/nodejs18-debian11
+FROM gcr.io/distroless/nodejs20-debian12
 WORKDIR /app
 COPY package.json .
+COPY main.js .
 COPY --from=app-builder /app/build build
 COPY --from=app-builder /app/node_modules node_modules
-ENTRYPOINT ["/nodejs/bin/node", "build"]
+ENTRYPOINT ["/nodejs/bin/node", "main.js"]

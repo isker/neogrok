@@ -1,6 +1,6 @@
 import * as v from "@badrap/valita";
 import type { ReadonlyDeep } from "type-fest";
-import { configuration } from "./configuration";
+import { makeZoektRequest } from "./zoekt-client";
 
 export type ListRepositoriesResponse =
   | {
@@ -18,13 +18,7 @@ export async function listRepositories(
 ): Promise<ListRepositoriesResponse> {
   const body = JSON.stringify({ q: query });
 
-  const response = await f(new URL("/api/list", configuration.zoektUrl), {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-    },
-    body,
-  });
+  const response = await makeZoektRequest(f, "/api/list", body);
 
   if (!response.ok) {
     if (response.status === 400) {

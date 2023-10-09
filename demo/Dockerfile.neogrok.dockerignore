@@ -9,3 +9,4 @@
 !tailwind.config.js
 !vite.config.ts
 !demo/Dockerfile.neogrok*
+!main.js

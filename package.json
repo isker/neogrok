@@ -14,6 +14,9 @@
     "format": "prettier --write .",
     "test": "vitest"
   },
+  "bin": {
+    "neogrok": "./main.js"
+  },
   "author": "Ian Kerins <npm@isk.haus>",
   "license": "MIT",
   "devDependencies": {
@@ -37,6 +40,7 @@
   },
   "dependencies": {
     "@badrap/valita": "0.3.0",
+    "prom-client": "15.0.0",
     "lucene": "2.1.1",
     "lucide-svelte": "0.256.1",
     "pretty-bytes": "6.1.1"
