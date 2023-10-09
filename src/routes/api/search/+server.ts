@@ -37,7 +37,7 @@ export const POST = (async ({ request, fetch }) => {
       {
         status: 500,
         headers: { "content-type": "application/json" },
-      }
+      },
     );
   }
 }) satisfies RequestHandler;

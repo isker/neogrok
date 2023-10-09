@@ -20,7 +20,7 @@ type Range = {
  */
 export const parseFileNameMatch = (
   content: Buffer,
-  matchRanges: ReadonlyArray<Range>
+  matchRanges: ReadonlyArray<Range>,
 ): // Needs to be mutable to satisfy valita.
 Array<ContentToken> => {
   const contentTokens: Array<ContentToken> = [];
@@ -51,7 +51,7 @@ Array<ContentToken> => {
  */
 export const parseChunkMatch = (
   content: Buffer,
-  matchRanges: ReadonlyArray<Range>
+  matchRanges: ReadonlyArray<Range>,
 ): // Needs to be mutable to satisfy valita.
 Array<Array<ContentToken>> => {
   const lines: Array<Array<ContentToken>> = [];
@@ -76,7 +76,7 @@ Array<Array<ContentToken>> => {
     (tokenBoundary = findNextBoundary(
       inMatch,
       currentMatchRange,
-      currentNewline
+      currentNewline,
     ))
   ) {
     const { index: tokenEnd, match, newline } = tokenBoundary;
@@ -176,7 +176,7 @@ type TokenBoundary = {
 const findNextBoundary = (
   inMatch: boolean,
   currentMatchRange: Range | undefined,
-  currentNewline: number | undefined
+  currentNewline: number | undefined,
 ): TokenBoundary | undefined => {
   const candidates: Array<TokenBoundary> = [];
   if (currentNewline !== undefined) {

@@ -27,7 +27,7 @@ export type SearchResponse =
 
 export const search = async (
   { query, contextLines, files, matches }: SearchQuery,
-  f: typeof fetch
+  f: typeof fetch,
 ): Promise<SearchResponse> => {
   const body = JSON.stringify({
     q: query,
@@ -160,8 +160,8 @@ const searchResultSchema = v.object({
                             start: start - baseByteOffset,
                             end: end - baseByteOffset,
                           })),
-                      })
-                    )
+                      }),
+                    ),
                 ),
               })
               .map(
@@ -177,13 +177,13 @@ const searchResultSchema = v.object({
                   // the filename itself. We have to especially handle such
                   // matches to render them properly.
                   const fileNameChunks = chunkMatches.filter(
-                    (m) => m.isFileNameChunk
+                    (m) => m.isFileNameChunk,
                   );
                   if (fileNameChunks.length > 1) {
                     // Should only ever be one match, with one or more ranges.
                     // Check just to be sure.
                     throw new Error(
-                      `Unreachable: received ${fileNameChunks.length} file name matches`
+                      `Unreachable: received ${fileNameChunks.length} file name matches`,
                     );
                   }
                   let fileNameTokens: Array<ContentToken>;
@@ -212,20 +212,20 @@ const searchResultSchema = v.object({
                             // needed so frequently that it's substantially less
                             // tedious to precompute it.
                             matchCount: numMatches(lineTokens),
-                          })
+                          }),
                         );
 
                         const matchCount = lines.reduce(
                           (n, { matchCount }) => n + matchCount,
-                          0
+                          0,
                         );
 
                         return { matchCount, startLineNumber, lines };
                       }),
                   };
-                }
-              )
-          )
+                },
+              ),
+          ),
         )
         .map((val) => val ?? []),
       RepoURLs: v.record(v.union(v.string(), v.undefined())),
@@ -262,7 +262,7 @@ const searchResultSchema = v.object({
               repository,
               matchCount: chunks.reduce(
                 (n, { matchCount: m }) => n + m,
-                fileNameMatchCount
+                fileNameMatchCount,
               ),
               fileName: {
                 matchCount: fileNameMatchCount,
@@ -277,9 +277,9 @@ const searchResultSchema = v.object({
               lineNumberTemplate:
                 repoLineNumberFragments[repository]?.split("{{.LineNumber}}"),
             };
-          }
+          },
         ),
-      })
+      }),
     ),
 });
 

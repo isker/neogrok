@@ -8,14 +8,14 @@ type RouteListQuery = {
 };
 
 export const parseSearchParams = (
-  searchParams: URLSearchParams
+  searchParams: URLSearchParams,
 ): RouteListQuery => ({
   // coerce the empty string to undefined
   query: searchParams.get("q") || undefined,
 });
 
 export const routeListQuery = derived(page, (p) =>
-  parseSearchParams(p.url.searchParams)
+  parseSearchParams(p.url.searchParams),
 );
 
 // This function is only called in the browser, so it's fine to have this be in

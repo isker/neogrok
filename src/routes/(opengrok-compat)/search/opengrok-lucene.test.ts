@@ -10,7 +10,7 @@ const toZoekt = (
   dependencies: ConversionDependencies = {
     projectToRepo: new Map(),
     queryUnknownRepos: (candidates) => Promise.resolve(candidates),
-  }
+  },
 ) => toZoektWithDependencies(params, dependencies);
 
 describe("toZoekt", () => {
@@ -122,7 +122,7 @@ describe("toZoekt", () => {
         warnings: [
           { code: "UnsupportedLanguage", language: "BORLAND TURBO PASCAL" },
         ],
-      }
+      },
     );
   });
 
@@ -144,12 +144,12 @@ describe("toZoekt", () => {
                 "github.com/user/repo2",
                 "github.com/user/repo3",
                 "project4",
-              ])
+              ]),
             );
 
             return new Set(["github.com/user/repo2", "github.com/user/repo3"]);
           },
-        }
+        },
       ),
       {
         luceneQuery: "foobar",
@@ -168,7 +168,7 @@ describe("toZoekt", () => {
             repos: ["github.com/user/repo2", "github.com/user/repo3"],
           },
         ],
-      }
+      },
     );
   });
 
@@ -201,7 +201,7 @@ describe("toZoekt", () => {
           { code: "SimilarityNotSupported", location: { start: 28, end: 40 } },
           { code: "RangeTermNotSupported", location: { start: 40, end: 44 } },
         ],
-      }
+      },
     );
   });
 
@@ -225,7 +225,7 @@ describe("toZoekt", () => {
         zoektQuery:
           "a (sym:b or c) or -(d or (-file:e (-f -g) h)) (-file:i file:j)",
         warnings: [],
-      }
+      },
     );
   });
 
@@ -243,7 +243,7 @@ describe("toZoekt", () => {
           // FIXME warnings from pushdown are duplicated, not a huge deal but
           { code: "ReferencesNotSupported", location: { start: 26, end: 30 } },
         ],
-      }
+      },
     );
   });
 });

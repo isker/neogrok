@@ -48,25 +48,25 @@ export const loadPreferences = (cookies: Cookies): Preferences => ({
     cookies,
     searchTypeKey,
     defaultSearchType,
-    searchTypeFromString
+    searchTypeFromString,
   ),
   [matchSortOrderKey]: loadPreference(
     cookies,
     matchSortOrderKey,
     defaultMatchSortOrder,
-    matchSortOrderFromString
+    matchSortOrderFromString,
   ),
   [fileMatchesCutoffKey]: loadPreference(
     cookies,
     fileMatchesCutoffKey,
     defaultFileMatchesCutoff,
-    fileMatchesCutoffFromString
+    fileMatchesCutoffFromString,
   ),
   [openGrokInstantRedirectKey]: loadPreference(
     cookies,
     openGrokInstantRedirectKey,
     defaultOpenGrokInstantRedirect,
-    openGrokInstantRedirectFromString
+    openGrokInstantRedirectFromString,
   ),
 });
 
@@ -74,7 +74,7 @@ const loadPreference = <T>(
   cookies: Cookies,
   key: string,
   defaultValue: T,
-  fromString: (x: string) => T | null
+  fromString: (x: string) => T | null,
 ) => {
   const s = cookies.get(key);
   const parsed = s ? fromString(s) : null;
@@ -96,13 +96,13 @@ const loadPreference = <T>(
  */
 export const persistInitialPreferences = (preferences: Preferences) => {
   Object.entries(preferences).forEach(([k, v]) =>
-    setContext(k, createPreferenceStore(k, v))
+    setContext(k, createPreferenceStore(k, v)),
   );
 };
 
 const createPreferenceStore = <T>(
   key: string,
-  initialValue: T
+  initialValue: T,
 ): Writable<T> => {
   const delegate = writable(initialValue);
   return {

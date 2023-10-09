@@ -40,7 +40,7 @@ export const load: import("./$types").PageServerLoad = async ({
     }
 
     const present = new Set(
-      repositories.results.repositories.map(({ name }) => name)
+      repositories.results.repositories.map(({ name }) => name),
     );
     return new Set(Array.from(candidates).filter((c) => !present.has(c)));
   };
@@ -58,7 +58,7 @@ export const load: import("./$types").PageServerLoad = async ({
   if (preferences.openGrokInstantRedirect && zoektQuery) {
     throw redirect(
       301,
-      `/?${new URLSearchParams({ q: zoektQuery }).toString()}`
+      `/?${new URLSearchParams({ q: zoektQuery }).toString()}`,
     );
   }
 

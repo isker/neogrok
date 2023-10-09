@@ -14,7 +14,7 @@ export type ListRepositoriesResponse =
 
 export async function listRepositories(
   { query }: { query?: string },
-  f: typeof fetch
+  f: typeof fetch,
 ): Promise<ListRepositoriesResponse> {
   const body = JSON.stringify({ q: query });
 
@@ -94,7 +94,7 @@ const listResultSchema = v.object({
                         .map(({ Name, Version }) => ({
                           name: Name,
                           version: Version,
-                        }))
+                        })),
                     ),
                   })
                   .map(
@@ -114,7 +114,7 @@ const listResultSchema = v.object({
                       lastCommit: toISOStringWithoutMs(LatestCommitDate),
                       fileUrlTemplate: FileURLTemplate,
                       branches: Branches,
-                    })
+                    }),
                   ),
                 IndexMetadata: v
                   .object({
@@ -129,8 +129,8 @@ const listResultSchema = v.object({
                 ...Repository,
                 lastIndexed,
                 stats: Stats,
-              }))
-          )
+              })),
+          ),
         )
         .map((val) => val ?? []),
     })

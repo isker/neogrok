@@ -40,7 +40,7 @@ export const toZoekt = async (
     searchall,
     start,
   }: OpenGrokSearchParams,
-  { projectToRepo, queryUnknownRepos }: ConversionDependencies
+  { projectToRepo, queryUnknownRepos }: ConversionDependencies,
 ): Promise<ZoektConversionResult> => {
   // OpenGrok has the lovely property of allowing you to input a "full" lucene
   // query into the primary search form field, or queries for specific lucene
@@ -144,7 +144,7 @@ export const toZoekt = async (
       });
     }
     const knownRepos = Array.from(candidateRepos).filter(
-      (r) => !unknownRepos.has(r)
+      (r) => !unknownRepos.has(r),
     );
     if (knownRepos.length > 0) {
       zoektParts.push(renderRepoQuery(knownRepos));
@@ -212,7 +212,7 @@ export type ZoektConversionResult = {
 /** Recursively render an OpenGrok lucene query AST into a Zoekt query. */
 const renderAst = (
   astNode: lucene.AST | lucene.Node,
-  pushDownField?: PushDownField
+  pushDownField?: PushDownField,
 ): RenderResult => {
   if ("left" in astNode) {
     const { left, parenthesized } = astNode;
@@ -223,7 +223,7 @@ const renderAst = (
         ? renderInfixExpression(
             renderAst(left, field),
             astNode.operator,
-            renderAst(astNode.right, field)
+            renderAst(astNode.right, field),
           )
         : renderAst(left, field);
     return parenthesized &&
@@ -274,7 +274,7 @@ type RenderResult = Pick<ZoektConversionResult, "zoektQuery" | "warnings">;
 /** Chooses what the relevant field is for this AST node, if any. */
 const resolveField = (
   astField: lucene.ASTField,
-  pushDownField: PushDownField | undefined
+  pushDownField: PushDownField | undefined,
 ): PushDownField | undefined => {
   if (astField.field && astField.field !== "<implicit>") {
     return {
@@ -289,7 +289,7 @@ const resolveField = (
 const renderInfixExpression = (
   left: RenderResult,
   operator: lucene.Operator,
-  right: RenderResult
+  right: RenderResult,
 ): RenderResult => {
   const warnings = [...left.warnings, ...right.warnings];
   if (left.zoektQuery && right.zoektQuery) {
@@ -343,7 +343,7 @@ const renderInfixExpression = (
 
 const renderTermNode = (
   node: lucene.NodeTerm,
-  pushDownField?: PushDownField
+  pushDownField?: PushDownField,
 ): RenderResult => {
   const {
     term,
@@ -462,7 +462,7 @@ const extractQueryLocation = (
         end: lucene.TermLocation;
       }
     | null
-    | undefined
+    | undefined,
 ): QueryLocation => {
   if (luceneLocation == null) {
     // This is just the types being bad, I'm pretty sure.
@@ -553,5 +553,5 @@ const escapeLuceneTerm = (s: string) =>
   s.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(
     /[?*]/g,
     // i.e. `.*` or `.?`
-    ".$&"
+    ".$&",
   );

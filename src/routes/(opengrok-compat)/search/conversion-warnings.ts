@@ -50,7 +50,7 @@ export type QueryLocation = {
 };
 
 export const renderWarning = (
-  warning: ZoektConversionWarning
+  warning: ZoektConversionWarning,
 ): { message: string; location?: QueryLocation } => {
   const location = "location" in warning ? warning.location : undefined;
   return { message: renderWarningMessage(warning), location };
@@ -82,13 +82,13 @@ const renderWarningMessage = (warning: ZoektConversionWarning): string => {
       return `The given OpenGrok sort order ${warning.sortOrder} is not supported in neogrok; neogrok `;
     case "ConvertedProjects":
       return `The following OpenGrok projects have been renamed to neogrok repositories: ${Object.entries(
-        warning.conversions
+        warning.conversions,
       )
         .map(([project, repo]) => `${project} -> ${repo}`)
         .join(", ")}`;
     case "UnknownRepos":
       return `The following neogrok repositories do not exist in the backing zoekt instance and have been discarded from the query: ${warning.repos.join(
-        ", "
+        ", ",
       )}`;
     case "UnsupportedLanguage":
       return `The given OpenGrok file type could not be converted to a neogrok language (\`lang:\`): ${warning.language}`;

@@ -40,7 +40,7 @@ export const resolveConfiguration: () => Promise<void> = async () => {
   try {
     fileConfig = fileConfigurationSchema.parse(
       JSON.parse(await fs.promises.readFile(configFilePath, "utf8")),
-      { mode: "strict" }
+      { mode: "strict" },
     );
   } catch (e) {
     // Swallow errors related to the default config file being missing.
@@ -66,7 +66,7 @@ export const resolveConfiguration: () => Promise<void> = async () => {
   const zoektUrl = environmentConfig.ZOEKT_URL ?? fileConfig?.zoektUrl;
   if (zoektUrl === undefined) {
     throw new Error(
-      `"ZOEKT_URL" must be defined in the environment, or "zoektUrl" must be defined in the configuration file at ${configFilePath}`
+      `"ZOEKT_URL" must be defined in the environment, or "zoektUrl" must be defined in the configuration file at ${configFilePath}`,
     );
   }
 

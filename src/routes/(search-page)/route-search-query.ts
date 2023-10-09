@@ -15,11 +15,11 @@ type RouteSearchQuery = Omit<SearchQuery, "query"> & {
 };
 
 export const parseSearchParams = (
-  searchParams: URLSearchParams
+  searchParams: URLSearchParams,
 ): RouteSearchQuery => {
   const parsedContextLines = Number.parseInt(
     searchParams.get("contextLines") ?? "",
-    10
+    10,
   );
   const parsedFiles = Number.parseInt(searchParams.get("files") ?? "", 10);
   const parsedMatches = Number.parseInt(searchParams.get("matches") ?? "", 10);
@@ -42,7 +42,7 @@ export const parseSearchParams = (
 };
 
 export const routeSearchQuery = derived(page, (p) =>
-  parseSearchParams(p.url.searchParams)
+  parseSearchParams(p.url.searchParams),
 );
 
 // This function is only called in the browser, so it's fine to have this be in

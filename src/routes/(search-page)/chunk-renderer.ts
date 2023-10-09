@@ -6,7 +6,7 @@ export const renderChunksToLineGroups = (
   // The number of matches that, when exceeded, we stop incorporating chunks
   // into the line groups.
   softCutoff: number,
-  expanded: boolean
+  expanded: boolean,
 ) => {
   // Groups of contiguous lines in the file; contiguous matches are merged into
   // a single group.
@@ -73,7 +73,6 @@ export const renderChunksToLineGroups = (
       const renderedChunk = expanded
         ? chunk
         : // The above `break` guarantees this is non-null.
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           subChunk!;
       const { lines, startLineNumber } = renderedChunk;
       const numberedLines = lines.map(({ lineTokens }, i) => ({
@@ -87,7 +86,6 @@ export const renderChunksToLineGroups = (
         // Collapse adjacent chunks into a single line group.
 
         // By the definition of `contiguous` we know this exists.
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         lineGroups.at(-1)!.push(...numberedLines);
       } else {
         lineGroups.push(numberedLines);

@@ -15,7 +15,7 @@ export const load: import("./$types").PageServerLoad = async ({
     {
       query: `repo:^${escapeRegExp(convertedRepo ?? project)}$`,
     },
-    fetch
+    fetch,
   );
   if (result.kind === "error") {
     throw new Error(`Failed to list repositories: ${result.error}`);

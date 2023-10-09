@@ -15,7 +15,7 @@ export const load: import("./$types").PageLoad = async ({ url, fetch }) => ({
 
 const executeSearch = async (
   url: URL,
-  f: typeof fetch
+  f: typeof fetch,
 ): Promise<SearchOutcome> => {
   const { query, ...rest } = parseSearchParams(new URL(url).searchParams);
   if (query === undefined) {
