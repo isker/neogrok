@@ -1,8 +1,7 @@
 FROM node:18-slim as app-builder
 WORKDIR /app
 COPY . .
-ARG ZOEKT_URL
-RUN ZOEKT_URL=$ZOEKT_URL npm install \
+RUN npm install \
     && npm run build \
     && npm install --omit=dev
 

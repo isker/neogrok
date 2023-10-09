@@ -4,10 +4,8 @@ import type { HandleServerError } from "@sveltejs/kit";
 
 if (!building) {
   // Resolve the configuration on startup, such that startup fails if the
-  // configuration is invalid.
-  //
-  // We don't actually use any of the features of this hooks module, other than
-  // that it is evaluated on startup; other modules are not.
+  // configuration is invalid. We do this here because this hooks module runs on
+  // service startup, but not the build, unlike the configuration module.
   await resolveConfiguration();
 }
 
