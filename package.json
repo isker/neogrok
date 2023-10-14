@@ -8,9 +8,7 @@
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
-    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-    "lint": "prettier --check . && eslint --report-unused-disable-directives --max-warnings 0 .",
+    "lint": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --fail-on-warnings && prettier --check . && eslint --report-unused-disable-directives --max-warnings 0 .",
     "format": "prettier --write .",
     "test": "vitest"
   },
