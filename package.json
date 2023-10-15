@@ -1,20 +1,35 @@
 {
   "name": "neogrok",
   "version": "0.0.1",
-  "description": "A snappier frontend for zoekt",
-  "private": true,
+  "description": "A snappy code search frontend for zoekt",
+  "keywords": [
+    "code search",
+    "grok",
+    "zoekt"
+  ],
+  "homepage": "https://github.com/isker/neogrok",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/isker/neogrok.git"
+  },
+  "bugs": "https://github.com/isker/neogrok/issues",
   "type": "module",
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
+    "start": "./main.js",
     "lint": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --fail-on-warnings && prettier --check . && eslint --report-unused-disable-directives --max-warnings 0 .",
     "format": "prettier --write .",
-    "test": "vitest"
+    "test": "vitest",
+    "prepublishOnly": "npm run build"
   },
   "bin": {
-    "neogrok": "./main.js"
+    "neogrok": "main.js"
   },
+  "files": [
+    "build"
+  ],
   "author": "Ian Kerins <npm@isk.haus>",
   "license": "MIT",
   "devDependencies": {
@@ -42,5 +57,8 @@
     "lucene": "2.1.1",
     "lucide-svelte": "0.256.1",
     "pretty-bytes": "6.1.1"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

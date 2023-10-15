@@ -2,11 +2,27 @@
 
 Neogrok is a frontend for [zoekt](https://github.com/sourcegraph/zoekt), a fast
 and scalable code search engine. Neogrok exposes zoekt's search APIs in the form
-of a modern, snappy UI.
+of a modern, snappy UI. Neogrok is a SvelteKit application running on Node.js
+and in the browser.
 
-There is a [demo deployment](./demo) at https://neogrok-demo-web.fly.dev/. This
-deployment's configuration can serve as a guide for your own deployments of
-neogrok; currently there are no packaged distributions.
+There is a demo deployment of neogrok and zoekt running together at
+https://neogrok-demo-web.fly.dev/.
+
+## Installing
+
+Neogrok is packaged for installation on
+[NPM](https://www.npmjs.com/package/neogrok). Simply `npm install -g neogrok` to
+install an executable.
+
+Alternatively, building from source is easy. Clone the repository,
+`npm install && npm run build && npm run start`. You can of course run the server
+without intermediation by `npm`, by doing whatever `npm run start` does directly;
+but the relevant commands may change in the future, whereas `npm run start` will
+not.
+
+## Deploying
+The demo deployment is configured [in this repository](./demo). This configuration
+can serve as a guide for your own deployments of neogrok together with zoekt.
 
 ## Configuration
 
@@ -43,7 +59,7 @@ Neogrok exports some basic [Prometheus](https://prometheus.io/)
 `PROMETHEUS_HOST`. These variables have the exact same semantics as the
 above-described SvelteKit environment variables, but the port/socket must be
 different than those of the main application. When opting in with these
-variables, `/metrics` will be served.
+variables, `/metrics` will be served at the location they describe.
 
 `/metrics` is required to be served with a different port/socket so as to not
 expose it on the main site; serving one port to end users and another to the

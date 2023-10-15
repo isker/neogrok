@@ -24,7 +24,7 @@ RUN go install github.com/sourcegraph/zoekt/cmd/zoekt-git-index@latest github.co
   git clone --depth 1 https://github.com/sourcegraph/zoekt.git && \
   zoekt-git-index -index=index -require_ctags neogrok zoekt
 
-FROM gcr.io/distroless/static-debian11:latest as zoekt-webserver
+FROM gcr.io/distroless/static-debian12:latest as zoekt-webserver
 WORKDIR /zoekt
 COPY --from=go-builder /go/bin/zoekt-webserver /zoekt/zoekt-webserver
 COPY --from=go-builder /zoekt/index /zoekt/index

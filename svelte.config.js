@@ -7,7 +7,7 @@ const config = {
   // for more information about preprocessors
   preprocess: vitePreprocess(),
   kit: {
-    adapter: adapter({ precompress: true }),
+    adapter: adapter({ precompress: true, polyfill: false }),
   },
   compilerOptions: {
     immutable: true,

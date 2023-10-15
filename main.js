@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 // This is the main "production" entrypoint into neogrok. It wraps the SvelteKit
 // server to do some additional things. Note that the vite dev server used by
 // SvelteKit bypasses this module entirely, as it's a fundamentally different
