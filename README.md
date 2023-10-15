@@ -21,6 +21,7 @@ but the relevant commands may change in the future, whereas `npm run start` will
 not.
 
 ## Deploying
+
 The demo deployment is configured [in this repository](./demo). This configuration
 can serve as a guide for your own deployments of neogrok together with zoekt.
 
