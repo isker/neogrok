@@ -49,8 +49,8 @@ jobs:
       - run: npm install
       - uses: changesets/action@v1
         with:
-          commit: Version neogrok
-          title: Version neogrok
+          commit: Publish release
+          title: Publish release
           publish: npx changeset publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
