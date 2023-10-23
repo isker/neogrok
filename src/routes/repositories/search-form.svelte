@@ -5,6 +5,7 @@
   import { computeInputColor } from "$lib/input-colors";
   import { routeListQuery, updateRouteListQuery } from "./route-list-query";
   import ToggleSearchType from "$lib/toggle-search-type.svelte";
+  import LoadingEllipsis from "$lib/loading-ellipsis.svelte";
 
   export let queryError: string | null;
 
@@ -55,7 +56,7 @@
   <label for="query" class="flex-auto flex flex-col space-y-0.5">
     <span
       title="Same query syntax as the main search - use `r:name` to filter repositories by name, otherwise you are filtering them by their content!"
-      class="text-xs px-1 text-gray-500">query</span
+      class="text-xs px-1 text-gray-500">query<LoadingEllipsis /></span
     >
     <span
       class={`flex flex-auto p-1 border shadow-sm space-x-1 ${computeInputColor(

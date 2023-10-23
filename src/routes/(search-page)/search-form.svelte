@@ -6,6 +6,7 @@
   import { computeInputColor } from "$lib/input-colors";
   import ToggleSearchType from "$lib/toggle-search-type.svelte";
   import ToggleMatchSortOrder from "$lib/toggle-match-sort-order.svelte";
+  import LoadingEllipsis from "$lib/loading-ellipsis.svelte";
   import {
     routeSearchQuery,
     updateRouteSearchQuery,
@@ -59,7 +60,6 @@
     $navigating === null && $routeSearchQuery.matches !== matches;
 </script>
 
-<!-- TODO more clearly indicate in the UI when a search query API request is in progress -->
 <!-- TODO explore JS-disabled compat.  Should actually be pretty doable with `action="/"`? -->
 <form
   on:submit|preventDefault={() => {
@@ -73,7 +73,7 @@
 
   <div class="flex flex-wrap gap-y-2 justify-center whitespace-nowrap">
     <label for="query" class="flex-auto flex flex-col space-y-0.5">
-      <span class="text-xs px-1 text-gray-500">query</span>
+      <span class="text-xs px-1 text-gray-500">query<LoadingEllipsis /></span>
       <span
         class={`flex flex-auto p-1 border shadow-sm space-x-1 ${computeInputColor(
           {
