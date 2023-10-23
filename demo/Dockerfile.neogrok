@@ -9,6 +9,6 @@ FROM gcr.io/distroless/nodejs20-debian12
 WORKDIR /app
 COPY package.json .
 COPY main.js .
-COPY --from=app-builder /app/build build
 COPY --from=app-builder /app/node_modules node_modules
+COPY --from=app-builder /app/build build
 ENTRYPOINT ["/nodejs/bin/node", "main.js"]
