@@ -31,6 +31,24 @@
   });
   onDestroy(unsubscribe);
 
+  const shouldLiveSearch = () =>
+    $searchType === "live" &&
+    // Zoekt search is based on trigrams. Queries for 1 or 2 characters are thus
+    // _really_ expensive on large instances, as they essentially can't use the index
+    // fully. It's also almost always the case that users do not want to make
+    // such short queries, and that such queries are being executed only because
+    // live search is creating them as users type in their desired longer query.
+    //
+    // So, force such queries into a "surprise manual" mode: they will not be
+    // automatically executed, but can still be submitted with the enter key,
+    // just like manual searches.
+    //
+    // Of course, without actually parsing the query (which we will never do, in
+    // neogrok; the zoekt parser is so janky that there's no way it could be
+    // maintainably reimplemented), we can't determine when a user is clearing
+    // the "trigram threshold". This is just a dumb heuristic.
+    (!query || query.length >= 3);
+
   const manualSubmit = () => {
     updateRouteSearchQuery({
       query,
@@ -63,9 +81,7 @@
 <!-- TODO explore JS-disabled compat.  Should actually be pretty doable with `action="/"`? -->
 <form
   on:submit|preventDefault={() => {
-    if ($searchType === "manual") {
-      manualSubmit();
-    }
+    manualSubmit();
   }}
 >
   <!-- Make enter key submission work: https://stackoverflow.com/a/35235768 -->
@@ -87,7 +103,7 @@
         <input
           bind:value={query}
           on:input={() => {
-            if ($searchType === "live") {
+            if (shouldLiveSearch()) {
               updateRouteSearchQuery({ query, searchType: $searchType });
             }
           }}
@@ -111,7 +127,7 @@
         pending={contextLinesPending}
         bind:value={contextLines}
         on:change={(e) => {
-          if ($searchType === "live") {
+          if (shouldLiveSearch()) {
             updateRouteSearchQuery({
               contextLines: e.detail,
               searchType: $searchType,
@@ -128,7 +144,7 @@
         pending={filesPending}
         bind:value={files}
         on:change={(e) => {
-          if ($searchType === "live") {
+          if (shouldLiveSearch()) {
             updateRouteSearchQuery({
               files: e.detail,
               searchType: $searchType,
@@ -145,7 +161,7 @@
         pending={matchesPending}
         bind:value={matches}
         on:change={(e) => {
-          if ($searchType === "live") {
+          if (shouldLiveSearch()) {
             updateRouteSearchQuery({
               matches: e.detail,
               searchType: $searchType,
