@@ -11,6 +11,8 @@
   } = results);
 </script>
 
+<!-- TODO accept null results, render empty table -->
+<!-- FIXME perf is bad on an instance with thousands of repos. -->
 <!-- FIXME the file count/ram size data is for repo shards matching the query,
 but that's not understandable from the UI -->
 <h1 class="text-xs py-1">

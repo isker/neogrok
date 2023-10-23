@@ -62,7 +62,7 @@
         {
           error: queryError !== null,
           pending: queryPending,
-        }
+        },
       )}`}
     >
       <!-- It's a search page, a11y be damned. cf. google.com, bing.com, etc. -->
@@ -86,7 +86,5 @@
       <ToggleSearchType />
     </span>
   </label>
+  <div class="text-xs text-red-500">{queryError ?? "\u200b"}</div>
 </form>
-{#if queryError}
-  <span class="text-sm text-red-500">{queryError}</span>
-{/if}

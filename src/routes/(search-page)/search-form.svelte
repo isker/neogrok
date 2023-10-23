@@ -79,7 +79,7 @@
           {
             error: queryError !== null,
             pending: queryPending,
-          }
+          },
         )}`}
       >
         <!-- It's a search page, a11y be damned. cf. google.com, bing.com, etc. -->
@@ -155,9 +155,5 @@
       />
     </label>
   </div>
-
-  <!-- FIXME this shifts the entire page contents down when it's visible, we should have a buffer. -->
-  {#if queryError !== null}
-    <span class="text-xs text-red-500">{queryError}</span>
-  {/if}
+  <div class="text-xs text-red-500">{queryError ?? "\u200b"}</div>
 </form>

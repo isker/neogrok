@@ -17,7 +17,7 @@
     neogrokMatchCount === $routeSearchQuery.matches;
 </script>
 
-<h1 class="text-xs flex flex-wrap pt-2">
+<h1 class="text-xs flex flex-wrap py-1">
   <span>
     zoekt: {fileCount}
     {fileCount === 1 ? "file" : "files"} / {matchCount}
@@ -42,9 +42,10 @@
     >
   </span>
 </h1>
-<!-- TODO enable removing this key by making SearchResultsFile reset its internal state when props change. -->
-{#each files as file, i (`${file.repository}/${file.fileName.tokens
-  .map(({ text }) => text)
-  .join()}@${file.branches.join(";")}`)}
-  <SearchResultsFile {file} rank={i + 1} />
-{/each}
+<div class="space-y-2">
+  {#each files as file, i (`${file.repository}/${file.fileName.tokens
+    .map(({ text }) => text)
+    .join()}@${file.branches.join(";")}`)}
+    <SearchResultsFile {file} rank={i + 1} />
+  {/each}
+</div>
