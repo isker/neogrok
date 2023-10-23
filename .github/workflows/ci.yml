@@ -35,6 +35,7 @@ jobs:
     if: github.event_name == 'push'
     needs: build-lint-test
     runs-on: ubuntu-latest
+    concurrency: release-${{ github.ref }}
     permissions:
       contents: write # to create releases
       pull-requests: write # to create pull requests
