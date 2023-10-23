@@ -3,9 +3,6 @@ import { parseSearchParams } from "./route-search-query";
 
 export type SearchOutcome =
   | { kind: "none" }
-  // TODO for long searches, we should consider making `results` a Promise.
-  // Needs benchmarking to determine just how slow a zoekt backend can get with
-  // large repositories.
   | { kind: "success"; results: SearchResults }
   | { kind: "error"; error: string };
 
