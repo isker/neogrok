@@ -2,6 +2,9 @@ import * as v from "@badrap/valita";
 import type { ReadonlyDeep } from "type-fest";
 import { makeZoektRequest } from "./zoekt-client";
 
+export const listQuerySchema = v.object({ query: v.string().optional() });
+export type ListQuery = ReadonlyDeep<v.Infer<typeof listQuerySchema>>;
+
 export type ListRepositoriesResponse =
   | {
       kind: "success";
@@ -13,7 +16,7 @@ export type ListRepositoriesResponse =
     };
 
 export async function listRepositories(
-  { query }: { query?: string },
+  { query }: ListQuery,
   f: typeof fetch,
 ): Promise<ListRepositoriesResponse> {
   const body = JSON.stringify({ q: query });

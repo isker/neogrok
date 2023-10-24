@@ -1,4 +1,8 @@
-import type { SearchResponse, SearchResults } from "$lib/server/search-api";
+import type {
+  SearchQuery,
+  SearchResponse,
+  SearchResults,
+} from "$lib/server/search-api";
 import { parseSearchParams } from "./route-search-query";
 
 export type SearchOutcome =
@@ -22,7 +26,7 @@ const executeSearch = async (
   try {
     const response = await f("/api/search", {
       method: "POST",
-      body: JSON.stringify({ query, ...rest }),
+      body: JSON.stringify({ query, ...rest } satisfies SearchQuery),
       headers: { "content-type": "application/json" },
     });
     const searchResponse: SearchResponse = await response.json();
