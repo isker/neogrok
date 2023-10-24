@@ -24,17 +24,14 @@
   >
 </svelte:head>
 
-<!--
-  We hoist this above the conditions so that it never gets destroyed/remounted
-  as we transition among the states they represent.  This is important for
-  proper maintenance of the intricate synchronization between the route state
-  and the form state.
--->
 <SearchForm
   queryError={data.listOutcome.kind === "error" ? data.listOutcome.error : null}
 />
-{#if data.listOutcome.kind === "error" && previousListResults}
-  <RepositoriesList results={previousListResults} />
-{:else if data.listOutcome.kind === "success"}
-  <RepositoriesList results={data.listOutcome.results} />
-{/if}
+<RepositoriesList
+  results={data.listOutcome.kind === "success"
+    ? data.listOutcome.results
+    : previousListResults ?? {
+        repositories: [],
+        stats: { fileCount: 0, contentBytes: 0, indexBytes: 0 },
+      }}
+/>
