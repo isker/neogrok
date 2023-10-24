@@ -1,5 +1,13 @@
 # neogrok
 
+## 0.0.4
+
+### Patch Changes
+
+- d0378bc: Display empty repositories table instead of nothing when there's a query error
+- b4807fb: Make repositories table a bit skinnier by abbreviating git commit shas
+- 9f80401: Expand `devalue` bypass to /api/list in addition to /api/search
+
 ## 0.0.3
 
 ### Patch Changes
