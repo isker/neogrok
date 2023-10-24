@@ -12,7 +12,12 @@
     lastCommit,
     branches,
     stats: { fileCount, indexBytes, contentBytes },
+    commitUrlTemplate,
   } = repository);
+
+  // Abbreviate git hashes. Helps make the very wide table a bit narrower.
+  const abbreviateVersion = (v: string) =>
+    /^[a-z0-9]{40}$/.test(v) ? v.slice(0, 8) : v;
 </script>
 
 <tr class="border">
@@ -21,9 +26,17 @@
   </td>
   <td class="p-1">{fileCount}</td>
   <td class="p-1">
-    {branches
-      .map(({ name: branchName, version }) => `${branchName}@${version}`)
-      .join(" ")}
+    {#each branches as { name: branchName, version }}
+      {branchName}@<span class="font-mono">
+        {#if commitUrlTemplate}
+          <Link to={commitUrlTemplate.replaceAll("{{.Version}}", version)}
+            >{abbreviateVersion(version)}</Link
+          >
+        {:else}
+          {abbreviateVersion(version)}
+        {/if}
+      </span>
+    {/each}
   </td>
   <td class="p-1">{prettyBytes(contentBytes, { space: false })}</td>
   <td class="p-1">{prettyBytes(indexBytes, { space: false })}</td>

@@ -85,6 +85,7 @@ const listResultSchema = v.object({
                     URL: v.string(),
                     LatestCommitDate: dateSchema,
                     FileURLTemplate: v.string(),
+                    CommitURLTemplate: v.string(),
                     Branches: v.array(
                       v
                         .object({ Name: v.string(), Version: v.string() })
@@ -102,6 +103,7 @@ const listResultSchema = v.object({
                       URL,
                       LatestCommitDate,
                       FileURLTemplate,
+                      CommitURLTemplate,
                       Branches,
                     }) => ({
                       name: Name,
@@ -110,6 +112,7 @@ const listResultSchema = v.object({
                       url: URL,
                       lastCommit: toISOStringWithoutMs(LatestCommitDate),
                       fileUrlTemplate: FileURLTemplate,
+                      commitUrlTemplate: CommitURLTemplate,
                       branches: Branches,
                     }),
                   ),
