@@ -46,9 +46,7 @@
 
 <form
   on:submit|preventDefault={() => {
-    if ($searchType === "manual") {
-      manualSubmit();
-    }
+    manualSubmit();
   }}
 >
   <!-- Make enter key submission work: https://stackoverflow.com/a/35235768 -->
@@ -71,7 +69,11 @@
       <input
         bind:value={query}
         on:input={() => {
-          if ($searchType === "live") {
+          if (
+            $searchType === "live" &&
+            // Same trigram efficiency rules as on the main search page.
+            (!query || query.length >= 3)
+          ) {
             updateRouteListQuery({ query, searchType: $searchType });
           }
         }}
