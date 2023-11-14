@@ -72,42 +72,47 @@
       <Expression>/&apos;foo/</Expression> and the second being
       <Expression>/bar&apos;/</Expression>.)
     </p>
-    <p>
-      As described above, expressions are <em>conjunctive</em> by default. A
-      file must have at least one match for each expression to be included in
-      the query results. Expressions may be made <em>disjunctive</em> by joining
-      them with the special expression infix operator
-      <code>or</code>. <ExampleQuery query="foo or bar" /> returns all matches for
-      <Expression>/foo/</Expression> or
-      <Expression>/bar/</Expression> in all files that have matches for at least
-      one of <Expression>/foo/</Expression> or
-      <Expression>/bar/</Expression>. (To use <code>or</code> as a literal
-      expression and not as an operator, double quote it:
-      <ExampleQuery query={'foo "or" bar'} /> has three conjunctive expressions.)
-    </p>
-    <p>
-      Expressions can be logically grouped with parentheses:
-      <ExampleQuery query="foo (bar or baz)" /> produces results from files with
-      matches for both <Expression>/foo/</Expression> and at least one of <Expression
-        >/bar/</Expression
-      > or
-      <Expression>/baz/</Expression>. These groupings can be nested arbitrarily.
-    </p>
-    <p>
-      To complete the boolean logic, expressions can be negated with a leading
-      dash. <ExampleQuery query="foo -bar" /> returns all matches for <Expression
-        >/foo/</Expression
-      > in files that do not have matches for <Expression>/bar/</Expression>.
-      <ExampleQuery query="foo -(bar or baz)" /> returns all matches for
-      <Expression>/foo/</Expression> in files that do not have matches for either
-      <Expression>/bar/</Expression> or
-      <Expression>/baz/</Expression>.
-      <ExampleQuery query="foo -(bar baz)" /> returns all matches for
-      <Expression>/foo/</Expression> in files that do not have matches for
-      <em>both</em>
-      <Expression>/bar/</Expression> and
-      <Expression>/baz/</Expression>.
-    </p>
+    <section class="space-y-2">
+      <Heading id="boolean-logic">
+        Multiple expressions are combined with boolean logic
+      </Heading>
+      <p>
+        As described above, expressions are <em>conjunctive</em> by default: a
+        file must have at least one match for each expression to be included in
+        the query results. Expressions may be made <em>disjunctive</em> by
+        joining them with the special expression infix operator <code>or</code>.
+        <ExampleQuery query="foo or bar" /> returns all matches for
+        <Expression>/foo/</Expression> or <Expression>/bar/</Expression> in all files
+        that have matches for at least one of
+        <Expression>/foo/</Expression> or <Expression>/bar/</Expression>. (To
+        use <code>or</code> as a literal expression and not as an operator,
+        double quote it: <ExampleQuery query={'foo "or" bar'} /> has three conjunctive
+        expressions.)
+      </p>
+      <p>
+        Expressions can be logically grouped with parentheses: <ExampleQuery
+          query="foo (bar or baz)"
+        /> produces results from files with matches for both <Expression
+          >/foo/</Expression
+        > and at least one of <Expression>/bar/</Expression> or <Expression
+          >/baz/</Expression
+        >. These groupings can be nested arbitrarily.
+      </p>
+      <p>
+        To complete the boolean logic, expressions can be negated with a leading
+        dash. <ExampleQuery query="foo -bar" /> returns all matches for
+        <Expression>/foo/</Expression> in files that do not have matches for
+        <Expression>/bar/</Expression>. <ExampleQuery
+          query="foo -(bar or baz)"
+        /> returns all matches for <Expression>/foo/</Expression> in files that do
+        not have matches for either <Expression>/bar/</Expression> or
+        <Expression>/baz/</Expression>. <ExampleQuery query="foo -(bar baz)" />
+        returns all matches for <Expression>/foo/</Expression> in files that do not
+        have matches for <em>both</em>
+        <Expression>/bar/</Expression> and
+        <Expression>/baz/</Expression>.
+      </p>
+    </section>
   </section>
   <section class="space-y-2">
     <Heading id="prefix-expressions">
@@ -140,6 +145,12 @@
     <p>
       There are a few more kinds of prefix expressions than those two.
       They&apos;re all tabulated below.
+    </p>
+    <p>
+      Finally, note that the boolean logic described above applies to prefix
+      expressions just like normal ones: <ExampleQuery query="-f:test assert" />
+      shows matches for <Expression>/assert/</Expression> except for those in files
+      whose names match <Expression>/test/</Expression>.
     </p>
   </section>
 </div>

@@ -134,10 +134,11 @@
       </ul>
     </li>
     <li class="grow basis-64 max-w-xs">
-      <h3 class="text-lg">
-        Logically compose <Link to="/syntax#expressions">expressions</Link>
-      </h3>
-      <span class="text-xs"> Seriously, read the manual for this one. </span>
+      <h3 class="text-lg">Logically compose expressions</h3>
+      <span class="text-xs">
+        Seriously, <Link to="/syntax#boolean-logic">read the manual</Link> for this
+        one.
+      </span>
       <ul class="space-y-1">
         <li>
           <ExampleQuery query="this -without_this" />
