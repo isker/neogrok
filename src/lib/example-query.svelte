@@ -3,8 +3,13 @@
   import Expression from "./expression.svelte";
   export let query: string;
   export let wrap = false;
+  export let page: "search" | "repositories" = "search";
 </script>
 
-<Link to={`/?${new URLSearchParams({ q: query }).toString()}`}>
+<Link
+  to={`${page === "search" ? "/" : "/repositories"}?${new URLSearchParams({
+    q: query,
+  }).toString()}`}
+>
   <Expression {wrap}>{query}</Expression>
 </Link>
