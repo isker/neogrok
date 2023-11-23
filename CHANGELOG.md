@@ -1,5 +1,16 @@
 # neogrok
 
+## 0.1.0
+
+### Minor Changes
+
+- 33a5fe6: Enhance the repositories list page, making it more performant on instances with large numbers of repositories, and make columns sortable by clicking on their headers
+
+### Patch Changes
+
+- ace6aa0: Expand and enhance documentation on /about and /syntax
+- 37dacde: Replicate live search optimization heuristic to the repositories page
+
 ## 0.0.4
 
 ### Patch Changes
