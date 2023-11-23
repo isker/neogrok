@@ -154,163 +154,157 @@
     </p>
   </section>
 </div>
-<section class="max-w-4xl mx-auto pt-2 space-y-2">
-  <div class="text-center">
-    <Heading id="prefix-table">Available prefixes</Heading>
-  </div>
-  <div class="overflow-x-auto">
-    <table class="border border-collapse text-sm text-center">
-      <thead>
-        <tr class="border bg-slate-100">
-          <th class="p-1">Prefix(es)</th>
-          <th class="p-1">Description</th>
-          <th class="p-1">Examples</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr class="border">
-          <td class="p-1">
-            <code>file:</code>, <code>f:</code>
-          </td>
-          <td class="p-1">
-            Regex match file names only, instead of the default file names and
-            file contents
-          </td>
-          <td class="p-1">
-            <ExampleQuery query="f:README" />
-            <br />
-            <ExampleQuery query="f:README neogrok" />
-            <br />
-            <ExampleQuery query={'f:"evil file with spaces"'} />
-          </td>
-        </tr>
-        <tr class="border">
-          <td class="p-1">
-            <code>content:</code>, <code>c:</code>
-          </td>
-          <td class="p-1">
-            Regex match file contents only, instead of the default file names
-            and file contents
-          </td>
-          <td class="p-1">
-            <ExampleQuery query="c:README" />
-          </td>
-        </tr>
-        <tr class="border">
-          <td class="p-1">
-            <code>repo:</code>, <code>r:</code>
-          </td>
-          <td class="p-1">
-            Regex match repository names; by default all repositories are
-            searched
-          </td>
-          <td class="p-1">
-            <ExampleQuery query="r:linux driver" />
-          </td>
-        </tr>
-        <tr class="border">
-          <td class="p-1">
-            <code>branch:</code>, <code>b:</code>
-          </td>
-          <td class="p-1">
-            Regex match branch names; by default all branches are searched
-          </td>
-          <td class="p-1">
-            <ExampleQuery query="b:prerelease foo" />
-          </td>
-        </tr>
-        <tr class="border">
-          <td class="p-1">
-            <code>lang:</code>
-          </td>
-          <td class="p-1">
-            Constrain files to those in the given language (or language alias)
-            as defined by
-            <Link
-              to="https://github.com/github/linguist/blob/master/lib/linguist/languages.yml"
-            >
-              linguist
-            </Link>
-            and computed probabilistically from file name and contents at index time
-            by
-            <Link to="https://github.com/go-enry/go-enry/">go-enry</Link>. This
-            is
-            <em>not</em> a regex or a substring, though it is case-insensitive; each
-            expression can only contain one language.
-          </td>
-          <td class="p-1">
-            <ExampleQuery query="lang:typescript type" />
-          </td>
-        </tr>
-        <tr class="border">
-          <td class="p-1">
-            <code>sym:</code>
-          </td>
-          <td class="p-1">
-            Regex match symbol definitions, as determined by
-            <Link to="https://ctags.io/">universal ctags</Link> at index time, if
-            it was present during indexing
-          </td>
-          <td class="p-1">
-            <ExampleQuery query="sym:\bmain\b" />
-          </td>
-        </tr>
-        <tr class="border">
-          <td class="p-1">
-            <code>case:</code>
-          </td>
-          <td class="p-1">
-            Unlike most other expressions, does not do anything on its own, but
-            rather modifies other expressions in the query.
-            <code>case:yes</code> makes other expressions case-sensitive;
-            <code>case:no</code> makes them case-insensitive, and
-            <code>case:auto</code> (the default behavior) makes them case-sensitive
-            if they have any uppercase characters and case-insensitive otherwise
-          </td>
-          <td class="p-1">
-            <ExampleQuery query="case:no TEST" />
-          </td>
-        </tr>
-        <tr class="border">
-          <td class="p-1">
-            <code>archived:</code>
-          </td>
-          <td class="p-1">
-            <code>archived:no</code> excludes archived repositories while
-            <code>archived:yes</code> excludes non-archived repositories. The default
-            is to exclude neither.
-          </td>
-          <td class="p-1">
-            <ExampleQuery query="archived:no readme" />
-          </td>
-        </tr>
-        <tr class="border">
-          <td class="p-1">
-            <code>fork:</code>
-          </td>
-          <td class="p-1">
-            <code>fork:no</code> excludes repositories that are forks of another
-            while <code>fork:yes</code> excludes repositories that are not forks
-            of another. The default is to exclude neither.
-          </td>
-          <td class="p-1">
-            <ExampleQuery query="fork:no readme" />
-          </td>
-        </tr>
-        <tr class="border">
-          <td class="p-1">
-            <code>public:</code>
-          </td>
-          <td class="p-1">
-            <code>public:no</code> excludes public repositories while
-            <code>public:yes</code> excludes private repositories. The default is
-            to exclude neither.
-          </td>
-          <td class="p-1">
-            <ExampleQuery query="public:no readme" />
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</section>
+<div class="max-w-4xl mx-auto pt-2 overflow-x-auto">
+  <table class="border border-collapse text-sm text-center">
+    <Heading element="caption" id="prefix-table">Available prefixes</Heading>
+    <thead>
+      <tr class="border bg-slate-100">
+        <th class="p-1">Prefix(es)</th>
+        <th class="p-1">Description</th>
+        <th class="p-1">Examples</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="border">
+        <td class="p-1">
+          <code>file:</code>, <code>f:</code>
+        </td>
+        <td class="p-1">
+          Regex match file names only, instead of the default file names and
+          file contents
+        </td>
+        <td class="p-1">
+          <ExampleQuery query="f:README" />
+          <br />
+          <ExampleQuery query="f:README neogrok" />
+          <br />
+          <ExampleQuery query={'f:"evil file with spaces"'} />
+        </td>
+      </tr>
+      <tr class="border">
+        <td class="p-1">
+          <code>content:</code>, <code>c:</code>
+        </td>
+        <td class="p-1">
+          Regex match file contents only, instead of the default file names and
+          file contents
+        </td>
+        <td class="p-1">
+          <ExampleQuery query="c:README" />
+        </td>
+      </tr>
+      <tr class="border">
+        <td class="p-1">
+          <code>repo:</code>, <code>r:</code>
+        </td>
+        <td class="p-1">
+          Regex match repository names; by default all repositories are searched
+        </td>
+        <td class="p-1">
+          <ExampleQuery query="r:linux driver" />
+        </td>
+      </tr>
+      <tr class="border">
+        <td class="p-1">
+          <code>branch:</code>, <code>b:</code>
+        </td>
+        <td class="p-1">
+          Regex match branch names; by default all branches are searched
+        </td>
+        <td class="p-1">
+          <ExampleQuery query="b:prerelease foo" />
+        </td>
+      </tr>
+      <tr class="border">
+        <td class="p-1">
+          <code>lang:</code>
+        </td>
+        <td class="p-1">
+          Constrain files to those in the given language (or language alias) as
+          defined by
+          <Link
+            to="https://github.com/github/linguist/blob/master/lib/linguist/languages.yml"
+          >
+            linguist
+          </Link>
+          and computed probabilistically from file name and contents at index time
+          by
+          <Link to="https://github.com/go-enry/go-enry/">go-enry</Link>. This is
+          <em>not</em> a regex or a substring, though it is case-insensitive; each
+          expression can only contain one language.
+        </td>
+        <td class="p-1">
+          <ExampleQuery query="lang:typescript type" />
+        </td>
+      </tr>
+      <tr class="border">
+        <td class="p-1">
+          <code>sym:</code>
+        </td>
+        <td class="p-1">
+          Regex match symbol definitions, as determined by
+          <Link to="https://ctags.io/">universal ctags</Link> at index time, if it
+          was present during indexing
+        </td>
+        <td class="p-1">
+          <ExampleQuery query="sym:\bmain\b" />
+        </td>
+      </tr>
+      <tr class="border">
+        <td class="p-1">
+          <code>case:</code>
+        </td>
+        <td class="p-1">
+          Unlike most other expressions, does not do anything on its own, but
+          rather modifies other expressions in the query.
+          <code>case:yes</code> makes other expressions case-sensitive;
+          <code>case:no</code> makes them case-insensitive, and
+          <code>case:auto</code> (the default behavior) makes them case-sensitive
+          if they have any uppercase characters and case-insensitive otherwise
+        </td>
+        <td class="p-1">
+          <ExampleQuery query="case:no TEST" />
+        </td>
+      </tr>
+      <tr class="border">
+        <td class="p-1">
+          <code>archived:</code>
+        </td>
+        <td class="p-1">
+          <code>archived:no</code> excludes archived repositories while
+          <code>archived:yes</code> excludes non-archived repositories. The default
+          is to exclude neither.
+        </td>
+        <td class="p-1">
+          <ExampleQuery query="archived:no readme" />
+        </td>
+      </tr>
+      <tr class="border">
+        <td class="p-1">
+          <code>fork:</code>
+        </td>
+        <td class="p-1">
+          <code>fork:no</code> excludes repositories that are forks of another
+          while <code>fork:yes</code> excludes repositories that are not forks of
+          another. The default is to exclude neither.
+        </td>
+        <td class="p-1">
+          <ExampleQuery query="fork:no readme" />
+        </td>
+      </tr>
+      <tr class="border">
+        <td class="p-1">
+          <code>public:</code>
+        </td>
+        <td class="p-1">
+          <code>public:no</code> excludes public repositories while
+          <code>public:yes</code> excludes private repositories. The default is to
+          exclude neither.
+        </td>
+        <td class="p-1">
+          <ExampleQuery query="public:no readme" />
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
