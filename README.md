@@ -6,7 +6,31 @@ of a modern, snappy UI. Neogrok is a SvelteKit application running on Node.js
 and in the browser.
 
 There is a demo deployment of neogrok and zoekt running together at
-https://neogrok-demo-web.fly.dev/.
+https://neogrok-demo-web.fly.dev/. Try it out!
+
+## Features and usage
+
+Together, neogrok and zoekt provide:
+
+- Fast, live code search with a syntax based on regular expressions.
+- Easy deployments. A single deployment of zoekt can performantly index and
+  serve thousands of source repositories, using one of the many available
+  indexers like
+  [`zoekt-git-index`](https://github.com/sourcegraph/zoekt/blob/main/cmd/zoekt-git-index/)
+  to produce binary index files (called "shards") that are served by
+  [`zoekt-webserver`](https://github.com/sourcegraph/zoekt/tree/main/cmd/zoekt-webserver).
+  Neogrok is just a veneer on top of `zoekt-webserver`; the only necessary
+  configuration for neogrok is the URL of a running `zoekt-webserver`.
+- Low resource utilization. The demo (which just indexes the neogrok and zoekt
+  repos) happily runs on the smallest instances Fly can provision. Indexing
+  the Linux kernel produces about 2.7GiB of index shards, and serving those
+  shards uses just under 1 GiB of RAM.
+
+Beyond that, neogrok aims to be self-documenting. You can find details on usage
+and features on the demo site's [about
+page](https://neogrok-demo-web.fly.dev/about), and a full description of the
+zoekt search syntax on the site's [syntax
+page](https://neogrok-demo-web.fly.dev/syntax).
 
 ## Installing
 
