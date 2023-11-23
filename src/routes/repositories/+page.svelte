@@ -32,6 +32,6 @@
     ? data.listOutcome.results
     : previousListResults ?? {
         repositories: [],
-        stats: { fileCount: 0, contentBytes: 0, indexBytes: 0 },
+        stats: { shardCount: 0, fileCount: 0, contentBytes: 0, indexBytes: 0 },
       }}
 />

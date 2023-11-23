@@ -107,20 +107,56 @@
       the repositories indexed in the backing zoekt instance, including a variety
       of data about them.
     </p>
-    <p>
-      Note that the search input on this page has the same semantics as the
-      search input on the main search page: you are writing a full <Link
-        to="/syntax">zoekt query</Link
-      >, but instead of getting normal search results, you get repositories that
-      contain any results matching the query. So, <ExampleQuery
-        query="r:linux"
-        page="repositories"
-      /> filters the table to repositories with "linux" in their name, while <ExampleQuery
-        query="linux"
-        page="repositories"
-      /> filters the table to repositories with linux in their
-      <em>contents</em>.
-    </p>
+    <section class="space-y-2">
+      <Heading element="h3" id="repo-search">Repository search</Heading>
+      <p>
+        Note that the search input on this page has the same semantics as the
+        search input on the main search page: you are writing a full <Link
+          to="/syntax">zoekt query</Link
+        >, but instead of getting normal search results, you get repositories
+        that contain any results matching the query. So, <ExampleQuery
+          query="r:linux"
+          page="repositories"
+        /> filters the table to repositories with "linux" in their name, while <ExampleQuery
+          query="linux"
+          page="repositories"
+        /> filters the table to repositories with linux in their
+        <em>contents</em>.
+      </p>
+      <p>
+        To improve page performance on deployments with large numbers of
+        repositories, there is a <i>repos</i> input that limits the number of
+        displayed repositories in the same way that the <i>files</i> and
+        <i>matches</i> inputs on the search page do.
+      </p>
+    </section>
+    <section class="space-y-2">
+      <Heading element="h3" id="repository-stats">Repository stats</Heading>
+      <p>
+        The tabulated data includes links to the repository and its indexed
+        branches, the times the repository was last indexed and that it was last
+        committed to, and data about the index <i>shards</i> and their contents.
+        The table can be sorted by clicking on column headers: the first click will
+        sort in ascending order, the second in descending, and the third will restore
+        the status quo.
+      </p>
+      <p>
+        <i>Shards</i> are what zoekt calls the files emitted from its indexer, and
+        they're all that's used by the zoekt-webserver backing neogrok to handle
+        neogrok's API requests; they contain the above-described repository metadata,
+        indexes used to quickly search repository content, and the repository content
+        itself (file names and contents). Indexing a repository typically results
+        in a single shard, but zoekt limits shard files to be about 100MiB in size,
+        so big repositories get more than one shard.
+      </p>
+      <p>
+        When you search repository contents (i.e. make a non-<code>repo:</code>
+        query), are in fact searching repository <em>shards</em>, and so for a
+        repository with more than one shard, you will see that the counts of
+        shards and associated data in the table go down when you enter a query
+        that matches content in only some of its shards.
+      </p>
+    </section>
   </section>
 
   <section class="space-y-2">

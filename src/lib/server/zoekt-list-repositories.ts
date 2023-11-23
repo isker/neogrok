@@ -47,15 +47,18 @@ export async function listRepositories(
 
 const statsSchema = v
   .object({
+    Shards: v.number(),
     Documents: v.number(),
     IndexBytes: v.number(),
     ContentBytes: v.number(),
   })
-  .map(({ Documents, IndexBytes, ContentBytes }) => ({
+  .map(({ Shards, Documents, IndexBytes, ContentBytes }) => ({
+    shardCount: Shards,
     fileCount: Documents,
     indexBytes: IndexBytes,
     contentBytes: ContentBytes,
   }));
+export type RepoStats = v.Infer<typeof statsSchema>;
 
 const dateSchema = v.string().chain((str) => {
   const date = new Date(str);
@@ -125,10 +128,10 @@ const listResultSchema = v.object({
                   })),
                 Stats: statsSchema,
               })
-              .map(({ Repository, IndexMetadata: { lastIndexed }, Stats }) => ({
+              .map(({ Repository, IndexMetadata, Stats }) => ({
                 ...Repository,
-                lastIndexed,
-                stats: Stats,
+                ...IndexMetadata,
+                ...Stats,
               })),
           ),
         )
@@ -147,7 +150,5 @@ const listResultSchema = v.object({
 const toISOStringWithoutMs = (d: Date) =>
   d.toISOString().replace(/\.\d{3}Z$/, "Z");
 
-export type ListResults = ReadonlyDeep<
-  v.Infer<typeof listResultSchema>["List"]
->;
+export type ListResults = v.Infer<typeof listResultSchema>["List"];
 export type Repository = ListResults["repositories"][number];
