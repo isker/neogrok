@@ -1,5 +1,11 @@
 # neogrok
 
+## 0.1.1
+
+### Patch Changes
+
+- 14bd2b4: Fix query disappearing when changing repos limit on /repositories
+
 ## 0.1.0
 
 ### Minor Changes
