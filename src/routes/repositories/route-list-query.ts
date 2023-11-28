@@ -52,7 +52,8 @@ export const updateRouteListQuery = ({
   const baselineUrl = get(navigating)?.to?.url ?? get(page).url;
   const listQuery = parseSearchParams(baselineUrl.searchParams);
 
-  const queryChanged = (query || undefined) !== listQuery.query;
+  const queryChanged =
+    query !== undefined && (query || undefined) !== listQuery.query;
   const reposChanged =
     repos !== undefined && repos >= 0 && repos !== listQuery.repos;
 
