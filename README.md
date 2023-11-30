@@ -56,7 +56,7 @@ configuration file, or, where possible, environment variables. Configuration
 options defined in the environment take precedence over those defined in the
 configuration file.
 
-The configuration file is read from `/etc/neogrok/configuration.json` by
+The configuration file is read from `/etc/neogrok/config.json` by
 default, but the location may be customized using the environment variable
 `NEOGROK_CONFIG_FILE`. The file is entirely optional, as all of the required
 configuration may be defined in the environment. If it is present, the file's
