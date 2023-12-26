@@ -131,16 +131,6 @@ Array<Array<ContentToken>> => {
   // naturally has a trailing newline; if there's a newline at the last byte,
   // this indicates that there is a final line that is empty.
   lines.push(currentLineTokens);
-  // TODO this incorrectly produces an extra line if the newline is the last
-  // byte in the file. I don't think there's a way to properly distinguish such
-  // a situation using the provided zoekt API response unless we ask it for the
-  // contents of the entire file and compare `baseByteOffset +
-  // contentBytes.length` to the byte length of the file.
-  //
-  // I think this is a fundamentally bad design in zoekt? Semantically, a line
-  // always includes a newline as its final byte, but zoekt is effectively
-  // excluding that final byte from ChunkMatches' `content`, leaving a file's
-  // trailing newline as inherently unidentifiable.
 
   return lines;
 };
