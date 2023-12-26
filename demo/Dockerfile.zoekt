@@ -1,4 +1,4 @@
-FROM golang:1.20 as go-builder
+FROM golang:1.21 as go-builder
 # The ctags in debian stable is far too old for zoekt. And the alpine community
 # repo package is not built with all the flags zoekt needs. Source builds ahoy.
 WORKDIR /ctags
