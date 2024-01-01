@@ -192,7 +192,7 @@ describe("renderChunksToLineGroups", () => {
                   "lineNumber": 20,
                   "lineTokens": [
                     {
-                      "text": "	\\"strings\\"
+                      "text": "	"strings"
           ",
                     },
                   ],
@@ -201,14 +201,14 @@ describe("renderChunksToLineGroups", () => {
                   "lineNumber": 21,
                   "lineTokens": [
                     {
-                      "text": "	\\"",
+                      "text": "	"",
                     },
                     {
                       "match": true,
                       "text": "test",
                     },
                     {
-                      "text": "ing\\"
+                      "text": "ing"
           ",
                     },
                   ],
@@ -368,7 +368,7 @@ describe("renderChunksToLineGroups", () => {
                   "lineNumber": 20,
                   "lineTokens": [
                     {
-                      "text": "	\\"strings\\"
+                      "text": "	"strings"
           ",
                     },
                   ],
@@ -377,14 +377,14 @@ describe("renderChunksToLineGroups", () => {
                   "lineNumber": 21,
                   "lineTokens": [
                     {
-                      "text": "	\\"",
+                      "text": "	"",
                     },
                     {
                       "match": true,
                       "text": "test",
                     },
                     {
-                      "text": "ing\\"
+                      "text": "ing"
           ",
                     },
                   ],
@@ -556,7 +556,7 @@ describe("renderChunksToLineGroups", () => {
                   "lineNumber": 91,
                   "lineTokens": [
                     {
-                      "text": "				Content:      []byte(\\"foo\\"),",
+                      "text": "				Content:      []byte("foo"),",
                     },
                   ],
                 },

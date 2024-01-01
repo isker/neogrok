@@ -11,7 +11,7 @@ export const load: import("./$types").PageServerLoad = async ({
   fetch,
 }) => {
   if (!file) {
-    throw error(404);
+    error(404);
   }
   const revision = url.searchParams.get("r");
   const convertedRepo = configuration.openGrokProjectMappings.get(project);
@@ -36,7 +36,7 @@ export const load: import("./$types").PageServerLoad = async ({
   });
 
   if (fileUrl && (await parent()).preferences.openGrokInstantRedirect) {
-    throw redirect(301, fileUrl);
+    redirect(301, fileUrl);
   }
 
   return { file, fileUrl };

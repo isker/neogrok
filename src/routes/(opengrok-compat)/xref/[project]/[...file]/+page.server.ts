@@ -38,7 +38,7 @@ export const load: import("./$types").PageServerLoad = async ({
   });
 
   if (destinationUrl && (await parent()).preferences.openGrokInstantRedirect) {
-    throw redirect(301, destinationUrl);
+    redirect(301, destinationUrl);
   }
 
   return { file, destinationUrl };

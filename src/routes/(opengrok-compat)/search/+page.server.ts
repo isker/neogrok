@@ -56,10 +56,7 @@ export const load: import("./$types").PageServerLoad = async ({
 
   const { preferences } = await parent();
   if (preferences.openGrokInstantRedirect && zoektQuery) {
-    throw redirect(
-      301,
-      `/?${new URLSearchParams({ q: zoektQuery }).toString()}`,
-    );
+    redirect(301, `/?${new URLSearchParams({ q: zoektQuery }).toString()}`);
   }
 
   return {

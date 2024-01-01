@@ -9,7 +9,7 @@ export const GET = (async () => {
     // In prod, prom metrics are exposed on a different port on an opt-in basis;
     // this is the most generally-useful and not-harmful approach, as you don't
     // want to expose /metrics to end users in prod.
-    throw error(404, "Not found");
+    error(404, "Not found");
   }
   return new Response(await registry.metrics(), {
     headers: { "content-type": registry.contentType },
