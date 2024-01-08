@@ -23,13 +23,13 @@ const fileMatchesCutoffFromString = (x: string) => {
 };
 
 /**
- * Whether the user has opted to bypass explanatory OpenGrok compatibility pages
- * by way of instantly redirecting requests for OpenGrok compatibility URLs to
- * their neogrok equivalents where possible.
+ * Whether to bypass explanatory OpenGrok compatibility pages by way of
+ * instantly redirecting requests for OpenGrok compatibility URLs to their
+ * neogrok equivalents where possible.
  */
 export type OpenGrokInstantRedirect = boolean;
 const openGrokInstantRedirectKey = "openGrokInstantRedirect";
-const defaultOpenGrokInstantRedirect = false;
+const defaultOpenGrokInstantRedirect = true;
 const openGrokInstantRedirectFromString = (x: string) => x === "true";
 
 export type Preferences = {
