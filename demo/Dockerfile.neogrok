@@ -1,9 +1,9 @@
 FROM node:20-slim as app-builder
 WORKDIR /app
 COPY . .
-RUN npm install \
-    && npm run build \
-    && npm install --omit=dev
+RUN yarn install \
+    && yarn run build \
+    && yarn workspaces focus --production
 
 FROM gcr.io/distroless/nodejs20-debian12
 WORKDIR /app

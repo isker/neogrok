@@ -12,10 +12,10 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 20.x
-      - run: npm install
-      - run: npm run lint
-      - run: npm run test
-      - run: npm run build
+      - run: yarn install
+      - run: yarn run lint
+      - run: yarn run test
+      - run: yarn run build
   deploy-demo:
     # Only run on master commits; this is a further restriction of the top-level `on`.
     if: github.event_name == 'push'
@@ -47,7 +47,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 20.x
-      - run: npm install
+      - run: yarn install
       - uses: changesets/action@v1
         with:
           commit: Publish release

@@ -39,9 +39,9 @@ Neogrok is packaged for installation on
 install an executable.
 
 Alternatively, building from source is easy. Clone the repository,
-`npm install && npm run build && npm run start`. You can of course run the server
-without intermediation by `npm`, by doing whatever `npm run start` does directly;
-but the relevant commands may change in the future, whereas `npm run start` will
+`yarn install && yarn run build && yarn run start`. You can of course run the server
+without intermediation by `yarn`, by doing whatever `yarn run start` does directly;
+but the relevant commands may change in the future, whereas `yarn run start` will
 not.
 
 ## Deploying
