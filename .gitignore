@@ -2,8 +2,8 @@
 *.log
 node_modules/
 *.tsbuildinfo
-.npm
 .svelte-kit
 build/
 .env
 .envrc
+.yarn/install-state.gz

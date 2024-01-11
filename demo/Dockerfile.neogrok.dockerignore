@@ -1,7 +1,7 @@
 *
-!.npmrc
+!.yarn*
+!yarn.lock
 !.postcssrc
-!package-lock.json
 !package.json
 !src/
 !static/
