@@ -1,5 +1,12 @@
 # neogrok
 
+## 0.2.0
+
+### Minor Changes
+
+- 62a7326: Flip the default for OpenGrok automatic redirects to `true`
+- 9a0407e: Add syntax highlighting with shikiji
+
 ## 0.1.1
 
 ### Patch Changes
