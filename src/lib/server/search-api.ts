@@ -109,7 +109,11 @@ const searchResultSchema = v.object({
                 Repository: v.string(),
                 FileName: v.string(),
                 Branches: v.array(v.string()),
-                Language: v.string(),
+                // Will be the empty string if zoekt couldn't figure it out, we
+                // call it Text for both display purposes and for parameterizing
+                // syntax highlighting; Text is the name zoekt will pick for
+                // plain text files it can identify.
+                Language: v.string().map((lang) => lang || "Text"),
                 Version: v.string(),
                 ChunkMatches: v.array(
                   v
