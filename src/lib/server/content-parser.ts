@@ -1,11 +1,9 @@
-/* Parsed content, as emitted by this module. */
-export type ContentToken = {
+export type ContentLine = {
   readonly text: string;
-  // true | undefined for less wasteful JSON serialization
-  readonly match?: true;
+  readonly matchRanges: ReadonlyArray<Range>;
 };
 
-type Range = {
+export type Range = {
   // inclusive
   readonly start: number;
   // exclusive
@@ -20,29 +18,28 @@ type Range = {
  */
 export const parseFileNameMatch = (
   content: Buffer,
-  matchRanges: ReadonlyArray<Range>,
-): // Needs to be mutable to satisfy valita.
-Array<ContentToken> => {
-  const contentTokens: Array<ContentToken> = [];
+  byteRanges: ReadonlyArray<Range>,
+): ContentLine => {
+  const matchRanges: Array<Range> = [];
+  let text = "";
 
   let base = 0;
-  for (const { start: matchStart, end: matchEnd } of matchRanges) {
+  for (const { start: matchStart, end: matchEnd } of byteRanges) {
     if (matchStart > base) {
-      contentTokens.push({
-        text: content.toString("utf8", base, matchStart),
-      });
+      text += content.toString("utf8", base, matchStart);
     }
-    contentTokens.push({
-      text: content.toString("utf8", matchStart, matchEnd),
-      match: true,
+    matchRanges.push({
+      start: text.length,
+      end: (text += content.toString("utf8", matchStart, matchEnd)).length,
     });
+
     base = matchEnd;
   }
   if (base < content.length) {
-    contentTokens.push({ text: content.toString("utf8", base) });
+    text += content.toString("utf8", base);
   }
 
-  return contentTokens;
+  return { text, matchRanges };
 };
 
 /**
@@ -51,17 +48,18 @@ Array<ContentToken> => {
  */
 export const parseChunkMatch = (
   content: Buffer,
-  matchRanges: ReadonlyArray<Range>,
+  byteRanges: ReadonlyArray<Range>,
 ): // Needs to be mutable to satisfy valita.
-Array<Array<ContentToken>> => {
-  const lines: Array<Array<ContentToken>> = [];
-  let currentLineTokens: Array<ContentToken> = [];
+Array<ContentLine> => {
+  const lines: Array<ContentLine> = [];
+  let currentLineText = "";
+  let currentLineMatchRanges: Array<Range> = [];
 
-  const matchRangeIterator = matchRanges[Symbol.iterator]();
+  const byteRangeIterator = byteRanges[Symbol.iterator]();
   // The range that we're currently in, or the next upcoming range, or undefined
   // if we've passed the last range.
-  let currentMatchRange: Range | undefined = matchRangeIterator.next().value;
-  // Have we previously handled the start of `currentMatchRange` but not its
+  let currentByteRange: Range | undefined = byteRangeIterator.next().value;
+  // Have we previously handled the start of `currentByteRange` but not its
   // end?
   let inMatch = false;
 
@@ -75,7 +73,7 @@ Array<Array<ContentToken>> => {
   while (
     (tokenBoundary = findNextBoundary(
       inMatch,
-      currentMatchRange,
+      currentByteRange,
       currentNewline,
     ))
   ) {
@@ -84,20 +82,22 @@ Array<Array<ContentToken>> => {
     if (match === "start") {
       inMatch = true;
       if (tokenEnd > tokenStart) {
-        currentLineTokens.push({
-          text: content.toString("utf8", tokenStart, tokenEnd),
-        });
+        currentLineText += content.toString("utf8", tokenStart, tokenEnd);
       }
       tokenStart = tokenEnd;
     } else if (match === "end") {
       inMatch = false;
       if (tokenEnd > tokenStart) {
-        currentLineTokens.push({
-          text: content.toString("utf8", tokenStart, tokenEnd),
-          match: true,
+        currentLineMatchRanges.push({
+          start: currentLineText.length,
+          end: (currentLineText += content.toString(
+            "utf8",
+            tokenStart,
+            tokenEnd,
+          )).length,
         });
       }
-      currentMatchRange = matchRangeIterator.next().value;
+      currentByteRange = byteRangeIterator.next().value;
       tokenStart = tokenEnd;
     }
 
@@ -107,30 +107,36 @@ Array<Array<ContentToken>> => {
       // as lines are visually separated from one another in the UI with
       // `display: block`.
       if (tokenEnd > tokenStart) {
-        currentLineTokens.push({
-          text: content.toString("utf8", tokenStart, tokenEnd),
-          ...(inMatch ? { match: true } : {}),
-        });
+        const start = currentLineText.length;
+        currentLineText += content.toString("utf8", tokenStart, tokenEnd);
+        if (inMatch) {
+          currentLineMatchRanges.push({ start, end: currentLineText.length });
+        }
       }
-      lines.push(currentLineTokens);
-      currentLineTokens = [];
+      lines.push({
+        text: currentLineText,
+        matchRanges: currentLineMatchRanges,
+      });
+      currentLineText = "";
+      currentLineMatchRanges = [];
       currentNewline = newlineIterator.next().value;
       tokenStart = tokenEnd + 1;
     }
   }
 
   if (tokenStart < content.length) {
-    currentLineTokens.push({
-      text: content.toString("utf8", tokenStart),
-      ...(inMatch ? { match: true } : {}),
-    });
+    const start = currentLineText.length;
+    currentLineText += content.toString("utf8", tokenStart);
+    if (inMatch) {
+      currentLineMatchRanges.push({ start, end: currentLineText.length });
+    }
   }
 
-  // Conclude the current line. Note that if `currentLineTokens` is length 0,
+  // Conclude the current line. Note that if `currentLineText` is length 0,
   // that is still semantically a line, namely an empty line. `Content` never
   // naturally has a trailing newline; if there's a newline at the last byte,
   // this indicates that there is a final line that is empty.
-  lines.push(currentLineTokens);
+  lines.push({ text: currentLineText, matchRanges: currentLineMatchRanges });
 
   return lines;
 };

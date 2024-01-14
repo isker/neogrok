@@ -14,7 +14,7 @@
     ...(file.branches.length > 1 || file.branches[0] !== "HEAD"
       ? [file.branches.join(", ")]
       : []),
-    file.language,
+    file.language || "Text",
     `№${rank}`,
   ];
 </script>
@@ -30,8 +30,8 @@
       class="inline"
       size={16}
     />{#if file.fileUrl}<Link to={file.fileUrl}>
-        <RenderedContent tokens={file.fileName.tokens} /></Link
-      >{:else}<RenderedContent tokens={file.fileName.tokens} />{/if}</span
+        <RenderedContent content={file.fileName} /></Link
+      >{:else}<RenderedContent content={file.fileName} />{/if}</span
   >
   <span class="ml-auto">{metadata.join(" | ")}</span>
 </h2>
