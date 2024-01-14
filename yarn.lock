@@ -985,6 +985,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:20.10.0":
+  version: 20.10.0
+  resolution: "@types/node@npm:20.10.0"
+  dependencies:
+    undici-types: "npm:~5.26.4"
+  checksum: f379e57d9d28cb5f3d8eab943de0c54a0ca2f95ee356e1fe2a1a4fa718b740103ae522c50ce107cffd52c3642ef3244cfc55bf5369081dd6c48369c8587b21ae
+  languageName: node
+  linkType: hard
+
 "@types/node@npm:^12.7.1":
   version: 12.20.55
   resolution: "@types/node@npm:12.20.55"
@@ -3559,6 +3568,7 @@ __metadata:
     "@sveltejs/kit": "npm:2.0.6"
     "@sveltejs/vite-plugin-svelte": "npm:3.0.1"
     "@types/lucene": "npm:2.1.5"
+    "@types/node": "npm:20.10.0"
     "@typescript-eslint/eslint-plugin": "npm:6.7.5"
     "@typescript-eslint/parser": "npm:6.7.5"
     eslint: "npm:8.51.0"
@@ -3570,6 +3580,7 @@ __metadata:
     prettier-plugin-svelte: "npm:3.0.3"
     pretty-bytes: "npm:6.1.1"
     prom-client: "npm:15.0.0"
+    shikiji: "patch:shikiji@npm%3A0.9.18#~/.yarn/patches/shikiji-npm-0.9.18-945ea5efcb.patch"
     svelte: "npm:4.2.1"
     svelte-check: "npm:3.5.2"
     tailwindcss: "npm:3.3.3"
@@ -4492,6 +4503,38 @@ __metadata:
   languageName: node
   linkType: hard
 
+"shikiji-core@npm:0.9.18":
+  version: 0.9.18
+  resolution: "shikiji-core@npm:0.9.18"
+  checksum: cc8673c664d31a2392bb972c69c57c79f364056dd2361565d401165bee7d3afe8b358c15211d6356357fbc9d25c34dd9d06c9949fa7237031b840995e5eb5da2
+  languageName: node
+  linkType: hard
+
+"shikiji-core@patch:shikiji-core@npm%3A0.9.18#~/.yarn/patches/shikiji-core-npm-0.9.18-826293a3df.patch":
+  version: 0.9.18
+  resolution: "shikiji-core@patch:shikiji-core@npm%3A0.9.18#~/.yarn/patches/shikiji-core-npm-0.9.18-826293a3df.patch::version=0.9.18&hash=6968ed"
+  checksum: ace21e92feb3bfe58d126d95fd876b729184dbf57bf1e0cf3f96f7c71840754ed227649328e2301bcb47730e6875c4915e109599db5ed5d7f28557a3bd82b4c5
+  languageName: node
+  linkType: hard
+
+"shikiji@npm:0.9.18":
+  version: 0.9.18
+  resolution: "shikiji@npm:0.9.18"
+  dependencies:
+    shikiji-core: "npm:0.9.18"
+  checksum: 29651f5c397c5862ff1c78e0c6b85e6fa47f9f3538f5672f64c4c9afea368e77dfb1697eb7cd5746bc259d7cbaec6d77c91c5e0b520dc4dcbb77ad8492dbef72
+  languageName: node
+  linkType: hard
+
+"shikiji@patch:shikiji@npm%3A0.9.18#~/.yarn/patches/shikiji-npm-0.9.18-945ea5efcb.patch":
+  version: 0.9.18
+  resolution: "shikiji@patch:shikiji@npm%3A0.9.18#~/.yarn/patches/shikiji-npm-0.9.18-945ea5efcb.patch::version=0.9.18&hash=43ddf9"
+  dependencies:
+    shikiji-core: "npm:0.9.18"
+  checksum: b397c3bef535e66c64c73785143e4ce9e6faca083966b0ade618063e88fa27ed025531e78aaa7712ad5c776a97130a0e6603c77fadeeebde5ba078dfb7d9cfc3
+  languageName: node
+  linkType: hard
+
 "siginfo@npm:^2.0.0":
   version: 2.0.0
   resolution: "siginfo@npm:2.0.0"
@@ -5194,6 +5237,13 @@ __metadata:
   version: 1.3.2
   resolution: "ufo@npm:1.3.2"
   checksum: 180f3dfcdf319b54fe0272780841c93cb08a024fc2ee5f95e63285c2a3c42d8b671cd3641e9a53aafccf100cf8466aa8c040ddfa0efea1fc1968c9bfb250a661
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~5.26.4":
+  version: 5.26.5
+  resolution: "undici-types@npm:5.26.5"
+  checksum: bb673d7876c2d411b6eb6c560e0c571eef4a01c1c19925175d16e3a30c4c428181fb8d7ae802a261f283e4166a0ac435e2f505743aa9e45d893f9a3df017b501
   languageName: node
   linkType: hard
 

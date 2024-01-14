@@ -1,0 +1,49 @@
+diff --git a/dist/chunk-types.d.mts b/dist/chunk-types.d.mts
+index 2992357a1d0e670afce9ec11133a58a4e17593da..788cab9adb4134796ab6cd91fa9fd25b3a971dc5 100644
+--- a/dist/chunk-types.d.mts
++++ b/dist/chunk-types.d.mts
+@@ -1124,10 +1124,8 @@ interface ThemedTokenExplanation {
+ interface ThemedToken extends TokenStyles, TokenBase {
+ }
+ interface TokenBase {
+-    /**
+-     * The content of the token
+-     */
+-    content: string;
++    start: number;
++    end: number;
+     /**
+      * Explanation of
+      *
+diff --git a/dist/index.mjs b/dist/index.mjs
+index 6f891f5e37470cb673f8bcb8914c44634ca47091..1b52e8c87fa19d739e66f824715a18f37ae05fc6 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -3709,7 +3709,7 @@ function dimColor(color) {
+ function codeToThemedTokens(internal, code, options = {}) {
+     const { lang = 'text', theme: themeName = internal.getLoadedThemes()[0], } = options;
+     if (isPlaintext(lang)) {
+-        const lines = code.split(/\r\n|\r|\n/);
++        const lines = code;
+         return [...lines.map(line => [{ content: line }])];
+     }
+     const { theme, colorMap } = internal.setTheme(themeName);
+@@ -3723,7 +3723,7 @@ function tokenizeWithTheme(code, grammar, theme, colorMap, options) {
+         ...theme.colorReplacements,
+         ...options?.colorReplacements,
+     };
+-    const lines = code.split(/\r\n|\r|\n/);
++    const lines = code;
+     let ruleStack = INITIAL;
+     let actual = [];
+     const final = [];
+@@ -3754,7 +3754,8 @@ function tokenizeWithTheme(code, grammar, theme, colorMap, options) {
+             const foregroundColor = applyColorReplacements(colorMap[foreground], colorReplacements);
+             const fontStyle = StackElementMetadata.getFontStyle(metadata);
+             const token = {
+-                content: line.substring(startIndex, nextStartIndex),
++                start: startIndex,
++                end: nextStartIndex,
+                 color: foregroundColor,
+                 fontStyle,
+             };

@@ -5,7 +5,7 @@
   } from "$lib/preferences";
   import type { ResultFile } from "$lib/server/search-api";
   import SearchResultsFileHeader from "./search-results-file-header.svelte";
-  import RenderedContent from "./rendered-content.svelte";
+  import LineGroup from "./line-group.svelte";
   import { renderChunksToLineGroups } from "./chunk-renderer";
 
   export let file: ResultFile;
@@ -30,7 +30,7 @@
   ));
 
   $: postCutoffMatchCount =
-    file.matchCount - preCutoffMatchCount - file.fileName.matchCount;
+    file.matchCount - preCutoffMatchCount - file.fileName.matchRanges.length;
 
   const expand = () => {
     expanded = true;
@@ -64,30 +64,8 @@
     <SearchResultsFileHeader {file} {rank} />
     {#if lineGroups.length > 0}
       <div class="font-mono text-sm divide-y">
-        {#each lineGroups as lines}
-          <!--
-          minmax because we don't want the line number column to slide left and
-          right as you scroll down through sections with different `min-content`s'
-          worth of line numbers. 2rem is enough for 3 digits, which should cover
-          the overwhelming majority of cases.
-        -->
-          <div
-            class="py-1 grid grid-cols-[minmax(2rem,_min-content)_1fr] gap-x-2 whitespace-pre overflow-x-auto"
-          >
-            {#each lines as { lineNumber, lineTokens }}
-              <span class="select-none text-gray-600 text-right pr-1">
-                {#if file.fileUrl && file.lineNumberTemplate}
-                  <a
-                    class="hover:underline decoration-1"
-                    href={`${file.fileUrl}${file.lineNumberTemplate.join(
-                      lineNumber.toString(),
-                    )}`}>{lineNumber}</a
-                  >
-                {:else}{lineNumber}{/if}
-              </span>
-              <code><RenderedContent tokens={lineTokens} /></code>
-            {/each}
-          </div>
+        {#each lineGroups as lines (lines[0].lineNumber)}
+          <LineGroup {lines} {file} />
         {/each}
       </div>
     {/if}

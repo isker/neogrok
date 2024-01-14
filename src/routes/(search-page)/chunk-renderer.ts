@@ -1,5 +1,10 @@
-import type { ContentToken } from "$lib/server/content-parser";
+import type { ContentLine } from "$lib/server/content-parser";
 import type { Chunk, ResultFile } from "$lib/server/search-api";
+
+export type LineGroup = Array<{
+  readonly lineNumber: number;
+  readonly line: ContentLine;
+}>;
 
 export const renderChunksToLineGroups = (
   chunks: ResultFile["chunks"],
@@ -18,12 +23,7 @@ export const renderChunksToLineGroups = (
   //
   // That being said, we will bail in the middle of a chunk if the greater
   // hardCutoff is exceeded.
-  const lineGroups: Array<
-    Array<{
-      readonly lineNumber: number;
-      readonly lineTokens: ReadonlyArray<ContentToken>;
-    }>
-  > = [];
+  const lineGroups: Array<LineGroup> = [];
 
   // The number of matches beyond which we will actually cut off a chunk early.
   // The problem is that the cost (and UI absurdity) of rendering a chunk scales
@@ -49,7 +49,7 @@ export const renderChunksToLineGroups = (
       const lines = [];
       for (const line of chunk.lines) {
         lines.push(line);
-        matchCount += line.matchCount;
+        matchCount += line.matchRanges.length;
         if (preCutoffMatchCount + matchCount >= hardCutoff) {
           break;
         }
@@ -75,9 +75,9 @@ export const renderChunksToLineGroups = (
         : // The above `break` guarantees this is non-null.
           subChunk!;
       const { lines, startLineNumber } = renderedChunk;
-      const numberedLines = lines.map(({ lineTokens }, i) => ({
+      const numberedLines = lines.map((line, i) => ({
         lineNumber: i + startLineNumber,
-        lineTokens,
+        line,
       }));
 
       const contiguous =

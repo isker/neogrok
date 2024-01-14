@@ -43,9 +43,7 @@
   </span>
 </h1>
 <div class="space-y-2">
-  {#each files as file, i (`${file.repository}/${file.fileName.tokens
-    .map(({ text }) => text)
-    .join()}@${file.branches.join(";")}`)}
+  {#each files as file, i (`${file.repository}/${file.fileName.text}@${file.branches.join(";")}`)}
     <SearchResultsFile {file} rank={i + 1} />
   {/each}
 </div>

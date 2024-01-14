@@ -2,179 +2,163 @@ import { describe, it, expect } from "vitest";
 import { renderChunksToLineGroups } from "./chunk-renderer";
 import type { Chunk } from "$lib/server/search-api";
 
-// This is real data from a search result against the zoekt repo.
+// This is real data from a search result against the zoekt repo:
+// r:zoekt f:api test
 const chunks: ReadonlyArray<Chunk> = [
   {
-    matchCount: 1,
+    lines: [
+      {
+        text: '\t"strings"',
+        matchRanges: [],
+      },
+      {
+        text: '\t"testing"',
+        matchRanges: [
+          {
+            start: 2,
+            end: 6,
+          },
+        ],
+      },
+      {
+        text: '\t"time"',
+        matchRanges: [],
+      },
+    ],
     startLineNumber: 20,
-    lines: [
-      {
-        lineTokens: [{ text: '\t"strings"\n' }],
-        matchCount: 0,
-      },
-      {
-        lineTokens: [
-          { text: '\t"' },
-          { match: true, text: "test" },
-          { text: 'ing"\n' },
-        ],
-        matchCount: 1,
-      },
-      {
-        lineTokens: [{ text: ")" }],
-        matchCount: 0,
-      },
-    ],
-  },
-  {
     matchCount: 1,
-    startLineNumber: 27,
-    lines: [
-      {
-        lineTokens: [{ text: "*/\n" }],
-        matchCount: 0,
-      },
-      {
-        lineTokens: [
-          {
-            text: "func BenchmarkMinimalRepoListEncodings(b *",
-          },
-          { match: true, text: "test" },
-          { text: "ing.B) {\n" },
-        ],
-        matchCount: 1,
-      },
-      {
-        lineTokens: [
-          {
-            text: "\tsize := uint32(13000) // 2021-06-24 rough estimate of number of repos on a replica.",
-          },
-        ],
-        matchCount: 0,
-      },
-    ],
   },
   {
-    matchCount: 2,
-    startLineNumber: 57,
     lines: [
       {
-        lineTokens: [{ text: "\n" }],
-        matchCount: 0,
+        text: "*/",
+        matchRanges: [],
       },
       {
-        lineTokens: [
+        text: "func BenchmarkMinimalRepoListEncodings(b *testing.B) {",
+        matchRanges: [
           {
-            text: "func benchmarkEncoding(data interface{}) func(*",
+            start: 42,
+            end: 46,
           },
-          { match: true, text: "test" },
-          { text: "ing.B) {\n" },
         ],
-        matchCount: 1,
       },
       {
-        lineTokens: [
-          { text: "\treturn func(b *" },
-          { match: true, text: "test" },
-          { text: "ing.B) {\n" },
-        ],
-        matchCount: 1,
-      },
-      {
-        lineTokens: [{ text: "\t\tb.Helper()" }],
-        matchCount: 0,
+        text: "\tsize := uint32(13000) // 2021-06-24 rough estimate of number of repos on a replica.",
+        matchRanges: [],
       },
     ],
-  },
-  {
-    matchCount: 2,
-    startLineNumber: 78,
-    lines: [
-      {
-        lineTokens: [{ text: "\n" }],
-        matchCount: 0,
-      },
-      {
-        lineTokens: [
-          { text: "func " },
-          { match: true, text: "Test" },
-          {
-            text: "SizeBytesSearchResult(t *",
-          },
-          { match: true, text: "test" },
-          { text: "ing.T) {\n" },
-        ],
-        matchCount: 2,
-      },
-      {
-        lineTokens: [
-          {
-            text: "\tvar sr = SearchResult{",
-          },
-        ],
-        matchCount: 0,
-      },
-    ],
-  },
-  {
+    startLineNumber: 28,
     matchCount: 1,
-    startLineNumber: 89,
-    lines: [
-      {
-        lineTokens: [
-          {
-            text: "\t\t\tLineMatches: nil, // 24 bytes\n",
-          },
-        ],
-        matchCount: 0,
-      },
-      {
-        lineTokens: [
-          {
-            text: "\t\t\tChunkMatches: []ChunkMatch{{ // 24 bytes + 208 bytes (see ",
-          },
-          { match: true, text: "Test" },
-          {
-            text: "SizeByteChunkMatches)\n",
-          },
-        ],
-        matchCount: 1,
-      },
-      {
-        lineTokens: [
-          {
-            text: '\t\t\t\tContent:      []byte("foo"),',
-          },
-        ],
-        matchCount: 0,
-      },
-    ],
   },
   {
-    matchCount: 2,
-    startLineNumber: 117,
     lines: [
       {
-        lineTokens: [{ text: "\n" }],
-        matchCount: 0,
+        text: "",
+        matchRanges: [],
       },
       {
-        lineTokens: [
-          { text: "func " },
-          { match: true, text: "Test" },
+        text: "func benchmarkEncoding(data interface{}) func(*testing.B) {",
+        matchRanges: [
           {
-            text: "SizeBytesChunkMatches(t *",
+            start: 47,
+            end: 51,
           },
-          { match: true, text: "test" },
-          { text: "ing.T) {\n" },
         ],
-        matchCount: 2,
       },
       {
-        lineTokens: [{ text: "\tcm := ChunkMatch{" }],
-        matchCount: 0,
+        text: "\treturn func(b *testing.B) {",
+        matchRanges: [
+          {
+            start: 16,
+            end: 20,
+          },
+        ],
+      },
+      {
+        text: "\t\tb.Helper()",
+        matchRanges: [],
       },
     ],
+    startLineNumber: 62,
+    matchCount: 2,
+  },
+  {
+    lines: [
+      {
+        text: "",
+        matchRanges: [],
+      },
+      {
+        text: "func TestSizeBytesSearchResult(t *testing.T) {",
+        matchRanges: [
+          {
+            start: 5,
+            end: 9,
+          },
+          {
+            start: 34,
+            end: 38,
+          },
+        ],
+      },
+      {
+        text: "\tvar sr = SearchResult{",
+        matchRanges: [],
+      },
+    ],
+    startLineNumber: 83,
+    matchCount: 2,
+  },
+  {
+    lines: [
+      {
+        text: "\t\t\tLineMatches: nil, // 24 bytes",
+        matchRanges: [],
+      },
+      {
+        text: "\t\t\tChunkMatches: []ChunkMatch{{ // 24 bytes + 208 bytes (see TestSizeByteChunkMatches)",
+        matchRanges: [
+          {
+            start: 61,
+            end: 65,
+          },
+        ],
+      },
+      {
+        text: '\t\t\t\tContent:      []byte("foo"),',
+        matchRanges: [],
+      },
+    ],
+    startLineNumber: 94,
+    matchCount: 1,
+  },
+  {
+    lines: [
+      {
+        text: "",
+        matchRanges: [],
+      },
+      {
+        text: "func TestSizeBytesChunkMatches(t *testing.T) {",
+        matchRanges: [
+          {
+            start: 5,
+            end: 9,
+          },
+          {
+            start: 34,
+            end: 38,
+          },
+        ],
+      },
+      {
+        text: "\tcm := ChunkMatch{",
+        matchRanges: [],
+      },
+    ],
+    startLineNumber: 122,
+    matchCount: 2,
   },
 ];
 
@@ -189,165 +173,130 @@ describe("renderChunksToLineGroups", () => {
             "lineGroups": [
               [
                 {
+                  "line": {
+                    "matchRanges": [],
+                    "text": "	"strings"",
+                  },
                   "lineNumber": 20,
-                  "lineTokens": [
-                    {
-                      "text": "	"strings"
-          ",
-                    },
-                  ],
                 },
                 {
+                  "line": {
+                    "matchRanges": [
+                      {
+                        "end": 6,
+                        "start": 2,
+                      },
+                    ],
+                    "text": "	"testing"",
+                  },
                   "lineNumber": 21,
-                  "lineTokens": [
-                    {
-                      "text": "	"",
-                    },
-                    {
-                      "match": true,
-                      "text": "test",
-                    },
-                    {
-                      "text": "ing"
-          ",
-                    },
-                  ],
                 },
                 {
+                  "line": {
+                    "matchRanges": [],
+                    "text": "	"time"",
+                  },
                   "lineNumber": 22,
-                  "lineTokens": [
-                    {
-                      "text": ")",
-                    },
-                  ],
                 },
               ],
               [
                 {
-                  "lineNumber": 27,
-                  "lineTokens": [
-                    {
-                      "text": "*/
-          ",
-                    },
-                  ],
-                },
-                {
+                  "line": {
+                    "matchRanges": [],
+                    "text": "*/",
+                  },
                   "lineNumber": 28,
-                  "lineTokens": [
-                    {
-                      "text": "func BenchmarkMinimalRepoListEncodings(b *",
-                    },
-                    {
-                      "match": true,
-                      "text": "test",
-                    },
-                    {
-                      "text": "ing.B) {
-          ",
-                    },
-                  ],
                 },
                 {
+                  "line": {
+                    "matchRanges": [
+                      {
+                        "end": 46,
+                        "start": 42,
+                      },
+                    ],
+                    "text": "func BenchmarkMinimalRepoListEncodings(b *testing.B) {",
+                  },
                   "lineNumber": 29,
-                  "lineTokens": [
-                    {
-                      "text": "	size := uint32(13000) // 2021-06-24 rough estimate of number of repos on a replica.",
-                    },
-                  ],
+                },
+                {
+                  "line": {
+                    "matchRanges": [],
+                    "text": "	size := uint32(13000) // 2021-06-24 rough estimate of number of repos on a replica.",
+                  },
+                  "lineNumber": 30,
                 },
               ],
               [
                 {
-                  "lineNumber": 57,
-                  "lineTokens": [
-                    {
-                      "text": "
-          ",
-                    },
-                  ],
+                  "line": {
+                    "matchRanges": [],
+                    "text": "",
+                  },
+                  "lineNumber": 62,
                 },
                 {
-                  "lineNumber": 58,
-                  "lineTokens": [
-                    {
-                      "text": "func benchmarkEncoding(data interface{}) func(*",
-                    },
-                    {
-                      "match": true,
-                      "text": "test",
-                    },
-                    {
-                      "text": "ing.B) {
-          ",
-                    },
-                  ],
+                  "line": {
+                    "matchRanges": [
+                      {
+                        "end": 51,
+                        "start": 47,
+                      },
+                    ],
+                    "text": "func benchmarkEncoding(data interface{}) func(*testing.B) {",
+                  },
+                  "lineNumber": 63,
                 },
                 {
-                  "lineNumber": 59,
-                  "lineTokens": [
-                    {
-                      "text": "	return func(b *",
-                    },
-                    {
-                      "match": true,
-                      "text": "test",
-                    },
-                    {
-                      "text": "ing.B) {
-          ",
-                    },
-                  ],
+                  "line": {
+                    "matchRanges": [
+                      {
+                        "end": 20,
+                        "start": 16,
+                      },
+                    ],
+                    "text": "	return func(b *testing.B) {",
+                  },
+                  "lineNumber": 64,
                 },
                 {
-                  "lineNumber": 60,
-                  "lineTokens": [
-                    {
-                      "text": "		b.Helper()",
-                    },
-                  ],
+                  "line": {
+                    "matchRanges": [],
+                    "text": "		b.Helper()",
+                  },
+                  "lineNumber": 65,
                 },
               ],
               [
                 {
-                  "lineNumber": 78,
-                  "lineTokens": [
-                    {
-                      "text": "
-          ",
-                    },
-                  ],
+                  "line": {
+                    "matchRanges": [],
+                    "text": "",
+                  },
+                  "lineNumber": 83,
                 },
                 {
-                  "lineNumber": 79,
-                  "lineTokens": [
-                    {
-                      "text": "func ",
-                    },
-                    {
-                      "match": true,
-                      "text": "Test",
-                    },
-                    {
-                      "text": "SizeBytesSearchResult(t *",
-                    },
-                    {
-                      "match": true,
-                      "text": "test",
-                    },
-                    {
-                      "text": "ing.T) {
-          ",
-                    },
-                  ],
+                  "line": {
+                    "matchRanges": [
+                      {
+                        "end": 9,
+                        "start": 5,
+                      },
+                      {
+                        "end": 38,
+                        "start": 34,
+                      },
+                    ],
+                    "text": "func TestSizeBytesSearchResult(t *testing.T) {",
+                  },
+                  "lineNumber": 84,
                 },
                 {
-                  "lineNumber": 80,
-                  "lineTokens": [
-                    {
-                      "text": "	var sr = SearchResult{",
-                    },
-                  ],
+                  "line": {
+                    "matchRanges": [],
+                    "text": "	var sr = SearchResult{",
+                  },
+                  "lineNumber": 85,
                 },
               ],
             ],
@@ -365,242 +314,190 @@ describe("renderChunksToLineGroups", () => {
             "lineGroups": [
               [
                 {
+                  "line": {
+                    "matchRanges": [],
+                    "text": "	"strings"",
+                  },
                   "lineNumber": 20,
-                  "lineTokens": [
-                    {
-                      "text": "	"strings"
-          ",
-                    },
-                  ],
                 },
                 {
+                  "line": {
+                    "matchRanges": [
+                      {
+                        "end": 6,
+                        "start": 2,
+                      },
+                    ],
+                    "text": "	"testing"",
+                  },
                   "lineNumber": 21,
-                  "lineTokens": [
-                    {
-                      "text": "	"",
-                    },
-                    {
-                      "match": true,
-                      "text": "test",
-                    },
-                    {
-                      "text": "ing"
-          ",
-                    },
-                  ],
                 },
                 {
+                  "line": {
+                    "matchRanges": [],
+                    "text": "	"time"",
+                  },
                   "lineNumber": 22,
-                  "lineTokens": [
-                    {
-                      "text": ")",
-                    },
-                  ],
                 },
               ],
               [
                 {
-                  "lineNumber": 27,
-                  "lineTokens": [
-                    {
-                      "text": "*/
-          ",
-                    },
-                  ],
-                },
-                {
+                  "line": {
+                    "matchRanges": [],
+                    "text": "*/",
+                  },
                   "lineNumber": 28,
-                  "lineTokens": [
-                    {
-                      "text": "func BenchmarkMinimalRepoListEncodings(b *",
-                    },
-                    {
-                      "match": true,
-                      "text": "test",
-                    },
-                    {
-                      "text": "ing.B) {
-          ",
-                    },
-                  ],
                 },
                 {
+                  "line": {
+                    "matchRanges": [
+                      {
+                        "end": 46,
+                        "start": 42,
+                      },
+                    ],
+                    "text": "func BenchmarkMinimalRepoListEncodings(b *testing.B) {",
+                  },
                   "lineNumber": 29,
-                  "lineTokens": [
-                    {
-                      "text": "	size := uint32(13000) // 2021-06-24 rough estimate of number of repos on a replica.",
-                    },
-                  ],
+                },
+                {
+                  "line": {
+                    "matchRanges": [],
+                    "text": "	size := uint32(13000) // 2021-06-24 rough estimate of number of repos on a replica.",
+                  },
+                  "lineNumber": 30,
                 },
               ],
               [
                 {
-                  "lineNumber": 57,
-                  "lineTokens": [
-                    {
-                      "text": "
-          ",
-                    },
-                  ],
+                  "line": {
+                    "matchRanges": [],
+                    "text": "",
+                  },
+                  "lineNumber": 62,
                 },
                 {
-                  "lineNumber": 58,
-                  "lineTokens": [
-                    {
-                      "text": "func benchmarkEncoding(data interface{}) func(*",
-                    },
-                    {
-                      "match": true,
-                      "text": "test",
-                    },
-                    {
-                      "text": "ing.B) {
-          ",
-                    },
-                  ],
+                  "line": {
+                    "matchRanges": [
+                      {
+                        "end": 51,
+                        "start": 47,
+                      },
+                    ],
+                    "text": "func benchmarkEncoding(data interface{}) func(*testing.B) {",
+                  },
+                  "lineNumber": 63,
                 },
                 {
-                  "lineNumber": 59,
-                  "lineTokens": [
-                    {
-                      "text": "	return func(b *",
-                    },
-                    {
-                      "match": true,
-                      "text": "test",
-                    },
-                    {
-                      "text": "ing.B) {
-          ",
-                    },
-                  ],
+                  "line": {
+                    "matchRanges": [
+                      {
+                        "end": 20,
+                        "start": 16,
+                      },
+                    ],
+                    "text": "	return func(b *testing.B) {",
+                  },
+                  "lineNumber": 64,
                 },
                 {
-                  "lineNumber": 60,
-                  "lineTokens": [
-                    {
-                      "text": "		b.Helper()",
-                    },
-                  ],
+                  "line": {
+                    "matchRanges": [],
+                    "text": "		b.Helper()",
+                  },
+                  "lineNumber": 65,
                 },
               ],
               [
                 {
-                  "lineNumber": 78,
-                  "lineTokens": [
-                    {
-                      "text": "
-          ",
-                    },
-                  ],
+                  "line": {
+                    "matchRanges": [],
+                    "text": "",
+                  },
+                  "lineNumber": 83,
                 },
                 {
-                  "lineNumber": 79,
-                  "lineTokens": [
-                    {
-                      "text": "func ",
-                    },
-                    {
-                      "match": true,
-                      "text": "Test",
-                    },
-                    {
-                      "text": "SizeBytesSearchResult(t *",
-                    },
-                    {
-                      "match": true,
-                      "text": "test",
-                    },
-                    {
-                      "text": "ing.T) {
-          ",
-                    },
-                  ],
+                  "line": {
+                    "matchRanges": [
+                      {
+                        "end": 9,
+                        "start": 5,
+                      },
+                      {
+                        "end": 38,
+                        "start": 34,
+                      },
+                    ],
+                    "text": "func TestSizeBytesSearchResult(t *testing.T) {",
+                  },
+                  "lineNumber": 84,
                 },
                 {
-                  "lineNumber": 80,
-                  "lineTokens": [
-                    {
-                      "text": "	var sr = SearchResult{",
-                    },
-                  ],
+                  "line": {
+                    "matchRanges": [],
+                    "text": "	var sr = SearchResult{",
+                  },
+                  "lineNumber": 85,
                 },
               ],
               [
                 {
-                  "lineNumber": 89,
-                  "lineTokens": [
-                    {
-                      "text": "			LineMatches: nil, // 24 bytes
-          ",
-                    },
-                  ],
+                  "line": {
+                    "matchRanges": [],
+                    "text": "			LineMatches: nil, // 24 bytes",
+                  },
+                  "lineNumber": 94,
                 },
                 {
-                  "lineNumber": 90,
-                  "lineTokens": [
-                    {
-                      "text": "			ChunkMatches: []ChunkMatch{{ // 24 bytes + 208 bytes (see ",
-                    },
-                    {
-                      "match": true,
-                      "text": "Test",
-                    },
-                    {
-                      "text": "SizeByteChunkMatches)
-          ",
-                    },
-                  ],
+                  "line": {
+                    "matchRanges": [
+                      {
+                        "end": 65,
+                        "start": 61,
+                      },
+                    ],
+                    "text": "			ChunkMatches: []ChunkMatch{{ // 24 bytes + 208 bytes (see TestSizeByteChunkMatches)",
+                  },
+                  "lineNumber": 95,
                 },
                 {
-                  "lineNumber": 91,
-                  "lineTokens": [
-                    {
-                      "text": "				Content:      []byte("foo"),",
-                    },
-                  ],
+                  "line": {
+                    "matchRanges": [],
+                    "text": "				Content:      []byte("foo"),",
+                  },
+                  "lineNumber": 96,
                 },
               ],
               [
                 {
-                  "lineNumber": 117,
-                  "lineTokens": [
-                    {
-                      "text": "
-          ",
-                    },
-                  ],
+                  "line": {
+                    "matchRanges": [],
+                    "text": "",
+                  },
+                  "lineNumber": 122,
                 },
                 {
-                  "lineNumber": 118,
-                  "lineTokens": [
-                    {
-                      "text": "func ",
-                    },
-                    {
-                      "match": true,
-                      "text": "Test",
-                    },
-                    {
-                      "text": "SizeBytesChunkMatches(t *",
-                    },
-                    {
-                      "match": true,
-                      "text": "test",
-                    },
-                    {
-                      "text": "ing.T) {
-          ",
-                    },
-                  ],
+                  "line": {
+                    "matchRanges": [
+                      {
+                        "end": 9,
+                        "start": 5,
+                      },
+                      {
+                        "end": 38,
+                        "start": 34,
+                      },
+                    ],
+                    "text": "func TestSizeBytesChunkMatches(t *testing.T) {",
+                  },
+                  "lineNumber": 123,
                 },
                 {
-                  "lineNumber": 119,
-                  "lineTokens": [
-                    {
-                      "text": "	cm := ChunkMatch{",
-                    },
-                  ],
+                  "line": {
+                    "matchRanges": [],
+                    "text": "	cm := ChunkMatch{",
+                  },
+                  "lineNumber": 124,
                 },
               ],
             ],

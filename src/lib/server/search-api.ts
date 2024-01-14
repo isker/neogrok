@@ -1,7 +1,7 @@
 import * as v from "@badrap/valita";
 import type { ReadonlyDeep } from "type-fest";
 import {
-  type ContentToken,
+  type ContentLine,
   parseChunkMatch,
   parseFileNameMatch,
 } from "./content-parser";
@@ -184,42 +184,27 @@ const searchResultSchema = v.object({
                       `Unreachable: received ${fileNameChunks.length} file name matches`,
                     );
                   }
-                  let fileNameTokens: Array<ContentToken>;
+                  let fileNameParsed: ContentLine;
                   if (fileNameChunks.length === 1) {
                     const { content, matchRanges } = fileNameChunks[0];
-                    fileNameTokens = parseFileNameMatch(content, matchRanges);
+                    fileNameParsed = parseFileNameMatch(content, matchRanges);
                   } else {
-                    fileNameTokens = [{ text: fileName }];
+                    fileNameParsed = { text: fileName, matchRanges: [] };
                   }
 
                   return {
                     repository,
-                    fileName,
-                    fileNameTokens,
+                    fileName: fileNameParsed,
                     branches,
                     language,
                     version,
                     chunks: chunkMatches
                       .filter(({ isFileNameChunk }) => !isFileNameChunk)
-                      .map(({ content, startLineNumber, matchRanges }) => {
-                        const lines = parseChunkMatch(content, matchRanges).map(
-                          (lineTokens) => ({
-                            lineTokens,
-                            // While the frontend could derive this from
-                            // lineTokens, counts of matches in a chunk are
-                            // needed so frequently that it's substantially less
-                            // tedious to precompute it.
-                            matchCount: numMatches(lineTokens),
-                          }),
-                        );
-
-                        const matchCount = lines.reduce(
-                          (n, { matchCount }) => n + matchCount,
-                          0,
-                        );
-
-                        return { matchCount, startLineNumber, lines };
-                      }),
+                      .map(({ content, startLineNumber, matchRanges }) => ({
+                        lines: parseChunkMatch(content, matchRanges),
+                        startLineNumber,
+                        matchCount: matchRanges.length,
+                      })),
                   };
                 },
               ),
@@ -246,30 +231,19 @@ const searchResultSchema = v.object({
           filesSkipped,
         },
         files: files.map(
-          ({
-            repository,
-            version,
-            fileName,
-            fileNameTokens,
-            chunks,
-            ...rest
-          }) => {
-            const fileNameMatchCount = numMatches(fileNameTokens);
+          ({ repository, version, fileName, chunks, ...rest }) => {
             return {
               ...rest,
               repository,
               matchCount: chunks.reduce(
                 (n, { matchCount: m }) => n + m,
-                fileNameMatchCount,
+                fileName.matchRanges.length,
               ),
-              fileName: {
-                matchCount: fileNameMatchCount,
-                tokens: fileNameTokens,
-              },
+              fileName,
               chunks,
               fileUrl: repoUrls[repository]
                 ?.replaceAll("{{.Version}}", version)
-                .replaceAll("{{.Path}}", fileName),
+                .replaceAll("{{.Path}}", fileName.text),
               // The 'template' is such that the line number can be `join`ed
               // into it. JSON serializable!
               lineNumberTemplate:
@@ -280,9 +254,6 @@ const searchResultSchema = v.object({
       }),
     ),
 });
-
-const numMatches = (tokens: Array<ContentToken>) =>
-  tokens.filter((t) => t.match).length;
 
 export type SearchResults = ReadonlyDeep<
   v.Infer<typeof searchResultSchema>["Result"]
