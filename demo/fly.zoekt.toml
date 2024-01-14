@@ -9,19 +9,10 @@ primary_region = "ewr"
 [experimental]
   auto_rollback = true
 
-[[services]]
-  http_checks = []
-  internal_port = 8080
-  processes = ["app"]
-  protocol = "tcp"
-  script_checks = []
-  [services.concurrency]
-    hard_limit = 25
-    soft_limit = 20
-    type = "connections"
-
-  [[services.tcp_checks]]
+[checks]
+  [checks.tcp_check]
+    type = "tcp"
+    port = 8080
     grace_period = "1s"
     interval = "15s"
-    restart_limit = 0
     timeout = "2s"
