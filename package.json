@@ -58,7 +58,7 @@
     "lucide-svelte": "0.303.0",
     "pretty-bytes": "6.1.1",
     "prom-client": "15.0.0",
-    "shikiji": "patch:shikiji@npm%3A0.9.18#~/.yarn/patches/shikiji-npm-0.9.18-945ea5efcb.patch"
+    "shikiji": "0.9.18"
   },
   "engines": {
     "node": ">=20"
@@ -107,7 +107,6 @@
     "typed-array-length": "npm:@nolyfill/typed-array-length@latest",
     "unbox-primitive": "npm:@nolyfill/unbox-primitive@latest",
     "which-boxed-primitive": "npm:@nolyfill/which-boxed-primitive@latest",
-    "which-typed-array": "npm:@nolyfill/which-typed-array@latest",
-    "shikiji-core@npm:0.9.18": "patch:shikiji-core@npm%3A0.9.18#~/.yarn/patches/shikiji-core-npm-0.9.18-826293a3df.patch"
+    "which-typed-array": "npm:@nolyfill/which-typed-array@latest"
   }
 }

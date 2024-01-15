@@ -44,7 +44,10 @@
       const matchRangeIterator = content.matchRanges[Symbol.iterator]();
       let currentMatchRange: Range | undefined =
         matchRangeIterator.next().value;
-      for (const { start, end, fontStyle, color } of highlights) {
+
+      let start = 0;
+      for (const { content: highlightText, fontStyle, color } of highlights) {
+        const end = start + highlightText.length;
         const fontClass = toFontClass(fontStyle);
         let base = start;
 
@@ -94,6 +97,8 @@
             color,
           });
         }
+
+        start = end;
       }
     } else {
       let base = 0;

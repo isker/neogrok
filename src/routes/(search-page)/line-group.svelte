@@ -56,7 +56,9 @@
         if (!canceled) {
           highlights.set(
             await codeToThemedTokens(
-              lines.map(({ line: { text } }) => text),
+              // Shikiji only accepts a single string even though it goes right
+              // ahead and splits it :(.
+              lines.map(({ line: { text } }) => text).join("\n"),
               {
                 theme: "github-light",
                 lang,

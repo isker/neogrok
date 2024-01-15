@@ -3580,7 +3580,7 @@ __metadata:
     prettier-plugin-svelte: "npm:3.0.3"
     pretty-bytes: "npm:6.1.1"
     prom-client: "npm:15.0.0"
-    shikiji: "patch:shikiji@npm%3A0.9.18#~/.yarn/patches/shikiji-npm-0.9.18-945ea5efcb.patch"
+    shikiji: "npm:0.9.18"
     svelte: "npm:4.2.1"
     svelte-check: "npm:3.5.2"
     tailwindcss: "npm:3.3.3"
@@ -4510,28 +4510,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"shikiji-core@patch:shikiji-core@npm%3A0.9.18#~/.yarn/patches/shikiji-core-npm-0.9.18-826293a3df.patch":
-  version: 0.9.18
-  resolution: "shikiji-core@patch:shikiji-core@npm%3A0.9.18#~/.yarn/patches/shikiji-core-npm-0.9.18-826293a3df.patch::version=0.9.18&hash=6968ed"
-  checksum: ace21e92feb3bfe58d126d95fd876b729184dbf57bf1e0cf3f96f7c71840754ed227649328e2301bcb47730e6875c4915e109599db5ed5d7f28557a3bd82b4c5
-  languageName: node
-  linkType: hard
-
 "shikiji@npm:0.9.18":
   version: 0.9.18
   resolution: "shikiji@npm:0.9.18"
   dependencies:
     shikiji-core: "npm:0.9.18"
   checksum: 29651f5c397c5862ff1c78e0c6b85e6fa47f9f3538f5672f64c4c9afea368e77dfb1697eb7cd5746bc259d7cbaec6d77c91c5e0b520dc4dcbb77ad8492dbef72
-  languageName: node
-  linkType: hard
-
-"shikiji@patch:shikiji@npm%3A0.9.18#~/.yarn/patches/shikiji-npm-0.9.18-945ea5efcb.patch":
-  version: 0.9.18
-  resolution: "shikiji@patch:shikiji@npm%3A0.9.18#~/.yarn/patches/shikiji-npm-0.9.18-945ea5efcb.patch::version=0.9.18&hash=43ddf9"
-  dependencies:
-    shikiji-core: "npm:0.9.18"
-  checksum: b397c3bef535e66c64c73785143e4ce9e6faca083966b0ade618063e88fa27ed025531e78aaa7712ad5c776a97130a0e6603c77fadeeebde5ba078dfb7d9cfc3
   languageName: node
   linkType: hard
 
