@@ -1,5 +1,11 @@
 # neogrok
 
+## 0.2.1
+
+### Patch Changes
+
+- 05cdf97: Fix ability to `npm install -g neogrok`
+
 ## 0.2.0
 
 ### Minor Changes
