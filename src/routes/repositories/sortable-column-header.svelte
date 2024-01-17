@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { ChevronUp, ChevronDown } from "lucide-svelte";
+  import ChevronUp from "lucide-svelte/icons/chevron-up";
+  import ChevronDown from "lucide-svelte/icons/chevron-down";
   import { nextSortBy, type SortColumn, type SortBy } from "./table-sorting";
 
   export let sortColumn: SortColumn;

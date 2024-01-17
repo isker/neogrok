@@ -1,5 +1,7 @@
 <script lang="ts">
-  import { ChevronRight } from "lucide-svelte";
+  // FIXME extra whitespace around inline lucide icons during SSR:
+  // https://github.com/lucide-icons/lucide/pull/1707#issuecomment-1894976168
+  import ChevronRight from "lucide-svelte/icons/chevron-right";
   import Link from "$lib/link.svelte";
   import type { ResultFile } from "$lib/server/search-api";
   import RenderedContent from "./rendered-content.svelte";
@@ -25,11 +27,10 @@
   <!-- ideally we could hyperlink the repository but there is no such
        URL in search results - either we do dumb stuff to the file template URL
        or we make a separate /list API request for each repo -->
-  <span>
-    {file.repository}<ChevronRight
-      class="inline"
-      size={16}
-    />{#if file.fileUrl}<Link to={file.fileUrl}>
+  <span
+    ><span>{file.repository}</span><span
+      ><ChevronRight class="inline" size={16} /></span
+    >{#if file.fileUrl}<Link to={file.fileUrl}>
         <RenderedContent content={file.fileName} /></Link
       >{:else}<RenderedContent content={file.fileName} />{/if}</span
   >

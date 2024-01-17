@@ -1,6 +1,6 @@
 <script lang="ts">
   import { acquireSearchTypeStore } from "$lib/preferences";
-  import { Zap } from "lucide-svelte";
+  import Zap from "lucide-svelte/icons/zap";
 
   const searchType = acquireSearchTypeStore();
 </script>

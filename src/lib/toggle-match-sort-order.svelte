@@ -1,6 +1,6 @@
 <script lang="ts">
   import { acquireMatchSortOrderStore } from "$lib/preferences";
-  import { ListOrdered } from "lucide-svelte";
+  import ListOrdered from "lucide-svelte/icons/list-ordered";
 
   const matchSortOrder = acquireMatchSortOrderStore();
 </script>
