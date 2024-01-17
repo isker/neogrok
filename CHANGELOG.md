@@ -1,5 +1,12 @@
 # neogrok
 
+## 0.2.2
+
+### Patch Changes
+
+- f9c0ad2: Replace timed delay for syntax highlighting with VisibilityObserver
+- 928e040: Improve lucide-icons build perf
+
 ## 0.2.1
 
 ### Patch Changes
