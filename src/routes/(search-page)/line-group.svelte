@@ -66,9 +66,19 @@
 
   $: {
     if (visible) {
-      // Shikiji only accepts a single string even though it goes
-      // right ahead and splits it :(.
-      highlight(lines.map(({ line: { text } }) => text).join("\n"));
+      // Skip highlighting anything with long lines, as it's an excellent way to
+      // freeze the browser. Such files are probably minified web assets, or
+      // otherwise low-signal.
+      if (!lines.some(({ line }) => line.text.length >= 1000)) {
+        // Shikiji only accepts a single string even though it goes
+        // right ahead and splits it :(.
+        highlight(lines.map(({ line: { text } }) => text).join("\n"));
+      } else {
+        // We can have defined `highlights` here if our LineGroup was cut in two
+        // by a now-removed "hidden" threshold. Having highlights for part of
+        // the group but not the rest is strange in the UI, so remove it all.
+        highlights = undefined;
+      }
     }
   }
 
