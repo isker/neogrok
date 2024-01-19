@@ -1,5 +1,11 @@
 # neogrok
 
+## 0.2.3
+
+### Patch Changes
+
+- 2cdf4d7: Skip syntax highlighting files with long lines
+
 ## 0.2.2
 
 ### Patch Changes
