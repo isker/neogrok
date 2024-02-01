@@ -1,5 +1,11 @@
 # neogrok
 
+## 0.2.4
+
+### Patch Changes
+
+- 070b197: Fix jittering icons on SSR
+
 ## 0.2.3
 
 ### Patch Changes
