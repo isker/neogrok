@@ -1,5 +1,11 @@
 # neogrok
 
+## 1.0.0
+
+### Major Changes
+
+- c8ba699: Cut 1.0! Neogrok has long been feature complete.
+
 ## 0.2.4
 
 ### Patch Changes
