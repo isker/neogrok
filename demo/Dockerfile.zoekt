@@ -1,4 +1,4 @@
-FROM golang:1.21 as go-builder
+FROM golang:1.22 as go-builder
 # The ctags in debian stable is far too old for zoekt. And the alpine community
 # repo package is not built with all the flags zoekt needs. Source builds ahoy.
 WORKDIR /ctags
@@ -13,11 +13,11 @@ RUN apt-get update && \
   git clone https://github.com/universal-ctags/ctags && \
   cd ctags && ./autogen.sh && ./configure --prefix=/usr && make && make install && \
   ln -s /usr/bin/ctags /usr/bin/universal-ctags
+ENV CGO_ENABLED=0
+WORKDIR /zoekt
 # Invalidate on every commit, as that's what we're effectively indexing. We
 # still index from github instead of locally so that we get repo metadata in the
 # index.
-ENV CGO_ENABLED=0
-WORKDIR /zoekt
 COPY .git .git
 RUN go install github.com/sourcegraph/zoekt/cmd/zoekt-git-index@latest github.com/sourcegraph/zoekt/cmd/zoekt-webserver@latest && \
   git clone --depth 1 https://github.com/isker/neogrok.git && \
