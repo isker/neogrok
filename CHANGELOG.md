@@ -1,5 +1,11 @@
 # neogrok
 
+## 1.0.1
+
+### Patch Changes
+
+- 4ef4961: Handle breaking change in ChunkMatch newlines
+
 ## 1.0.0
 
 ### Major Changes
