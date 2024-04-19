@@ -37,23 +37,23 @@ describe("parseFileNameMatch", () => {
 describe("parseChunkMatch", () => {
   it("parses chunk matches", () => {
     // Single line.
-    expect(parseChunkMatch(Buffer.from("foo"), [])).toEqual([
+    expect(parseChunkMatch(Buffer.from("foo\n"), [])).toEqual([
       { text: "foo", matchRanges: [] },
     ]);
-    expect(parseChunkMatch(Buffer.from("foo"), [{ start: 0, end: 3 }])).toEqual(
-      [{ text: "foo", matchRanges: [{ start: 0, end: 3 }] }],
-    );
-    expect(parseChunkMatch(Buffer.from("foo"), [{ start: 0, end: 2 }])).toEqual(
-      [{ text: "foo", matchRanges: [{ start: 0, end: 2 }] }],
-    );
-    expect(parseChunkMatch(Buffer.from("foo"), [{ start: 1, end: 3 }])).toEqual(
-      [{ text: "foo", matchRanges: [{ start: 1, end: 3 }] }],
-    );
-    expect(parseChunkMatch(Buffer.from("foo"), [{ start: 1, end: 2 }])).toEqual(
-      [{ text: "foo", matchRanges: [{ start: 1, end: 2 }] }],
-    );
     expect(
-      parseChunkMatch(Buffer.from("foo"), [
+      parseChunkMatch(Buffer.from("foo\n"), [{ start: 0, end: 3 }]),
+    ).toEqual([{ text: "foo", matchRanges: [{ start: 0, end: 3 }] }]);
+    expect(
+      parseChunkMatch(Buffer.from("foo\n"), [{ start: 0, end: 2 }]),
+    ).toEqual([{ text: "foo", matchRanges: [{ start: 0, end: 2 }] }]);
+    expect(
+      parseChunkMatch(Buffer.from("foo\n"), [{ start: 1, end: 3 }]),
+    ).toEqual([{ text: "foo", matchRanges: [{ start: 1, end: 3 }] }]);
+    expect(
+      parseChunkMatch(Buffer.from("foo\n"), [{ start: 1, end: 2 }]),
+    ).toEqual([{ text: "foo", matchRanges: [{ start: 1, end: 2 }] }]);
+    expect(
+      parseChunkMatch(Buffer.from("foo\n"), [
         { start: 1, end: 2 },
         { start: 2, end: 3 },
       ]),
@@ -68,42 +68,42 @@ describe("parseChunkMatch", () => {
     ]);
 
     // Multi-line.
-    expect(parseChunkMatch(Buffer.from("foo\n"), [])).toEqual([
+    expect(parseChunkMatch(Buffer.from("foo\n\n"), [])).toEqual([
       { text: "foo", matchRanges: [] },
       { text: "", matchRanges: [] },
     ]);
     expect(
-      parseChunkMatch(Buffer.from("foo\n"), [{ start: 0, end: 3 }]),
+      parseChunkMatch(Buffer.from("foo\n\n"), [{ start: 0, end: 3 }]),
     ).toEqual([
       { text: "foo", matchRanges: [{ start: 0, end: 3 }] },
       { text: "", matchRanges: [] },
     ]);
     expect(
-      parseChunkMatch(Buffer.from("foo\n"), [{ start: 0, end: 4 }]),
+      parseChunkMatch(Buffer.from("foo\n\n"), [{ start: 0, end: 4 }]),
     ).toEqual([
       { text: "foo", matchRanges: [{ start: 0, end: 3 }] },
       { text: "", matchRanges: [] },
     ]);
 
-    expect(parseChunkMatch(Buffer.from("foo\nbar"), [])).toEqual([
+    expect(parseChunkMatch(Buffer.from("foo\nbar\n"), [])).toEqual([
       { text: "foo", matchRanges: [] },
       { text: "bar", matchRanges: [] },
     ]);
     expect(
-      parseChunkMatch(Buffer.from("foo\nbar"), [{ start: 0, end: 3 }]),
+      parseChunkMatch(Buffer.from("foo\nbar\n"), [{ start: 0, end: 3 }]),
     ).toEqual([
       { text: "foo", matchRanges: [{ start: 0, end: 3 }] },
       { text: "bar", matchRanges: [] },
     ]);
     expect(
-      parseChunkMatch(Buffer.from("foo\nbar"), [{ start: 0, end: 4 }]),
+      parseChunkMatch(Buffer.from("foo\nbar\n"), [{ start: 0, end: 4 }]),
     ).toEqual([
       { text: "foo", matchRanges: [{ start: 0, end: 3 }] },
       { text: "bar", matchRanges: [] },
     ]);
 
     expect(
-      parseChunkMatch(Buffer.from("foo\nbar"), [
+      parseChunkMatch(Buffer.from("foo\nbar\n"), [
         { start: 0, end: 1 },
         { start: 2, end: 5 },
       ]),

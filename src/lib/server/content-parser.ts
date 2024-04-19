@@ -132,11 +132,10 @@ Array<ContentLine> => {
     }
   }
 
-  // Conclude the current line. Note that if `currentLineText` is length 0,
-  // that is still semantically a line, namely an empty line. `Content` never
-  // naturally has a trailing newline; if there's a newline at the last byte,
-  // this indicates that there is a final line that is empty.
-  lines.push({ text: currentLineText, matchRanges: currentLineMatchRanges });
+  if (currentLineText.length > 0) {
+    // Conclude the current line.
+    lines.push({ text: currentLineText, matchRanges: currentLineMatchRanges });
+  }
 
   return lines;
 };
