@@ -19,6 +19,7 @@ const executeList = async (
     const response = await f("/api/list", {
       method: "POST",
       body: JSON.stringify(listQuery),
+      headers: { "content-type": "application/json" },
     });
     return await response.json();
   } catch (error) {
