@@ -1,5 +1,12 @@
 # neogrok
 
+## 1.0.2
+
+### Patch Changes
+
+- e0060d4: Fix SvelteKit CSRF errors in /api/list
+- 5974e0f: Properly serve results from repositories that have no VCS metadata
+
 ## 1.0.1
 
 ### Patch Changes
