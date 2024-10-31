@@ -89,14 +89,21 @@ const listResultSchema = v.object({
                     LatestCommitDate: dateSchema,
                     FileURLTemplate: v.string(),
                     CommitURLTemplate: v.string(),
-                    Branches: v.array(
-                      v
-                        .object({ Name: v.string(), Version: v.string() })
-                        .map(({ Name, Version }) => ({
-                          name: Name,
-                          version: Version,
-                        })),
-                    ),
+                    Branches: v
+                      .array(
+                        v
+                          .object({ Name: v.string(), Version: v.string() })
+                          .map(({ Name, Version }) => ({
+                            name: Name,
+                            version: Version,
+                          })),
+                      )
+                      // Zoekt returns `null` when there are no branches (e.g.
+                      // the repo is just a directory, no VCS info). To me that
+                      // seems wrong and I think it should be `omitempty`, so
+                      // tolerate both options in case that ever gets fixed.
+                      .nullable()
+                      .optional(),
                   })
                   .map(
                     ({
@@ -116,7 +123,7 @@ const listResultSchema = v.object({
                       lastCommit: toISOStringWithoutMs(LatestCommitDate),
                       fileUrlTemplate: FileURLTemplate,
                       commitUrlTemplate: CommitURLTemplate,
-                      branches: Branches,
+                      branches: Branches ?? [],
                     }),
                   ),
                 IndexMetadata: v

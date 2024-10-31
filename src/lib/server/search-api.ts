@@ -108,13 +108,13 @@ const searchResultSchema = v.object({
               .object({
                 Repository: v.string(),
                 FileName: v.string(),
-                Branches: v.array(v.string()),
+                Branches: v.array(v.string()).optional(),
                 // Will be the empty string if zoekt couldn't figure it out, we
                 // call it Text for both display purposes and for parameterizing
                 // syntax highlighting; Text is the name zoekt will pick for
                 // plain text files it can identify.
                 Language: v.string().map((lang) => lang || "Text"),
-                Version: v.string(),
+                Version: v.string().optional(),
                 ChunkMatches: v.array(
                   v
                     .object({
@@ -166,7 +166,7 @@ const searchResultSchema = v.object({
                 ({
                   Repository: repository,
                   FileName: fileName,
-                  Branches: branches,
+                  Branches: branches = [],
                   Language: language,
                   Version: version,
                   ChunkMatches: chunkMatches,
@@ -241,9 +241,11 @@ const searchResultSchema = v.object({
               ),
               fileName,
               chunks,
-              fileUrl: repoUrls[repository]
-                ?.replaceAll("{{.Version}}", version)
-                .replaceAll("{{.Path}}", fileName.text),
+              fileUrl:
+                version &&
+                repoUrls[repository]
+                  ?.replaceAll("{{.Version}}", version)
+                  .replaceAll("{{.Path}}", fileName.text),
               // The 'template' is such that the line number can be `join`ed
               // into it. JSON serializable!
               lineNumberTemplate:
