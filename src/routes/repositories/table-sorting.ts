@@ -33,10 +33,10 @@ export const createComparator = ({ prop, kind, direction }: SortBy) => {
   } else if (kind === "number" && direction === "descending") {
     return ({ [prop]: a }: Repository, { [prop]: b }: Repository) => b - a;
   } else if (kind === "string" && direction === "ascending") {
-    return ({ [prop]: a }: Repository, { [prop]: b }: Repository) =>
+    return ({ [prop]: a = "" }: Repository, { [prop]: b = "" }: Repository) =>
       a < b ? -1 : a > b ? 1 : 0;
   } else if (kind === "string" && direction === "descending") {
-    return ({ [prop]: a }: Repository, { [prop]: b }: Repository) =>
+    return ({ [prop]: a = "" }: Repository, { [prop]: b = "" }: Repository) =>
       b < a ? -1 : b > a ? 1 : 0;
   }
 };

@@ -2,7 +2,7 @@
   import Link from "$lib/link.svelte";
 
   export let name: string;
-  export let url: string | null;
+  export let url: string | undefined;
 </script>
 
 <div class="text-left">

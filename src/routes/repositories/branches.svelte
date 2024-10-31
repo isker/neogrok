@@ -3,7 +3,7 @@
   import type { Repository } from "$lib/server/zoekt-list-repositories";
 
   export let branches: Repository["branches"];
-  export let commitUrlTemplate: string | null;
+  export let commitUrlTemplate: string | undefined;
 
   // Abbreviate git hashes. Helps make the very wide table a bit narrower.
   const abbreviateVersion = (v: string) =>
@@ -20,4 +20,6 @@
       {abbreviateVersion(version)}
     {/if}
   </span>
+{:else}
+  n/a
 {/each}

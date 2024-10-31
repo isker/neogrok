@@ -149,7 +149,7 @@
             >{prettyBytes(contentBytes, { space: false, binary: true })}</td
           >
           <td class="p-1 border-x">{lastIndexed}</td>
-          <td class="p-1 border-x">{lastCommit}</td>
+          <td class="p-1 border-x">{lastCommit ?? "n/a"}</td>
         </tr>
       {/each}
     </tbody>

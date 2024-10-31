@@ -27,7 +27,7 @@ export const load: import("./$types").PageServerLoad = async ({
   let destinationUrl: string | undefined;
   if (file) {
     destinationUrl = repo?.fileUrlTemplate
-      .replaceAll("{{.Version}}", revision ?? repo.branches[0].name)
+      ?.replaceAll("{{.Version}}", revision ?? repo.branches[0].name)
       .replaceAll("{{.Path}}", file);
   } else {
     destinationUrl = repo?.url;

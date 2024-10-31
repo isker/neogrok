@@ -70,6 +70,20 @@ const dateSchema = v.string().chain((str) => {
   return v.ok(date);
 });
 
+const optionalDateSchema = v.string().chain((str) => {
+  const date = new Date(str);
+
+  if (isNaN(date.getTime())) {
+    return v.err(`Invalid date "${str}"`);
+  } else if (str === "0001-01-01T00:00:00Z") {
+    // time.MarshalJSON in Go is immune to `omitempty`, so you can be served the
+    // 0-value, which takes this form.
+    return v.ok(undefined);
+  }
+
+  return v.ok(date);
+});
+
 const listResultSchema = v.object({
   List: v
     .object({
@@ -85,10 +99,10 @@ const listResultSchema = v.object({
                     Name: v.string(),
                     ID: v.number(),
                     Rank: v.number(),
-                    URL: v.string(),
-                    LatestCommitDate: dateSchema,
-                    FileURLTemplate: v.string(),
-                    CommitURLTemplate: v.string(),
+                    URL: v.string().optional(),
+                    LatestCommitDate: optionalDateSchema,
+                    FileURLTemplate: v.string().optional(),
+                    CommitURLTemplate: v.string().optional(),
                     Branches: v
                       .array(
                         v
@@ -120,7 +134,9 @@ const listResultSchema = v.object({
                       id: ID,
                       rank: Rank,
                       url: URL,
-                      lastCommit: toISOStringWithoutMs(LatestCommitDate),
+                      lastCommit: LatestCommitDate
+                        ? toISOStringWithoutMs(LatestCommitDate)
+                        : undefined,
                       fileUrlTemplate: FileURLTemplate,
                       commitUrlTemplate: CommitURLTemplate,
                       branches: Branches ?? [],

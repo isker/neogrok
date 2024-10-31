@@ -28,7 +28,7 @@ export const load: import("./$types").PageServerLoad = async ({
 
   const repo = result.results.repositories[0];
   const fileUrl = repo?.fileUrlTemplate
-    .replaceAll("{{.Version}}", revision ?? repo.branches[0].name)
+    ?.replaceAll("{{.Version}}", revision ?? repo.branches[0].name)
     .replaceAll("{{.Path}}", file);
 
   setHeaders({
