@@ -28,4 +28,6 @@ FROM gcr.io/distroless/static-debian12:latest as zoekt-webserver
 WORKDIR /zoekt
 COPY --from=go-builder /go/bin/zoekt-webserver /zoekt/zoekt-webserver
 COPY --from=go-builder /zoekt/index /zoekt/index
+# The `-html=false` and `-rpc=true` flags are both a requirement to get a
+# functioning zoekt API. If you do not pass these, neogrok will not work.
 ENTRYPOINT ["/zoekt/zoekt-webserver", "-index=/zoekt/index", "-html=false", "-rpc=true", "-listen=:8080"]

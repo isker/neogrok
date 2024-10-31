@@ -60,14 +60,14 @@ The configuration file is read from `/etc/neogrok/config.json` by
 default, but the location may be customized using the environment variable
 `NEOGROK_CONFIG_FILE`. The file is entirely optional, as all of the required
 configuration may be defined in the environment. If it is present, the file's
-contents must be a JSON object with zero or more entires, whose keys correspond
+contents must be a JSON object with zero or more entries, whose keys correspond
 to the option names tabulated below.
 
 ### Configuration options
 
 | Option name               | Environment variable name | Required Y/N | Description                                                                                                                        |
 | :------------------------ | :------------------------ | :----------- | :--------------------------------------------------------------------------------------------------------------------------------- |
-| `zoektUrl`                | `ZOEKT_URL`               | Y            | The base zoekt URL at which neogrok will make API requests, at e.g. `/api/search` and `/api/list`                                  |
+| `zoektUrl`                | `ZOEKT_URL`               | Y            | The base zoekt URL at which neogrok will make API requests, e.g. `http://localhost:6070`                                           |
 | `openGrokProjectMappings` | N/A                       | N            | An object mapping OpenGrok project names to zoekt repository names; see [below](#renaming-opengrok-projects-to-zoekt-repositories) |
 
 ### SvelteKit environment variables

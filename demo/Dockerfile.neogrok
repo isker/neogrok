@@ -1,3 +1,7 @@
+# This dockerfile installs neogrok from source, as we want the demo to run the
+# latest master commit, not the latest released version. You can do the same in
+# your own deployments, or simply `npm install -g neogrok` to download a
+# released version that can be run as `neogrok`.
 FROM node:20-slim as app-builder
 WORKDIR /app
 COPY . .
