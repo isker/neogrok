@@ -1,6 +1,6 @@
 {
   "name": "neogrok",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A snappy code search frontend for zoekt",
   "keywords": [
     "code search",
