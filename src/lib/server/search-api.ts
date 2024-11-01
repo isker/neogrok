@@ -6,6 +6,7 @@ import {
   parseFileNameMatch,
 } from "./content-parser";
 import { makeZoektRequest } from "./zoekt-client";
+import { evaluateFileUrlTemplate } from "$lib/url-templates";
 
 export const searchQuerySchema = v.object({
   query: v.string(),
@@ -232,6 +233,7 @@ const searchResultSchema = v.object({
         },
         files: files.map(
           ({ repository, version, fileName, chunks, ...rest }) => {
+            const fileUrlTemplate = repoUrls[repository];
             return {
               ...rest,
               repository,
@@ -243,9 +245,12 @@ const searchResultSchema = v.object({
               chunks,
               fileUrl:
                 version &&
-                repoUrls[repository]
-                  ?.replaceAll("{{.Version}}", version)
-                  .replaceAll("{{.Path}}", fileName.text),
+                fileUrlTemplate &&
+                evaluateFileUrlTemplate(
+                  fileUrlTemplate,
+                  version,
+                  fileName.text,
+                ),
               // The 'template' is such that the line number can be `join`ed
               // into it. JSON serializable!
               lineNumberTemplate:

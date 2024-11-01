@@ -1,6 +1,7 @@
 <script lang="ts">
   import Link from "$lib/link.svelte";
   import type { Repository } from "$lib/server/zoekt-list-repositories";
+  import { evaluateCommitUrlTemplate } from "$lib/url-templates";
 
   export let branches: Repository["branches"];
   export let commitUrlTemplate: string | undefined;
@@ -13,7 +14,7 @@
 {#each branches as { name: branchName, version }}
   {branchName}@<span class="font-mono">
     {#if commitUrlTemplate}
-      <Link to={commitUrlTemplate.replaceAll("{{.Version}}", version)}
+      <Link to={evaluateCommitUrlTemplate(commitUrlTemplate, version)}
         >{abbreviateVersion(version)}</Link
       >
     {:else}

@@ -1,6 +1,7 @@
 import { escapeRegExp } from "$lib/regexp";
 import { configuration } from "$lib/server/configuration";
 import { listRepositories } from "$lib/server/zoekt-list-repositories";
+import { evaluateFileUrlTemplate } from "$lib/url-templates";
 import { redirect } from "@sveltejs/kit";
 
 export const load: import("./$types").PageServerLoad = async ({
@@ -24,11 +25,13 @@ export const load: import("./$types").PageServerLoad = async ({
   }
   const repo = result.results.repositories[0];
 
-  let destinationUrl: string | undefined;
-  if (file) {
-    destinationUrl = repo?.fileUrlTemplate
-      ?.replaceAll("{{.Version}}", revision ?? repo.branches[0].name)
-      .replaceAll("{{.Path}}", file);
+  let destinationUrl: string | null | undefined;
+  if (file && repo?.fileUrlTemplate) {
+    destinationUrl = evaluateFileUrlTemplate(
+      repo.fileUrlTemplate,
+      revision ?? repo.branches[0]?.name,
+      file,
+    );
   } else {
     destinationUrl = repo?.url;
   }
