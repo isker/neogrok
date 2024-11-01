@@ -1,5 +1,12 @@
 # neogrok
 
+## 1.0.3
+
+### Patch Changes
+
+- 9a1c731: Improve tabular display of missing optional repository properties
+- 67a04c1: Handle breaking change in zoekt repo URL templates
+
 ## 1.0.2
 
 ### Patch Changes
