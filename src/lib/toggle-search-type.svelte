@@ -6,21 +6,15 @@
 </script>
 
 <button
-  class={`rounded w-6 grid place-items-center ${
+  class={`border-[1.5px] rounded w-6 grid place-items-center ${
     $searchType === "live"
-      ? "bg-sky-500 hover:bg-slate-500"
-      : "hover:bg-slate-300"
+      ? "text-cyan-600 dark:text-cyan-400 border-cyan-600 dark:border-cyan-400"
+      : "border-dashed border-black dark:border-white"
   }`}
   title={$searchType === "live" ? "disable live search" : "enable live search"}
   on:click={() => {
     $searchType = $searchType === "live" ? "manual" : "live";
   }}
 >
-  <Zap
-    class="inline"
-    size={18}
-    color={$searchType === "live" ? "white" : "black"}
-    strokeWidth={1}
-    fill={$searchType === "live" ? "white" : "black"}
-  />
+  <Zap class="inline" size={18} strokeWidth={1.5} />
 </button>

@@ -6,10 +6,10 @@
 </script>
 
 <button
-  class={`rounded w-6 grid place-items-center ${
+  class={`border-[1.5px] rounded w-6 grid place-items-center ${
     $matchSortOrder === "line-number"
-      ? "bg-sky-500 hover:bg-slate-500"
-      : "hover:bg-slate-300"
+      ? "text-cyan-600 dark:text-cyan-400 border-cyan-600 dark:border-cyan-400"
+      : "border-dashed border-black dark:border-white"
   }`}
   title={$matchSortOrder === "line-number"
     ? "sort matches by score"
@@ -19,11 +19,5 @@
       $matchSortOrder === "line-number" ? "score" : "line-number";
   }}
 >
-  <ListOrdered
-    class="inline"
-    size={18}
-    color={$matchSortOrder === "line-number" ? "white" : "black"}
-    strokeWidth={1}
-    fill={$matchSortOrder === "line-number" ? "white" : "black"}
-  />
+  <ListOrdered class="inline" size={18} strokeWidth={1.5} />
 </button>

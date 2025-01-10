@@ -65,7 +65,8 @@
     <label for="query" class="flex-auto flex flex-col space-y-0.5">
       <span
         title="Same query syntax as the main search - use `r:name` to filter repositories by name, otherwise you are filtering them by their content!"
-        class="text-xs px-1 text-gray-500">query<LoadingEllipsis /></span
+        class="text-xs px-1 text-gray-500 dark:text-gray-400"
+        >query<LoadingEllipsis /></span
       >
       <span
         class={`flex flex-auto p-1 border shadow-sm space-x-1 ${computeInputColor(
@@ -91,13 +92,13 @@
           autocorrect="off"
           autocapitalize="off"
           autocomplete="off"
-          class="font-mono focus:outline-none flex-auto appearance-none"
+          class="font-mono dark:bg-black focus:outline-none flex-auto appearance-none"
         />
         <ToggleSearchType />
       </span>
     </label>
     <label for="repos" class="flex flex-col space-y-0.5">
-      <span class="text-xs px-1 text-gray-500">repos</span>
+      <span class="text-xs px-1 text-gray-500 dark:text-gray-400">repos</span>
       <IntegerInput
         id="context"
         pending={reposPending}

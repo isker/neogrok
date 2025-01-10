@@ -70,7 +70,11 @@
       </div>
     {/if}
     {#if postCutoffMatchCount > 0 && !expanded}
-      <button type="button" on:click={expand} class="bg-slate-100 text-sm py-1">
+      <button
+        type="button"
+        on:click={expand}
+        class="bg-slate-100 dark:bg-slate-800 text-sm py-1"
+      >
         Show {postCutoffMatchCount} more {postCutoffMatchCount === 1
           ? "match"
           : "matches"}
@@ -79,7 +83,7 @@
       <button
         type="button"
         on:click={collapse}
-        class="bg-slate-100 text-sm py-1 sticky bottom-0"
+        class="bg-slate-100 dark:bg-slate-800 text-sm py-1 sticky bottom-0"
       >
         Hide {postCutoffMatchCount}
         {postCutoffMatchCount === 1 ? "match" : "matches"}

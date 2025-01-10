@@ -35,7 +35,7 @@
           kind: "highlighted",
           content: luceneQuery.slice(
             highlightedLocation.start,
-            highlightedLocation.end
+            highlightedLocation.end,
           ),
         },
         {
@@ -70,10 +70,11 @@
       <h3 class="text-center font-semibold">
         Detected OpenGrok URL parameters
       </h3>
-      <pre class="bg-gray-100 p-2 text-sm whitespace-normal">{JSON.stringify(
+      <pre
+        class="bg-gray-100 dark:bg-gray-800 p-2 text-sm whitespace-normal">{JSON.stringify(
           openGrokParams,
           null,
-          2
+          2,
         )}</pre>
     </div>
     <span
@@ -88,7 +89,7 @@
         {:else}
           <Expression wrap
             >{#each renderedLuceneQuery as token}{#if token.kind === "highlighted"}<span
-                  class="bg-orange-200">{token.content}</span
+                  class="bg-orange-200 dark:bg-orange-800">{token.content}</span
                 >{:else}{token.content}{/if}{/each}</Expression
           >
         {/if}

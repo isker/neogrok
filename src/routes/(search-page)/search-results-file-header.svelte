@@ -22,7 +22,7 @@
 </script>
 
 <h2
-  class="px-2 py-1 text-sm sticky top-0 flex flex-wrap bg-slate-100 whitespace-pre-wrap [overflow-wrap:anywhere]"
+  class="px-2 py-1 text-sm sticky top-0 flex flex-wrap bg-slate-100 dark:bg-slate-800 whitespace-pre-wrap [overflow-wrap:anywhere]"
 >
   <!-- ideally we could hyperlink the repository but there is no such
        URL in search results - either we do dumb stuff to the file template URL

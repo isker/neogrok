@@ -1,9 +1,10 @@
 <script lang="ts">
   import type { ResultFile } from "$lib/server/search-api";
   import { onMount } from "svelte";
+  import type { ThemedToken, BundledLanguage } from "shikiji";
+  import { browserTheme, type BrowserTheme } from "$lib/theme";
   import type { LineGroup } from "./chunk-renderer";
   import RenderedContent from "./rendered-content.svelte";
-  import type { ThemedToken, BundledLanguage } from "shikiji";
 
   export let lines: LineGroup;
   export let file: ResultFile;
@@ -26,7 +27,7 @@
   let visible = false;
   let highlights: undefined | ReadonlyArray<ReadonlyArray<ThemedToken>>;
 
-  const highlight = async (code: string) => {
+  const highlight = async (code: string, theme: BrowserTheme) => {
     // We dynamically import shiki itself because it's huge and won't be
     // needed by those landing on the home page with no search query, or
     // on the server at all.
@@ -50,7 +51,7 @@
       // It's worth checking again, as downloading that chunk can take a
       // while, and highlighting can occupy meaningful CPU time.
       highlights = await codeToThemedTokens(code, {
-        theme: "github-light",
+        theme: `github-${theme}`,
         lang,
       });
     } else if (language !== "text") {
@@ -72,7 +73,10 @@
       if (!lines.some(({ line }) => line.text.length >= 1000)) {
         // Shikiji only accepts a single string even though it goes
         // right ahead and splits it :(.
-        highlight(lines.map(({ line: { text } }) => text).join("\n"));
+        highlight(
+          lines.map(({ line: { text } }) => text).join("\n"),
+          $browserTheme,
+        );
       } else {
         // We can have defined `highlights` here if our LineGroup was cut in two
         // by a now-removed "hidden" threshold. Having highlights for part of
@@ -108,7 +112,7 @@
   class="py-1 grid grid-cols-[minmax(2rem,_min-content)_1fr] gap-x-2 whitespace-pre overflow-x-auto"
 >
   {#each lines as { lineNumber, line }, i}
-    <span class="select-none text-gray-600 text-right pr-1">
+    <span class="select-none text-gray-600 dark:text-gray-500 text-right pr-1">
       {#if file.fileUrl && file.lineNumberTemplate}
         <a
           class="hover:underline decoration-1"

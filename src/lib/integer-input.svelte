@@ -33,8 +33,10 @@
   inputmode="numeric"
   {size}
   bind:value={stringValue}
-  class={`p-1 border shadow-sm focus:outline-none ${computeInputColor({
-    error: !valid,
-    pending,
-  })}`}
+  class={`p-1 border shadow-sm focus:outline-none dark:bg-black ${computeInputColor(
+    {
+      error: !valid,
+      pending,
+    },
+  )}`}
 />

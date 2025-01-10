@@ -158,7 +158,7 @@
   <table class="border border-collapse text-sm text-center">
     <Heading element="caption" id="prefix-table">Available prefixes</Heading>
     <thead>
-      <tr class="border bg-slate-100">
+      <tr class="border bg-slate-100 dark:bg-slate-800">
         <th class="p-1">Prefix(es)</th>
         <th class="p-1">Description</th>
         <th class="p-1">Examples</th>

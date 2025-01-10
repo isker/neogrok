@@ -25,18 +25,19 @@
     {#if filesSkipped > 0}
       <span
         title="The number of matches found in zoekt reached the maximum limits, so the search was aborted and these counts are incomplete"
-        class="text-yellow-700 cursor-help underline decoration-dashed"
+        class="text-yellow-700 dark:text-yellow-600 cursor-help underline decoration-dashed"
       >
         (truncated)
       </span>
     {/if} / {Math.floor(duration / 1e4) / 1e2}ms
   </span>
   <span class="ml-auto">
-    neogrok: <span class:text-yellow-700={filesLimited}
+    neogrok: <span
+      class={filesLimited ? "text-yellow-700 dark:text-yellow-600" : ""}
       >{files.length} {files.length === 1 ? "file" : "files"}</span
     >
     /
-    <span class:text-yellow-700={matchesLimited}
+    <span class={matchesLimited ? "text-yellow-700 dark:text-yellow-600" : ""}
       >{neogrokMatchCount}
       {neogrokMatchCount === 1 ? "match" : "matches"}</span
     >

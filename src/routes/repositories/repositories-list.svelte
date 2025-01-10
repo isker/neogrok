@@ -54,7 +54,8 @@
     })} RAM
   </span>
   <span class="ml-auto"
-    >neogrok: <span class:text-yellow-700={limited}
+    >neogrok: <span
+      class={limited ? "text-yellow-700 dark:text-yellow-600" : ""}
       >{truncated.length}
       {truncated.length === 1 ? "repository" : "repositories"}</span
     >
@@ -72,7 +73,7 @@
 
 <div class="overflow-x-auto">
   <table class="border-collapse text-sm w-full text-center h-fit">
-    <thead class="border bg-slate-100">
+    <thead class="border bg-slate-100 dark:bg-slate-800">
       <tr>
         <th></th>
         <th></th>

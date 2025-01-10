@@ -89,7 +89,9 @@
 
   <div class="flex flex-wrap gap-y-2 justify-center whitespace-nowrap">
     <label for="query" class="flex-auto flex flex-col space-y-0.5">
-      <span class="text-xs px-1 text-gray-500">query<LoadingEllipsis /></span>
+      <span class="text-xs px-1 text-gray-500 dark:text-gray-400"
+        >query<LoadingEllipsis /></span
+      >
       <span
         class={`flex flex-auto p-1 border shadow-sm space-x-1 ${computeInputColor(
           {
@@ -114,14 +116,14 @@
           autocorrect="off"
           autocapitalize="off"
           autocomplete="off"
-          class="font-mono focus:outline-none flex-auto appearance-none"
+          class="font-mono dark:bg-black focus:outline-none flex-auto appearance-none"
         />
         <ToggleSearchType />
         <ToggleMatchSortOrder />
       </span>
     </label>
     <label for="context" class="flex flex-col space-y-0.5">
-      <span class="text-xs px-1 text-gray-500">context</span>
+      <span class="text-xs px-1 text-gray-500 dark:text-gray-400">context</span>
       <IntegerInput
         id="context"
         pending={contextLinesPending}
@@ -137,7 +139,7 @@
       />
     </label>
     <label for="files" class="flex flex-col space-y-0.5">
-      <span class="text-xs px-1 text-gray-500">files</span>
+      <span class="text-xs px-1 text-gray-500 dark:text-gray-400">files</span>
       <IntegerInput
         id="files"
         kind="positive"
@@ -154,7 +156,7 @@
       />
     </label>
     <label for="matches" class="flex flex-col space-y-0.5">
-      <span class="text-xs px-1 text-gray-500">matches</span>
+      <span class="text-xs px-1 text-gray-500 dark:text-gray-400">matches</span>
       <IntegerInput
         id="matches"
         kind="positive"

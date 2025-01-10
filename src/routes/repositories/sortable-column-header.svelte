@@ -8,7 +8,7 @@
 </script>
 
 <button
-  class="w-full h-full flex justify-center items-center hover:bg-slate-200"
+  class="w-full h-full flex justify-center items-center hover:bg-slate-200 hover:dark:bg-slate-700"
   on:click={() => {
     sortBy = nextSortBy(sortBy, sortColumn);
   }}

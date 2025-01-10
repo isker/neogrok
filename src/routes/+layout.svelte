@@ -28,7 +28,7 @@
           {#if url === $page.url.pathname}
             {text}{:else}
             <a
-              class="text-cyan-700"
+              class="text-cyan-700 dark:text-cyan-400"
               href={`${url}${
                 // On non-opengrok-compatibility pages, preserve the query
                 // string so that search queries are preserved across
