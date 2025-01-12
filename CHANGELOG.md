@@ -1,5 +1,11 @@
 # neogrok
 
+## 1.1.0
+
+### Minor Changes
+
+- a1f637f: Add dark mode (toggle using OS appearance)
+
 ## 1.0.3
 
 ### Patch Changes
