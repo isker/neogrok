@@ -2,7 +2,7 @@
 # latest master commit, not the latest released version. You can do the same in
 # your own deployments, or simply `npm install -g neogrok` to download a
 # released version that can be run as `neogrok`.
-FROM node:20-slim as app-builder
+FROM node:20-slim AS app-builder
 WORKDIR /app
 COPY . .
 RUN yarn install \

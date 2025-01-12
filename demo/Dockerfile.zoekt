@@ -1,4 +1,4 @@
-FROM golang:1.22 as go-builder
+FROM golang:1.23 AS go-builder
 # The ctags in debian stable is far too old for zoekt. And the alpine community
 # repo package is not built with all the flags zoekt needs. Source builds ahoy.
 WORKDIR /ctags
@@ -24,7 +24,7 @@ RUN go install github.com/sourcegraph/zoekt/cmd/zoekt-git-index@latest github.co
   git clone --depth 1 https://github.com/sourcegraph/zoekt.git && \
   zoekt-git-index -index=index -require_ctags neogrok zoekt
 
-FROM gcr.io/distroless/static-debian12:latest as zoekt-webserver
+FROM gcr.io/distroless/static-debian12:latest AS zoekt-webserver
 WORKDIR /zoekt
 COPY --from=go-builder /go/bin/zoekt-webserver /zoekt/zoekt-webserver
 COPY --from=go-builder /zoekt/index /zoekt/index
