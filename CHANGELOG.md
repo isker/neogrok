@@ -1,5 +1,11 @@
 # neogrok
 
+## 1.1.1
+
+### Patch Changes
+
+- dbac62a: Improve legibility of filename match highlighting in dark mode
+
 ## 1.1.0
 
 ### Minor Changes
