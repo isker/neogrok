@@ -126,11 +126,11 @@
       enumerate all possible colors emitted by the highlight theme (thus
       coupling us to it) in code, so that tailwind could pick them up.
     -->
-    <mark class="bg-yellow-200 dark:bg-yellow-900"
+    <mark class="bg-yellow-200 dark:bg-yellow-900 text-inherit"
       ><span style={`color: ${color}`} class={fontClass}>{text}</span></mark
     >
   {:else if match}
-    <mark class="bg-yellow-200 dark:bg-yellow-900">{text}</mark>
+    <mark class="bg-yellow-200 dark:bg-yellow-900 text-inherit">{text}</mark>
   {:else if color}
     <span style={`color: ${color}`} class={fontClass}>{text}</span>
   {:else}
