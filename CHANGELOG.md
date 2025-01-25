@@ -1,5 +1,11 @@
 # neogrok
 
+## 1.1.2
+
+### Patch Changes
+
+- dfbbdf6: Improve URL encoding of repository URLs
+
 ## 1.1.1
 
 ### Patch Changes
