@@ -17,9 +17,9 @@ export const evaluateFileUrlTemplate = (
       .split(/\s+/)
       .map((s) => {
         if (s === ".Version") {
-          return version;
+          return version.split("/").map(encodeURIComponent).join("/");
         } else if (s === ".Path") {
-          return path;
+          return path.split("/").map(encodeURIComponent).join("/");
         } else {
           // It's a quoted string: https://pkg.go.dev/strconv#Quote.
           return JSON.parse(s);
@@ -27,9 +27,14 @@ export const evaluateFileUrlTemplate = (
       })
       .join("/");
   } else {
-    return template
-      .replaceAll("{{.Version}}", version)
-      .replaceAll("{{.Path}}", path);
+    return (
+      template
+        // We use the function version of replaceAll because it interprets a
+        // variety of characters in strings specially. Only functions guarantee
+        // literal replacement.
+        .replaceAll("{{.Version}}", () => version)
+        .replaceAll("{{.Path}}", () => path)
+    );
   }
 };
 
@@ -44,7 +49,7 @@ export const evaluateCommitUrlTemplate = (
       .split(/\s+/)
       .map((s) => {
         if (s === ".Version") {
-          return version;
+          return version.split("/").map(encodeURIComponent).join("/");
         } else {
           // It's a quoted string: https://pkg.go.dev/strconv#Quote.
           return JSON.parse(s);
@@ -52,6 +57,9 @@ export const evaluateCommitUrlTemplate = (
       })
       .join("/");
   } else {
-    return template.replaceAll("{{.Version}}", version);
+    // We use the function version of replaceAll because it interprets a
+    // variety of characters in strings specially. Only functions guarantee
+    // literal replacement.
+    return template.replaceAll("{{.Version}}", () => version);
   }
 };
