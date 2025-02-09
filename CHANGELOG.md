@@ -1,5 +1,12 @@
 # neogrok
 
+## 1.1.4
+
+### Patch Changes
+
+- 6a18430: Upgrade shiki (syntax highlighting)
+- 409d8ab: Fix text color regression in dark mode
+
 ## 1.1.3
 
 ### Patch Changes
