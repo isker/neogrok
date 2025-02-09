@@ -1,4 +1,6 @@
 @import "tailwindcss";
+/* Hack: https://github.com/tailwindlabs/tailwindcss/discussions/16339#discussioncomment-12105934 */
+@source "app.html";
 
 /*
   The default border color has changed to `currentColor` in Tailwind CSS v4,
