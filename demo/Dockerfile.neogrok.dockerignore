@@ -1,12 +1,10 @@
 *
 !.yarn*
 !yarn.lock
-!.postcssrc
 !package.json
 !src/
 !static/
 !svelte.config.js
-!tailwind.config.js
 !vite.config.ts
 !demo/Dockerfile.neogrok*
 !main.js

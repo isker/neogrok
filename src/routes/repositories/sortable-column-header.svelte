@@ -8,14 +8,14 @@
 </script>
 
 <button
-  class="w-full h-full flex justify-center items-center hover:bg-slate-200 hover:dark:bg-slate-700"
+  class="w-full h-full flex justify-center items-center hover:bg-slate-200 dark:hover:bg-slate-700"
   on:click={() => {
     sortBy = nextSortBy(sortBy, sortColumn);
   }}
 >
   {#if sortBy === null || sortBy.prop !== sortColumn.prop}
     <!-- Placeholder so there's no shift on activating a sort. -->
-    <div class="flex-none w-4 h-4" />
+    <div class="flex-none w-4 h-4"></div>
   {:else if sortBy.direction === "ascending"}
     <ChevronUp class="flex-none" size={16} />
   {:else}

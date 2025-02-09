@@ -109,7 +109,7 @@
 -->
 <div
   bind:this={visibilityCanary}
-  class="py-1 grid grid-cols-[minmax(2rem,_min-content)_1fr] gap-x-2 whitespace-pre overflow-x-auto"
+  class="py-1 grid grid-cols-[minmax(2rem,min-content)_1fr] gap-x-2 whitespace-pre overflow-x-auto"
 >
   {#each lines as { lineNumber, line }, i}
     <span class="select-none text-gray-600 dark:text-gray-500 text-right pr-1">

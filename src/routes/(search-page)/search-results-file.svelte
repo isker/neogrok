@@ -59,7 +59,7 @@
 </script>
 
 <div>
-  <span bind:this={topOfList} />
+  <span bind:this={topOfList}></span>
   <section class="p-1 border-2 flex flex-col gap-1">
     <SearchResultsFileHeader {file} {rank} />
     {#if lineGroups.length > 0}

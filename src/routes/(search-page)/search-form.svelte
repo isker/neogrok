@@ -93,7 +93,7 @@
         >query<LoadingEllipsis /></span
       >
       <span
-        class={`flex flex-auto p-1 border shadow-sm space-x-1 ${computeInputColor(
+        class={`flex flex-auto p-1 border shadow-xs space-x-1 ${computeInputColor(
           {
             error: queryError !== null,
             pending: queryPending,
@@ -116,7 +116,7 @@
           autocorrect="off"
           autocapitalize="off"
           autocomplete="off"
-          class="font-mono dark:bg-black focus:outline-none flex-auto appearance-none"
+          class="font-mono dark:bg-black focus:outline-hidden flex-auto appearance-none"
         />
         <ToggleSearchType />
         <ToggleMatchSortOrder />

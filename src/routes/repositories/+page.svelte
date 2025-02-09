@@ -30,8 +30,8 @@
 <RepositoriesList
   results={data.listOutcome.kind === "success"
     ? data.listOutcome.results
-    : previousListResults ?? {
+    : (previousListResults ?? {
         repositories: [],
         stats: { shardCount: 0, fileCount: 0, contentBytes: 0, indexBytes: 0 },
-      }}
+      })}
 />

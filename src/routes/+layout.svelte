@@ -23,7 +23,7 @@
         whitespace `after` with a background-image instead (whitespace will
         collapse), but I'd have to understand SVG to do that. -->
         <li
-          class="after:content-['•'] after:pl-1 after:pr-2 last:after:content-none"
+          class="after:content-['•'] after:pl-2 after:pr-2 last:after:content-none"
         >
           {#if url === $page.url.pathname}
             {text}{:else}
