@@ -60,7 +60,7 @@
     "lucide-svelte": "0.475.0",
     "pretty-bytes": "6.1.1",
     "prom-client": "15.0.0",
-    "shikiji": "0.9.18"
+    "shiki": "2.3.2"
   },
   "engines": {
     "node": ">=20"

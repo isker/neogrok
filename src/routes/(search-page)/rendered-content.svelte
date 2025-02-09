@@ -1,9 +1,9 @@
 <script lang="ts">
   import type { ContentLine, Range } from "$lib/server/content-parser";
-  import type { FontStyle, ThemedToken } from "shikiji";
 
   export let content: ContentLine;
   export let highlights: ReadonlyArray<ThemedToken> | undefined = undefined;
+  import type { FontStyle, ThemedToken } from "shiki";
 
   const toFontClass = (
     fontStyle: FontStyle | undefined,
@@ -12,7 +12,7 @@
       return undefined;
     }
     switch (fontStyle) {
-      // These magic numbers come from an enum in shikiji that I refuse to link
+      // These magic numbers come from an enum in shiki that I refuse to link
       // this component to. Written on the wall that contains the thousands of
       // terrible design decisions in typescript, you will find enums.
       case 0:

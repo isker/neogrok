@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { ResultFile } from "$lib/server/search-api";
   import { onMount } from "svelte";
-  import type { ThemedToken, BundledLanguage } from "shikiji";
+  import type { ThemedToken, BundledLanguage } from "shiki";
   import { browserTheme, type BrowserTheme } from "$lib/theme";
   import type { LineGroup } from "./chunk-renderer";
   import RenderedContent from "./rendered-content.svelte";
@@ -21,7 +21,7 @@
   //
   // The price to pay over doing highlighting on the server is that the client
   // has to download and execute some assets that are pretty enormous, compared
-  // to everything else in the app. The baseline shikiji bundle (their JS, the
+  // to everything else in the app. The baseline shiki bundle (their JS, the
   // oniguruma wasm blob, plus the theme we use) is something like 300kb
   // _gzipped_, and each language is 3-50 more.
   let visible = false;
@@ -31,12 +31,12 @@
     // We dynamically import shiki itself because it's huge and won't be
     // needed by those landing on the home page with no search query, or
     // on the server at all.
-    const { codeToThemedTokens, bundledLanguages } = await import("shikiji");
+    const { codeToTokens, bundledLanguages } = await import("shiki");
 
     // This is the same normalization that zoekt applies when querying
-    // go-enry, and it seems to be good enough for us querying shikiji as well.
+    // go-enry, and it seems to be good enough for us querying shiki as well.
     let language = file.language.toLowerCase();
-    // ... except when it isn't. go-enry (backed by linguist) and shikiji
+    // ... except when it isn't. go-enry (backed by linguist) and shiki
     // (backed by vscode's textmate grammars) just seem to have fundamentally
     // different lineages, we have no hope but to do some remappings. TODO
     // perhaps these should be upstreamed as aliases in shikiji.
@@ -50,15 +50,17 @@
       const lang = language as BundledLanguage;
       // It's worth checking again, as downloading that chunk can take a
       // while, and highlighting can occupy meaningful CPU time.
-      highlights = await codeToThemedTokens(code, {
-        theme: `github-${theme}`,
-        lang,
-      });
+      highlights = (
+        await codeToTokens(code, {
+          theme: `github-${theme}`,
+          lang,
+        })
+      ).tokens;
     } else if (language !== "text") {
       // TODO this will be a lot of console spam... could use a store, as
       // absurd as that is.
       console.warn(
-        "Could not find shikiji language for '%s', skipping highlighting",
+        "Could not find shiki language for '%s', skipping highlighting",
         language,
         bundledLanguages,
       );
@@ -71,7 +73,7 @@
       // freeze the browser. Such files are probably minified web assets, or
       // otherwise low-signal.
       if (!lines.some(({ line }) => line.text.length >= 1000)) {
-        // Shikiji only accepts a single string even though it goes
+        // Shiki only accepts a single string even though it goes
         // right ahead and splits it :(.
         highlight(
           lines.map(({ line: { text } }) => text).join("\n"),
