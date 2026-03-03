@@ -9,9 +9,6 @@ const config = {
   kit: {
     adapter: adapter(),
   },
-  compilerOptions: {
-    immutable: true,
-  },
 };
 
 export default config;
