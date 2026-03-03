@@ -3,7 +3,8 @@
 
   export let content: ContentLine;
   export let highlights: ReadonlyArray<ThemedToken> | undefined = undefined;
-  import type { FontStyle, ThemedToken } from "shiki";
+  import type { ThemedToken } from "shiki";
+  import type { FontStyle } from "@shikijs/vscode-textmate";
 
   const toFontClass = (
     fontStyle: FontStyle | undefined,
