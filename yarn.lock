@@ -1267,12 +1267,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:20.10.0":
-  version: 20.10.0
-  resolution: "@types/node@npm:20.10.0"
+"@types/node@npm:24.11.0":
+  version: 24.11.0
+  resolution: "@types/node@npm:24.11.0"
   dependencies:
-    undici-types: "npm:~5.26.4"
-  checksum: 10c0/f379e57d9d28cb5f3d8eab943de0c54a0ca2f95ee356e1fe2a1a4fa718b740103ae522c50ce107cffd52c3642ef3244cfc55bf5369081dd6c48369c8587b21ae
+    undici-types: "npm:~7.16.0"
+  checksum: 10c0/4fb7390259e3b158d25dbecf52de8ce70fa18a4ed0949c9444bb6384517c361fa19781e6821ca8c18dc5f6af43eab72e9e159e07000e6b1286d082e8585d8c41
   languageName: node
   linkType: hard
 
@@ -3451,7 +3451,7 @@ __metadata:
     "@sveltejs/vite-plugin-svelte": "npm:5.0.3"
     "@tailwindcss/vite": "npm:4.0.5"
     "@types/lucene": "npm:2.1.5"
-    "@types/node": "npm:20.10.0"
+    "@types/node": "npm:24.11.0"
     eslint: "npm:9.20.0"
     eslint-config-prettier: "npm:10.0.1"
     eslint-plugin-svelte: "npm:2.46.1"
@@ -4528,10 +4528,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici-types@npm:~5.26.4":
-  version: 5.26.5
-  resolution: "undici-types@npm:5.26.5"
-  checksum: 10c0/bb673d7876c2d411b6eb6c560e0c571eef4a01c1c19925175d16e3a30c4c428181fb8d7ae802a261f283e4166a0ac435e2f505743aa9e45d893f9a3df017b501
+"undici-types@npm:~7.16.0":
+  version: 7.16.0
+  resolution: "undici-types@npm:7.16.0"
+  checksum: 10c0/3033e2f2b5c9f1504bdc5934646cb54e37ecaca0f9249c983f7b1fc2e87c6d18399ebb05dc7fd5419e02b2e915f734d872a65da2e3eeed1813951c427d33cc9a
   languageName: node
   linkType: hard
 

@@ -1,0 +1,49 @@
+on:
+  push:
+    branches: [master]
+jobs:
+  build-lint-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+      - run: yarn install
+      - run: yarn run lint
+      - run: yarn run test
+      - run: yarn run build
+  deploy-demo:
+    needs: build-lint-test
+    strategy:
+      matrix:
+        service: [neogrok, zoekt]
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: flyctl deploy --remote-only --config demo/fly.${{ matrix.service }}.toml --ignorefile demo/Dockerfile.${{ matrix.service }}.dockerignore
+  release:
+    needs: build-lint-test
+    runs-on: ubuntu-latest
+    concurrency: release-${{ github.ref }}
+    permissions:
+      id-token: write # to publish to npm
+      contents: write # to create releases
+      pull-requests: write # to create pull requests
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # Changesets needs full history to create proper changelogs.
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+      - run: yarn install
+      - uses: changesets/action@v1
+        with:
+          commit: Publish release
+          title: Publish release
+          publish: npx changeset publish

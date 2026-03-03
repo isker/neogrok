@@ -2,14 +2,14 @@
 # latest master commit, not the latest released version. You can do the same in
 # your own deployments, or simply `npm install -g neogrok` to download a
 # released version that can be run as `neogrok`.
-FROM node:20-slim AS app-builder
+FROM node:24-slim AS app-builder
 WORKDIR /app
 COPY . .
 RUN yarn install \
     && yarn run build \
     && yarn workspaces focus --production
 
-FROM gcr.io/distroless/nodejs20-debian12
+FROM gcr.io/distroless/nodejs24-debian13
 WORKDIR /app
 COPY package.json .
 COPY main.js .
