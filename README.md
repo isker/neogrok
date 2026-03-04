@@ -111,3 +111,22 @@ repository names, you can run `neogrok` with the appropriate
 [`openGrokProjectMappings` configuration](#configuration), which maps OpenGrok
 project names to zoekt repository names. With this data provided, neogrok can
 rewrite OpenGrok queries that include project names appropriately.
+
+## Project status
+
+Rest assured, Neogrok is Done:
+
+- This software is stable and feature complete.
+- It has powered code search at Tripadvisor (a company with decades of software
+  accretion, i.e. a lot of code to search) for years now, and as a service there
+  operates almost completely unattended.
+- It receives periodic updates to keep up with ecosystem rot (specifically to
+  stay on LTS versions of NodeJS) and security problems (which practically occur
+  in Svelte/SvelteKit with some regularity).
+- Bug reports are welcome. Attention from someone who actually understands UI
+  design would be welcome, but the UI is also good enough as is.
+- New features are unlikely to be accepted, as new features proposed so far all
+  involve materially expanding the scope of the project, e.g. doing things with
+  code search and navigation beyond what Zoekt provides. If you want to do such
+  a thing, feel free to fork the project. It is only ~6000 lines of Svelte and
+  TypeScript.
