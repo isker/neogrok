@@ -1,5 +1,15 @@
 # neogrok
 
+## 1.2.0
+
+### Minor Changes
+
+- a7007ac: Bump minimum NodeJS version to 24 (latest LTS)
+
+### Patch Changes
+
+- a385b38: Make protocol buffers syntax highlighting work
+
 ## 1.1.4
 
 ### Patch Changes
