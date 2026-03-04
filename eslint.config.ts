@@ -20,6 +20,11 @@ export default defineConfig(
       // This is dumb, you cannot partition things by path like this
       // successfully in the web. "Origin" means something.
       "svelte/no-navigation-without-resolve": ["off"],
+      // Requiring this all the time is absurd. You use it when you know you
+      // need perf or correctness, and you have a good grip on the data model so
+      // that you know you're producing a unique key. Otherwise, the default
+      // behavior of using the index is fine.
+      "svelte/require-each-key": ["off"],
       // Can't model svelte reactive variables well. Maybe would be better with
       // runes.
       "no-useless-assignment": ["off"],

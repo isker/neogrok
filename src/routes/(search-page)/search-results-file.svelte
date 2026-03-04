@@ -64,7 +64,7 @@
     <SearchResultsFileHeader {file} {rank} />
     {#if lineGroups.length > 0}
       <div class="font-mono text-sm divide-y">
-        {#each lineGroups as lines (lines[0].lineNumber)}
+        {#each lineGroups as lines}
           <LineGroup {lines} {file} />
         {/each}
       </div>

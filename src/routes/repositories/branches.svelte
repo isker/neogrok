@@ -11,7 +11,7 @@
     /^[a-z0-9]{40}$/.test(v) ? v.slice(0, 8) : v;
 </script>
 
-{#each branches as { name: branchName, version } (branchName)}
+{#each branches as { name: branchName, version }}
   {branchName}@<span class="font-mono">
     {#if commitUrlTemplate}
       <Link to={evaluateCommitUrlTemplate(commitUrlTemplate, version)}
