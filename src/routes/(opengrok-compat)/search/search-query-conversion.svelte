@@ -88,7 +88,7 @@
           URL parameters contain no query inputs
         {:else}
           <Expression wrap
-            >{#each renderedLuceneQuery as token}{#if token.kind === "highlighted"}<span
+            >{#each renderedLuceneQuery as token (token.content)}{#if token.kind === "highlighted"}<span
                   class="bg-orange-200 dark:bg-orange-800">{token.content}</span
                 >{:else}{token.content}{/if}{/each}</Expression
           >
@@ -123,6 +123,8 @@
       >
         <h3 class="text-center font-semibold">Conversion warnings</h3>
         <ul class="list-disc pl-2">
+          <!-- Nothing better than index here. -->
+          <!-- eslint-disable-next-line svelte/require-each-key -->
           {#each renderedWarnings as { message, location }}
             <li
               class="text-sm"
