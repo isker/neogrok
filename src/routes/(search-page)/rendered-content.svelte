@@ -119,7 +119,8 @@
   }
 </script>
 
-{#each tokens as { text, match, color, fontClass } (text)}
+<!-- eslint-disable-next-line svelte/require-each-key -->
+{#each tokens as { text, match, color, fontClass }}
   {#if match && color}
     <!--
       We have no choice but to go for direct styles here, as tailwind will not
