@@ -18,7 +18,7 @@
 <div class="container mx-auto px-2 py-4">
   <nav class="pb-12">
     <ul class="flex justify-center text-xs gap-y-2 flex-wrap">
-      {#each navLinks as [url, text]}
+      {#each navLinks as [url, text] (text)}
         <!-- FIXME when the flexbox wraps, there are dangling '•'s. Can use a
         whitespace `after` with a background-image instead (whitespace will
         collapse), but I'd have to understand SVG to do that. -->

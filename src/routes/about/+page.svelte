@@ -66,8 +66,7 @@
         the query zoekt found, and how many it sent to neogrok. It will show
         which of the <i>files</i> and <i>matches</i> inputs are the current limiting
         factor on the truncated results by highlighting the relevant count in the
-        header. You can get more results by increasing the relevant limit in its
-        input.
+        header. You can get more results by increasing the relevant limit in its input.
       </p>
     </section>
     <section class="space-y-2">
@@ -135,19 +134,19 @@
       <p>
         The tabulated data includes links to the repository and its indexed
         branches, the times the repository was last indexed and that it was last
-        committed to, and data about the index <i>shards</i> and their contents.
-        The table can be sorted by clicking on column headers: the first click will
-        sort in ascending order, the second in descending, and the third will restore
-        the status quo.
+        committed to, and data about the index <i>shards</i> and their contents. The
+        table can be sorted by clicking on column headers: the first click will sort
+        in ascending order, the second in descending, and the third will restore the
+        status quo.
       </p>
       <p>
         <i>Shards</i> are what zoekt calls the files emitted from its indexer, and
-        they're all that's used by the zoekt-webserver backing neogrok to handle
-        neogrok's API requests; they contain the above-described repository metadata,
-        indexes used to quickly search repository content, and the repository content
-        itself (file names and contents). Indexing a repository typically results
-        in a single shard, but zoekt limits shard files to be about 100MiB in size,
-        so big repositories get more than one shard.
+        they're all that's used by the zoekt-webserver backing neogrok to handle neogrok's
+        API requests; they contain the above-described repository metadata, indexes
+        used to quickly search repository content, and the repository content itself
+        (file names and contents). Indexing a repository typically results in a single
+        shard, but zoekt limits shard files to be about 100MiB in size, so big repositories
+        get more than one shard.
       </p>
       <p>
         When you search repository contents (i.e. make a non-<code>repo:</code>

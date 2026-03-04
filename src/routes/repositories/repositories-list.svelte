@@ -135,7 +135,7 @@
       </tr>
     </thead>
     <tbody>
-      {#each truncated as { name, url, branches, commitUrlTemplate, shardCount, fileCount, indexBytes, contentBytes, lastIndexed, lastCommit }}
+      {#each truncated as { name, url, branches, commitUrlTemplate, shardCount, fileCount, indexBytes, contentBytes, lastIndexed, lastCommit } (name)}
         <tr class="border">
           <td class="p-1 border-x"><RepositoryName {name} {url} /></td>
           <td class="p-1 border-x"

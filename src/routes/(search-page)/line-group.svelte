@@ -50,6 +50,7 @@
       const lang = language as BundledLanguage;
       // It's worth checking again, as downloading that chunk can take a
       // while, and highlighting can occupy meaningful CPU time.
+      // eslint-disable-next-line svelte/infinite-reactive-loop
       highlights = (
         await codeToTokens(code, {
           theme: `github-${theme}`,
@@ -75,6 +76,7 @@
       if (!lines.some(({ line }) => line.text.length >= 1000)) {
         // Shiki only accepts a single string even though it goes
         // right ahead and splits it :(.
+        // eslint-disable-next-line svelte/infinite-reactive-loop
         highlight(
           lines.map(({ line: { text } }) => text).join("\n"),
           $browserTheme,
@@ -113,7 +115,7 @@
   bind:this={visibilityCanary}
   class="py-1 grid grid-cols-[minmax(2rem,min-content)_1fr] gap-x-2 whitespace-pre overflow-x-auto"
 >
-  {#each lines as { lineNumber, line }, i}
+  {#each lines as { lineNumber, line }, i (lineNumber)}
     <span class="select-none text-gray-600 dark:text-gray-500 text-right pr-1">
       {#if file.fileUrl && file.lineNumberTemplate}
         <a

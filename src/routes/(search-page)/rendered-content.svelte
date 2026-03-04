@@ -119,7 +119,7 @@
   }
 </script>
 
-{#each tokens as { text, match, color, fontClass }}
+{#each tokens as { text, match, color, fontClass } (text)}
   {#if match && color}
     <!--
       We have no choice but to go for direct styles here, as tailwind will not
