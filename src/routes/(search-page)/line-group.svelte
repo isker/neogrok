@@ -42,8 +42,8 @@
     // perhaps these should be upstreamed as aliases in shikiji.
     if (language === "restructuredtext") {
       language = "rst";
-    } else if (language === 'protocol buffer') {
-      language = "protobuf"
+    } else if (language === "protocol buffer") {
+      language = "protobuf";
     }
 
     if (language in bundledLanguages) {
