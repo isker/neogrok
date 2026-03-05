@@ -3,8 +3,12 @@
   import type { Repository } from "$lib/server/zoekt-list-repositories";
   import { evaluateCommitUrlTemplate } from "$lib/url-templates";
 
-  export let branches: Repository["branches"];
-  export let commitUrlTemplate: string | undefined;
+  type Props = {
+    branches: Repository["branches"];
+    commitUrlTemplate: string | undefined;
+  };
+
+  let { branches, commitUrlTemplate }: Props = $props();
 
   // Abbreviate git hashes. Helps make the very wide table a bit narrower.
   const abbreviateVersion = (v: string) =>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { page } from "$app/stores";
+  import { page } from "$app/state";
   import { persistInitialPreferences } from "$lib/preferences";
   import "../app.css";
 
@@ -11,7 +11,13 @@
     ["/preferences", "Preferences"],
   ] as const;
 
-  export let data: import("./$types").LayoutServerData;
+  interface Props {
+    data: import("./$types").LayoutServerData;
+    children: import("svelte").Snippet;
+  }
+
+  let { data, children }: Props = $props();
+  // svelte-ignore state_referenced_locally
   persistInitialPreferences(data.preferences);
 </script>
 
@@ -25,7 +31,7 @@
         <li
           class="after:content-['•'] after:pl-2 after:pr-2 last:after:content-none"
         >
-          {#if url === $page.url.pathname}
+          {#if url === page.url.pathname}
             {text}{:else}
             <a
               class="text-cyan-700 dark:text-cyan-400"
@@ -35,9 +41,9 @@
                 // navigations. This is useful when moving back and forth
                 // between the main search and the repo search, or the main
                 // search and the query syntax page.
-                $page.route.id?.startsWith("/(opengrok-compat)/")
+                page.route.id?.startsWith("/(opengrok-compat)/")
                   ? ""
-                  : $page.url.search
+                  : page.url.search
               }`}>{text}</a
             >{/if}
         </li>
@@ -45,6 +51,6 @@
     </ul>
   </nav>
   <main>
-    <slot />
+    {@render children()}
   </main>
 </div>

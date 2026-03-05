@@ -3,7 +3,11 @@
   import Link from "$lib/link.svelte";
   import { escapeRegExp } from "$lib/regexp";
 
-  export let data: import("./$types").PageData;
+  type Props = {
+    data: import("./$types").PageData;
+  };
+
+  const { data }: Props = $props();
 </script>
 
 <section class="space-y-2 pt-2 max-w-prose mx-auto">

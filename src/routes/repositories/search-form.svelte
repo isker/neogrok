@@ -1,29 +1,37 @@
 <script lang="ts">
-  import { onDestroy } from "svelte";
-  import { navigating } from "$app/stores";
+  import { navigating, page } from "$app/state";
   import { acquireSearchTypeStore, type SearchType } from "$lib/preferences";
   import { computeInputColor } from "$lib/input-colors";
-  import { routeListQuery, updateRouteListQuery } from "./route-list-query";
+  import { parseSearchParams, updateRouteListQuery } from "./route-list-query";
   import ToggleSearchType from "$lib/toggle-search-type.svelte";
   import LoadingEllipsis from "$lib/loading-ellipsis.svelte";
   import IntegerInput from "$lib/integer-input.svelte";
 
-  export let queryError: string | null;
+  let routeListQuery = $derived(parseSearchParams(page.url.searchParams));
+
+  type Props = {
+    queryError: string | null;
+  };
+
+  let { queryError }: Props = $props();
 
   const searchType = acquireSearchTypeStore();
 
-  let query: string | undefined;
-  let repos: number;
-  const unsubscribe = routeListQuery.subscribe((rq) => {
+  // We need to do a complicated bidirectional mapping between the URL and the
+  // form state. So, yes, this is intentional.
+  // svelte-ignore state_referenced_locally
+  let query: string | undefined = $state(routeListQuery.query);
+  // svelte-ignore state_referenced_locally
+  let repos: number = $state(routeListQuery.repos);
+  $effect(() => {
     // Sync form values with route state whenever a navigation _not_ related to
     // direct user interactions with the form.  Those are inherently already
     // covered by the relevant input bindings, and the resulting navigations
     // can conflict with those bindings.
-    if ($navigating?.type !== "goto") {
-      ({ query, repos } = rq);
+    if (navigating.type !== "goto") {
+      ({ query, repos } = routeListQuery);
     }
   });
-  onDestroy(unsubscribe);
 
   const shouldLiveSearch = () =>
     $searchType === "live" &&
@@ -39,22 +47,26 @@
   };
 
   // When switching from manual to live search, submit any pending changes.
-  let previousSearchType: SearchType | undefined;
-  $: {
+  let previousSearchType: SearchType | undefined = $state();
+  $effect(() => {
     if ($searchType === "live" && previousSearchType === "manual") {
       manualSubmit();
     }
     previousSearchType = $searchType;
-  }
+  });
 
   // These all indicate when form changes with manual search are not yet submitted.
-  $: queryPending =
-    $navigating === null && ($routeListQuery.query ?? "") !== (query ?? "");
-  $: reposPending = $navigating === null && $routeListQuery.repos !== repos;
+  let queryPending = $derived(
+    navigating.type === null && (routeListQuery.query ?? "") !== (query ?? ""),
+  );
+  let reposPending = $derived(
+    navigating.type === null && routeListQuery.repos !== repos,
+  );
 </script>
 
 <form
-  on:submit|preventDefault={() => {
+  onsubmit={(e) => {
+    e.preventDefault();
     manualSubmit();
   }}
 >
@@ -77,10 +89,10 @@
         )}`}
       >
         <!-- It's a search page, a11y be damned. cf. google.com, bing.com, etc. -->
-        <!-- svelte-ignore a11y-autofocus -->
+        <!-- svelte-ignore a11y_autofocus -->
         <input
           bind:value={query}
-          on:input={() => {
+          oninput={() => {
             if (shouldLiveSearch()) {
               updateRouteListQuery({ query, searchType: $searchType });
             }
@@ -103,10 +115,10 @@
         id="context"
         pending={reposPending}
         bind:value={repos}
-        on:change={(e) => {
+        onChange={(value) => {
           if (shouldLiveSearch()) {
             updateRouteListQuery({
-              repos: e.detail,
+              repos: value,
               searchType: $searchType,
             });
           }

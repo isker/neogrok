@@ -8,47 +8,51 @@
     type ZoektConversionWarning,
   } from "./conversion-warnings";
 
-  export let openGrokParams: { readonly [key: string]: unknown };
-  export let luceneQuery: string | null;
-  export let zoektQuery: string | null;
-  export let warnings: ReadonlyArray<ZoektConversionWarning>;
+  type Props = {
+    openGrokParams: { readonly [key: string]: unknown };
+    luceneQuery: string | null;
+    zoektQuery: string | null;
+    warnings: ReadonlyArray<ZoektConversionWarning>;
+  };
 
-  let highlightedLocation: QueryLocation | null = null;
+  let { openGrokParams, luceneQuery, zoektQuery, warnings }: Props = $props();
 
-  $: renderedWarnings = warnings.map(renderWarning);
+  let highlightedLocation: QueryLocation | null = $state(null);
+
+  let renderedWarnings = $derived(warnings.map(renderWarning));
 
   type QueryToken =
     | { kind: "normal"; content: string }
     | { kind: "highlighted"; content: string };
 
-  let renderedLuceneQuery: ReadonlyArray<QueryToken> | null;
+  let renderedLuceneQuery: ReadonlyArray<QueryToken> | null = $derived.by(
+    () => {
+      if (highlightedLocation && luceneQuery) {
+        return [
+          {
+            kind: "normal",
+            content: luceneQuery.slice(0, highlightedLocation.start),
+          },
 
-  $: {
-    if (highlightedLocation && luceneQuery) {
-      renderedLuceneQuery = [
-        {
-          kind: "normal",
-          content: luceneQuery.slice(0, highlightedLocation.start),
-        },
-
-        {
-          kind: "highlighted",
-          content: luceneQuery.slice(
-            highlightedLocation.start,
-            highlightedLocation.end,
-          ),
-        },
-        {
-          kind: "normal",
-          content: luceneQuery.slice(highlightedLocation.end),
-        },
-      ];
-    } else if (luceneQuery) {
-      renderedLuceneQuery = [{ kind: "normal", content: luceneQuery }];
-    } else {
-      renderedLuceneQuery = null;
-    }
-  }
+          {
+            kind: "highlighted",
+            content: luceneQuery.slice(
+              highlightedLocation.start,
+              highlightedLocation.end,
+            ),
+          },
+          {
+            kind: "normal",
+            content: luceneQuery.slice(highlightedLocation.end),
+          },
+        ];
+      } else if (luceneQuery) {
+        return [{ kind: "normal", content: luceneQuery }];
+      } else {
+        return null;
+      }
+    },
+  );
 </script>
 
 <section class="space-y-2">
@@ -126,12 +130,12 @@
           {#each renderedWarnings as { message, location }}
             <li
               class="text-sm"
-              on:mouseenter={() => {
+              onmouseenter={() => {
                 if (location) {
                   highlightedLocation = location;
                 }
               }}
-              on:mouseleave={() => {
+              onmouseleave={() => {
                 highlightedLocation = null;
               }}
             >

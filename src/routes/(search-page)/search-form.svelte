@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { onDestroy } from "svelte";
-  import { navigating } from "$app/stores";
+  import { navigating, page } from "$app/state";
   import { acquireSearchTypeStore, type SearchType } from "$lib/preferences";
   import IntegerInput from "$lib/integer-input.svelte";
   import { computeInputColor } from "$lib/input-colors";
@@ -8,28 +7,39 @@
   import ToggleMatchSortOrder from "$lib/toggle-match-sort-order.svelte";
   import LoadingEllipsis from "$lib/loading-ellipsis.svelte";
   import {
-    routeSearchQuery,
+    parseSearchParams,
     updateRouteSearchQuery,
   } from "./route-search-query";
 
-  export let queryError: string | null = null;
+  let routeSearchQuery = $derived(parseSearchParams(page.url.searchParams));
+
+  type Props = {
+    queryError?: string | null;
+  };
+
+  let { queryError = null }: Props = $props();
 
   const searchType = acquireSearchTypeStore();
 
-  let query: string | undefined;
-  let contextLines: number;
-  let files: number;
-  let matches: number;
-  const unsubscribe = routeSearchQuery.subscribe((rq) => {
+  // We need to do a complicated bidirectional mapping between the URL and the
+  // form state. So, yes, this is intentional.
+  // svelte-ignore state_referenced_locally
+  let query: string | undefined = $state(routeSearchQuery.query);
+  // svelte-ignore state_referenced_locally
+  let contextLines: number = $state(routeSearchQuery.contextLines);
+  // svelte-ignore state_referenced_locally
+  let files: number = $state(routeSearchQuery.files);
+  // svelte-ignore state_referenced_locally
+  let matches: number = $state(routeSearchQuery.matches);
+  $effect(() => {
     // Sync route state into form values upon a navigation _not_ related to
     // direct user interactions with the form. Those are inherently already
     // covered by the relevant input bindings, and the resulting navigations
     // can conflict with those bindings.
-    if ($navigating?.type !== "goto") {
-      ({ query, contextLines, files, matches } = rq);
+    if (navigating.type !== "goto") {
+      ({ query, contextLines, files, matches } = routeSearchQuery);
     }
   });
-  onDestroy(unsubscribe);
 
   const shouldLiveSearch = () =>
     $searchType === "live" &&
@@ -60,27 +70,34 @@
   };
 
   // When switching from manual to live search, submit any pending changes.
-  let previousSearchType: SearchType | undefined;
-  $: {
+  let previousSearchType: SearchType | undefined = $state();
+  $effect(() => {
     if ($searchType === "live" && previousSearchType === "manual") {
       manualSubmit();
     }
     previousSearchType = $searchType;
-  }
+  });
 
   // These all indicate when form changes with manual search are not yet submitted.
-  $: queryPending =
-    $navigating === null && ($routeSearchQuery.query ?? "") !== (query ?? "");
-  $: contextLinesPending =
-    $navigating === null && $routeSearchQuery.contextLines !== contextLines;
-  $: filesPending = $navigating === null && $routeSearchQuery.files !== files;
-  $: matchesPending =
-    $navigating === null && $routeSearchQuery.matches !== matches;
+  let queryPending = $derived(
+    navigating.type === null &&
+      (routeSearchQuery.query ?? "") !== (query ?? ""),
+  );
+  let contextLinesPending = $derived(
+    navigating.type === null && routeSearchQuery.contextLines !== contextLines,
+  );
+  let filesPending = $derived(
+    navigating.type === null && routeSearchQuery.files !== files,
+  );
+  let matchesPending = $derived(
+    navigating.type === null && routeSearchQuery.matches !== matches,
+  );
 </script>
 
 <!-- TODO explore JS-disabled compat.  Should actually be pretty doable with `action="/"`? -->
 <form
-  on:submit|preventDefault={() => {
+  onsubmit={(e) => {
+    e.preventDefault();
     manualSubmit();
   }}
 >
@@ -101,10 +118,10 @@
         )}`}
       >
         <!-- It's a search page, a11y be damned. cf. google.com, bing.com, etc. -->
-        <!-- svelte-ignore a11y-autofocus -->
+        <!-- svelte-ignore a11y_autofocus -->
         <input
           bind:value={query}
-          on:input={() => {
+          oninput={() => {
             if (shouldLiveSearch()) {
               updateRouteSearchQuery({ query, searchType: $searchType });
             }
@@ -128,10 +145,10 @@
         id="context"
         pending={contextLinesPending}
         bind:value={contextLines}
-        on:change={(e) => {
+        onChange={(value) => {
           if (shouldLiveSearch()) {
             updateRouteSearchQuery({
-              contextLines: e.detail,
+              contextLines: value,
               searchType: $searchType,
             });
           }
@@ -145,10 +162,10 @@
         kind="positive"
         pending={filesPending}
         bind:value={files}
-        on:change={(e) => {
+        onChange={(value) => {
           if (shouldLiveSearch()) {
             updateRouteSearchQuery({
-              files: e.detail,
+              files: value,
               searchType: $searchType,
             });
           }
@@ -162,10 +179,10 @@
         kind="positive"
         pending={matchesPending}
         bind:value={matches}
-        on:change={(e) => {
+        onChange={(value) => {
           if (shouldLiveSearch()) {
             updateRouteSearchQuery({
-              matches: e.detail,
+              matches: value,
               searchType: $searchType,
             });
           }

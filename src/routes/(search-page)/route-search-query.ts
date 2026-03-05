@@ -1,8 +1,7 @@
-import { derived, get } from "svelte/store";
+import { goto } from "$app/navigation";
+import { page, navigating } from "$app/state";
 import type { SearchType } from "$lib/preferences";
 import type { SearchQuery } from "$lib/server/search-api";
-import { page, navigating } from "$app/stores";
-import { goto } from "$app/navigation";
 
 const defaultQueryOptions: Omit<SearchQuery, "query"> = Object.freeze({
   contextLines: 1,
@@ -10,7 +9,7 @@ const defaultQueryOptions: Omit<SearchQuery, "query"> = Object.freeze({
   matches: 500,
 });
 
-type RouteSearchQuery = Omit<SearchQuery, "query"> & {
+export type RouteSearchQuery = Omit<SearchQuery, "query"> & {
   readonly query: string | undefined;
 };
 
@@ -41,10 +40,6 @@ export const parseSearchParams = (
   };
 };
 
-export const routeSearchQuery = derived(page, (p) =>
-  parseSearchParams(p.url.searchParams),
-);
-
 // This function is only called in the browser, so it's fine to have this be in
 // module state.
 let lastNavigateTime = 0;
@@ -67,7 +62,7 @@ export const updateRouteSearchQuery = ({
   // that we need to use the URL of where we're _going_ to be, not where we are,
   // as a baseline for comparison to decide if additional navigations are
   // needed.
-  const baselineUrl = get(navigating)?.to?.url ?? get(page).url;
+  const baselineUrl = navigating.to?.url ?? page.url;
   const searchQuery = parseSearchParams(baselineUrl.searchParams);
 
   const queryChanged =

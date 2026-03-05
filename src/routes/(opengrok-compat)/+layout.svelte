@@ -1,6 +1,11 @@
 <script lang="ts">
   import Link from "$lib/link.svelte";
   import { acquireOpenGrokInstantRedirectStore } from "$lib/preferences";
+  type Props = {
+    children: import("svelte").Snippet;
+  };
+
+  let { children }: Props = $props();
 
   const openGrokInstantRedirect = acquireOpenGrokInstantRedirectStore();
 </script>
@@ -20,7 +25,7 @@
       and zoekt ought to be much faster and easier to use.
     </p>
   </section>
-  <slot />
+  {@render children()}
   <section class="space-y-2 max-w-prose mx-auto">
     <h2 class="text-lg">Want to get instantly redirected next time?</h2>
     <label class="text-sm">

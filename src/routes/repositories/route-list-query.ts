@@ -1,12 +1,11 @@
 import { goto } from "$app/navigation";
-import { navigating, page } from "$app/stores";
+import { navigating, page } from "$app/state";
 import type { SearchType } from "$lib/preferences";
 import type { ListQuery } from "$lib/server/zoekt-list-repositories";
-import { derived, get } from "svelte/store";
 
 const defaultQueryOptions: RouteListQuery = Object.freeze({ repos: 100 });
 
-type RouteListQuery = ListQuery & {
+export type RouteListQuery = ListQuery & {
   // This is only used in the frontend, there is no support for truncation in
   // the zoekt repositories list API, because there is no sorting.
   readonly repos: number;
@@ -27,10 +26,6 @@ export const parseSearchParams = (
   };
 };
 
-export const routeListQuery = derived(page, (p) =>
-  parseSearchParams(p.url.searchParams),
-);
-
 // This function is only called in the browser, so it's fine to have this be in
 // module state.
 let lastNavigateTime = 0;
@@ -49,7 +44,7 @@ export const updateRouteListQuery = ({
   // that we need to use the URL of where we're _going_ to be, not where we are,
   // as a baseline for comparison to decide if additional navigations are
   // needed.
-  const baselineUrl = get(navigating)?.to?.url ?? get(page).url;
+  const baselineUrl = navigating.to?.url ?? page.url;
   const listQuery = parseSearchParams(baselineUrl.searchParams);
 
   const queryChanged =

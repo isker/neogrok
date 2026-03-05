@@ -1,9 +1,13 @@
 <script lang="ts">
   import Link from "./link.svelte";
   import Expression from "./expression.svelte";
-  export let query: string;
-  export let wrap = false;
-  export let page: "search" | "repositories" = "search";
+  type Props = {
+    query: string;
+    wrap?: boolean;
+    page?: "search" | "repositories";
+  };
+
+  let { query, wrap = false, page = "search" }: Props = $props();
 </script>
 
 <Link

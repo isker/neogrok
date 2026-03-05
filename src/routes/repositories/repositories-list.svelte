@@ -1,5 +1,6 @@
 <script lang="ts">
   import prettyBytes from "pretty-bytes";
+  import { page } from "$app/state";
   import type {
     ListResults,
     RepoStats,
@@ -8,36 +9,45 @@
   import Branches from "./branches.svelte";
   import Sortable from "./sortable-column-header.svelte";
   import { createComparator, type SortBy } from "./table-sorting";
-  import { routeListQuery } from "./route-list-query";
+  import { parseSearchParams } from "./route-list-query";
   import Link from "$lib/link.svelte";
 
-  export let results: ListResults;
+  let routeListQuery = $derived(parseSearchParams(page.url.searchParams));
 
-  let sortBy: SortBy | null = null;
-  $: sorted =
+  type Props = {
+    results: ListResults;
+  };
+
+  let { results }: Props = $props();
+
+  let sortBy: SortBy | null = $state(null);
+  let sorted = $derived(
     sortBy === null
       ? results.repositories
-      : Array.from(results.repositories).sort(createComparator(sortBy));
+      : Array.from(results.repositories).sort(createComparator(sortBy)),
+  );
 
-  $: truncated = sorted.slice(0, $routeListQuery.repos);
-  $: limited = results.repositories.length > $routeListQuery.repos;
-  $: truncatedStats = limited
-    ? truncated.reduce<RepoStats>(
-        (acc, val) => {
-          acc.shardCount += val.shardCount;
-          acc.fileCount += val.fileCount;
-          acc.indexBytes += val.indexBytes;
-          acc.contentBytes += val.contentBytes;
-          return acc;
-        },
-        {
-          shardCount: 0,
-          fileCount: 0,
-          indexBytes: 0,
-          contentBytes: 0,
-        },
-      )
-    : results.stats;
+  let truncated = $derived(sorted.slice(0, routeListQuery.repos));
+  let limited = $derived(results.repositories.length > routeListQuery.repos);
+  let truncatedStats = $derived(
+    limited
+      ? truncated.reduce<RepoStats>(
+          (acc, val) => {
+            acc.shardCount += val.shardCount;
+            acc.fileCount += val.fileCount;
+            acc.indexBytes += val.indexBytes;
+            acc.contentBytes += val.contentBytes;
+            return acc;
+          },
+          {
+            shardCount: 0,
+            fileCount: 0,
+            indexBytes: 0,
+            contentBytes: 0,
+          },
+        )
+      : results.stats,
+  );
 </script>
 
 <h1 class="text-xs flex flex-wrap py-1">

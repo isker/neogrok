@@ -1,7 +1,11 @@
 <script lang="ts">
   import SearchQueryConversion from "./search-query-conversion.svelte";
 
-  export let data: import("./$types").PageData;
+  type Props = {
+    data: import("./$types").PageData;
+  };
+
+  let { data }: Props = $props();
 </script>
 
 <SearchQueryConversion
