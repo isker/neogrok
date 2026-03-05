@@ -1,6 +1,6 @@
 import { goto } from "$app/navigation";
 import { navigating, page } from "$app/state";
-import type { SearchType } from "$lib/preferences";
+import type { SearchType } from "$lib/preferences.svelte";
 import type { ListQuery } from "$lib/server/zoekt-list-repositories";
 
 const defaultQueryOptions: RouteListQuery = Object.freeze({ repos: 100 });

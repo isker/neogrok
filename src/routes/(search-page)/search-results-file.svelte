@@ -1,8 +1,5 @@
 <script lang="ts">
-  import {
-    acquireFileMatchesCutoffStore,
-    acquireMatchSortOrderStore,
-  } from "$lib/preferences";
+  import { usePreferences } from "$lib/preferences.svelte";
   import type { ResultFile } from "$lib/server/search-api";
   import SearchResultsFileHeader from "./search-results-file-header.svelte";
   import LineGroup from "./line-group.svelte";
@@ -15,11 +12,10 @@
 
   let { file, rank }: Props = $props();
 
-  const matchSortOrder = acquireMatchSortOrderStore();
-  const fileMatchesCutoff = acquireFileMatchesCutoffStore();
+  const prefs = usePreferences();
 
   let sortedChunks = $derived(
-    $matchSortOrder === "line-number"
+    prefs.matchSortOrder === "line-number"
       ? [...file.chunks].sort(
           ({ startLineNumber: a }, { startLineNumber: b }) => a - b,
         )
@@ -29,7 +25,7 @@
 
   let expanded = $state(false);
   let { lineGroups, preCutoffMatchCount } = $derived(
-    renderChunksToLineGroups(sortedChunks, $fileMatchesCutoff, expanded),
+    renderChunksToLineGroups(sortedChunks, prefs.fileMatchesCutoff, expanded),
   );
 
   let postCutoffMatchCount = $derived(

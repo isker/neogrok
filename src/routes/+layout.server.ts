@@ -1,4 +1,4 @@
-import { loadPreferences } from "$lib/preferences";
+import { loadPreferences } from "$lib/preferences.svelte";
 
 export const load: import("./$types").LayoutServerLoad = ({ cookies }) => {
   return {

@@ -1,6 +1,6 @@
 import { goto } from "$app/navigation";
 import { page, navigating } from "$app/state";
-import type { SearchType } from "$lib/preferences";
+import type { SearchType } from "$lib/preferences.svelte";
 import type { SearchQuery } from "$lib/server/search-api";
 
 const defaultQueryOptions: Omit<SearchQuery, "query"> = Object.freeze({
