@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import { persistInitialPreferences } from "$lib/preferences";
+  import { contextifyPreferences } from "$lib/preferences.svelte";
   import "../app.css";
 
   const navLinks = [
@@ -18,7 +18,7 @@
 
   let { data, children }: Props = $props();
   // svelte-ignore state_referenced_locally
-  persistInitialPreferences(data.preferences);
+  contextifyPreferences(data.preferences);
 </script>
 
 <div class="container mx-auto px-2 py-4">

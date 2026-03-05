@@ -2,7 +2,7 @@
   import type { ResultFile } from "$lib/server/search-api";
   import { onMount } from "svelte";
   import type { ThemedToken, BundledLanguage } from "shiki";
-  import { browserTheme, type BrowserTheme } from "$lib/theme";
+  import { prefersDark } from "$lib/theme";
   import type { LineGroup } from "./chunk-renderer";
   import RenderedContent from "./rendered-content.svelte";
 
@@ -12,6 +12,11 @@
   };
 
   let { lines, file }: Props = $props();
+
+  type BrowserTheme = "light" | "dark";
+  const browserTheme: BrowserTheme = $derived(
+    prefersDark.current ? "dark" : "light",
+  );
 
   // Syntax highlighting can be pretty CPU intensive and so is done just in
   // time, and only on the client.
@@ -64,8 +69,6 @@
         })
       ).tokens;
     } else if (language !== "text") {
-      // TODO this will be a lot of console spam... could use a store, as
-      // absurd as that is.
       console.warn(
         "Could not find shiki language for '%s', skipping highlighting",
         language,
@@ -84,7 +87,7 @@
         // right ahead and splits it :(.
         highlight(
           lines.map(({ line: { text } }) => text).join("\n"),
-          $browserTheme,
+          browserTheme,
         );
       } else {
         // We can have defined `highlights` here if our LineGroup was cut in two

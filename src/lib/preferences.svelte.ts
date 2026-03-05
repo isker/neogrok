@@ -1,6 +1,5 @@
 import type { Cookies } from "@sveltejs/kit";
 import { getContext, setContext } from "svelte";
-import { writable, type Writable } from "svelte/store";
 
 export type SearchType = "live" | "manual";
 const searchTypeKey = "searchType";
@@ -40,8 +39,8 @@ export type Preferences = {
 };
 
 /**
- * Called during server load to parse cookies into Preferences, which can then
- * be used as Data during both SSR and CSR.
+ * Parses server cookies into Preferences, which can then be used as Data during
+ * both SSR and CSR.
  */
 export const loadPreferences = (cookies: Cookies): Preferences => ({
   [searchTypeKey]: loadPreference(
@@ -91,44 +90,65 @@ const loadPreference = <T>(
   }
 };
 
-/**
- * Called during page component initialization to create the relevant stores.
- */
-export const persistInitialPreferences = (preferences: Preferences) => {
-  Object.entries(preferences).forEach(([k, v]) =>
-    setContext(k, createPreferenceStore(k, v)),
+/** Exposes Preferences as reactive state for usage in components. Pushes writes into browser cookies. */
+export class PreferencesState {
+  #searchType: SearchType = $state(defaultSearchType);
+  #matchSortOrder: MatchSortOrder = $state(defaultMatchSortOrder);
+  #fileMatchesCutoff: FileMatchesCutoff = $state(defaultFileMatchesCutoff);
+  #openGrokInstantRedirect: OpenGrokInstantRedirect = $state(
+    defaultOpenGrokInstantRedirect,
   );
+
+  constructor(initial: Preferences) {
+    this.#searchType = initial.searchType;
+    this.#matchSortOrder = initial.matchSortOrder;
+    this.#fileMatchesCutoff = initial.fileMatchesCutoff;
+    this.#openGrokInstantRedirect = initial.openGrokInstantRedirect;
+  }
+
+  get searchType() {
+    return this.#searchType;
+  }
+  set searchType(v: SearchType) {
+    this.#searchType = v;
+    writeCookie(searchTypeKey, v);
+  }
+
+  get matchSortOrder() {
+    return this.#matchSortOrder;
+  }
+  set matchSortOrder(v: MatchSortOrder) {
+    this.#matchSortOrder = v;
+    writeCookie(matchSortOrderKey, v);
+  }
+
+  get fileMatchesCutoff() {
+    return this.#fileMatchesCutoff;
+  }
+  set fileMatchesCutoff(v: FileMatchesCutoff) {
+    this.#fileMatchesCutoff = v;
+    writeCookie(fileMatchesCutoffKey, v);
+  }
+
+  get openGrokInstantRedirect() {
+    return this.#openGrokInstantRedirect;
+  }
+  set openGrokInstantRedirect(v: OpenGrokInstantRedirect) {
+    this.#openGrokInstantRedirect = v;
+    writeCookie(openGrokInstantRedirectKey, v);
+  }
+}
+
+const writeCookie = (key: string, val: string | number | boolean) => {
+  document.cookie = `${key}=${val};path=/;sameSite=lax`;
 };
 
-const createPreferenceStore = <T>(
-  key: string,
-  initialValue: T,
-): Writable<T> => {
-  const delegate = writable(initialValue);
-  return {
-    subscribe: (...args) => delegate.subscribe(...args),
-    set: (val) => {
-      // We are counting on all keys and values being valid cookie keys/values,
-      // without escaping.
-      document.cookie = `${key}=${val};path=/;sameSite=lax`;
-      delegate.set(val);
-    },
-    update: () => {
-      throw new Error(`unimplemented`);
-    },
-  };
+const prefsCtx = Symbol("preferences");
+
+/** Transmutes raw Preferences data into contextually available PreferencesState. */
+export const contextifyPreferences = (initial: Preferences) => {
+  setContext(prefsCtx, new PreferencesState(initial));
 };
 
-// These are functions that can be called during component initialization to get
-// stores that work on CSR and SSR. We use context for this to mitigate
-// SvelteKit's abominable store semantics on SSR:
-// https://github.com/sveltejs/kit/discussions/4339
-export const acquireSearchTypeStore = (): Writable<SearchType> =>
-  getContext(searchTypeKey);
-export const acquireMatchSortOrderStore = (): Writable<MatchSortOrder> =>
-  getContext(matchSortOrderKey);
-export const acquireFileMatchesCutoffStore = (): Writable<FileMatchesCutoff> =>
-  getContext(fileMatchesCutoffKey);
-export const acquireOpenGrokInstantRedirectStore =
-  (): Writable<OpenGrokInstantRedirect> =>
-    getContext(openGrokInstantRedirectKey);
+/** Retrieves contextually available PreferencesState. */
+export const usePreferences = (): PreferencesState => getContext(prefsCtx);

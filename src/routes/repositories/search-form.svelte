@@ -1,6 +1,6 @@
 <script lang="ts">
   import { navigating, page } from "$app/state";
-  import { acquireSearchTypeStore, type SearchType } from "$lib/preferences";
+  import { usePreferences, type SearchType } from "$lib/preferences.svelte";
   import { computeInputColor } from "$lib/input-colors";
   import { parseSearchParams, updateRouteListQuery } from "./route-list-query";
   import ToggleSearchType from "$lib/toggle-search-type.svelte";
@@ -15,7 +15,7 @@
 
   let { queryError }: Props = $props();
 
-  const searchType = acquireSearchTypeStore();
+  const prefs = usePreferences();
 
   // We need to do a complicated bidirectional mapping between the URL and the
   // form state. So, yes, this is intentional.
@@ -34,7 +34,7 @@
   });
 
   const shouldLiveSearch = () =>
-    $searchType === "live" &&
+    prefs.searchType === "live" &&
     // Same trigram efficiency rules as on the main search page.
     (!query || query.length >= 3);
 
@@ -42,17 +42,17 @@
     updateRouteListQuery({
       query,
       repos,
-      searchType: $searchType,
+      searchType: prefs.searchType,
     });
   };
 
   // When switching from manual to live search, submit any pending changes.
   let previousSearchType: SearchType | undefined = $state();
   $effect(() => {
-    if ($searchType === "live" && previousSearchType === "manual") {
+    if (prefs.searchType === "live" && previousSearchType === "manual") {
       manualSubmit();
     }
-    previousSearchType = $searchType;
+    previousSearchType = prefs.searchType;
   });
 
   // These all indicate when form changes with manual search are not yet submitted.
@@ -94,7 +94,7 @@
           bind:value={query}
           oninput={() => {
             if (shouldLiveSearch()) {
-              updateRouteListQuery({ query, searchType: $searchType });
+              updateRouteListQuery({ query, searchType: prefs.searchType });
             }
           }}
           id="query"
@@ -119,7 +119,7 @@
           if (shouldLiveSearch()) {
             updateRouteListQuery({
               repos: value,
-              searchType: $searchType,
+              searchType: prefs.searchType,
             });
           }
         }}

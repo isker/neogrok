@@ -1,16 +1,8 @@
 <script lang="ts">
-  import {
-    acquireFileMatchesCutoffStore,
-    acquireMatchSortOrderStore,
-    acquireSearchTypeStore,
-    acquireOpenGrokInstantRedirectStore,
-  } from "$lib/preferences";
+  import { usePreferences } from "$lib/preferences.svelte";
   import IntegerInput from "$lib/integer-input.svelte";
 
-  const fileMatchesCutoff = acquireFileMatchesCutoffStore();
-  const matchSortOrder = acquireMatchSortOrderStore();
-  const searchType = acquireSearchTypeStore();
-  const openGrokInstantRedirect = acquireOpenGrokInstantRedirectStore();
+  const prefs = usePreferences();
 </script>
 
 <svelte:head>
@@ -32,7 +24,7 @@
             id="live"
             type="radio"
             name="search-type"
-            bind:group={$searchType}
+            bind:group={prefs.searchType}
             value="live"
           />
           Live as you type
@@ -44,7 +36,7 @@
             id="manual"
             type="radio"
             name="search-type"
-            bind:group={$searchType}
+            bind:group={prefs.searchType}
             value="manual"
           />
           Manual (hit enter to search)
@@ -59,7 +51,7 @@
             id="line-number"
             type="radio"
             name="sort"
-            bind:group={$matchSortOrder}
+            bind:group={prefs.matchSortOrder}
             value="line-number"
           />
           By line number
@@ -71,7 +63,7 @@
             id="score"
             type="radio"
             name="sort"
-            bind:group={$matchSortOrder}
+            bind:group={prefs.matchSortOrder}
             value="score"
           />
           By score according to zoekt
@@ -84,7 +76,7 @@
         <IntegerInput
           id="file-matches-cutoff"
           pending={false}
-          bind:value={$fileMatchesCutoff}
+          bind:value={prefs.fileMatchesCutoff}
         />
       </label>
     </div>
@@ -95,7 +87,7 @@
       <span class="text-lg">Redirects</span>
       <div>
         <label class="text-sm">
-          <input type="checkbox" bind:checked={$openGrokInstantRedirect} /> Automatically
+          <input type="checkbox" bind:checked={prefs.openGrokInstantRedirect} /> Automatically
           redirect from old OpenGrok URLs when possible.</label
         >
       </div>
