@@ -8,29 +8,33 @@
   import LineGroup from "./line-group.svelte";
   import { renderChunksToLineGroups } from "./chunk-renderer";
 
-  export let file: ResultFile;
-  export let rank: number;
+  type Props = {
+    file: ResultFile;
+    rank: number;
+  };
+
+  let { file, rank }: Props = $props();
 
   const matchSortOrder = acquireMatchSortOrderStore();
   const fileMatchesCutoff = acquireFileMatchesCutoffStore();
 
-  $: sortedChunks =
+  let sortedChunks = $derived(
     $matchSortOrder === "line-number"
       ? [...file.chunks].sort(
           ({ startLineNumber: a }, { startLineNumber: b }) => a - b,
         )
       : // Nothing to do otherwise; matches are already sorted by score.
-        file.chunks;
+        file.chunks,
+  );
 
-  let expanded = false;
-  $: ({ lineGroups, preCutoffMatchCount } = renderChunksToLineGroups(
-    sortedChunks,
-    $fileMatchesCutoff,
-    expanded,
-  ));
+  let expanded = $state(false);
+  let { lineGroups, preCutoffMatchCount } = $derived(
+    renderChunksToLineGroups(sortedChunks, $fileMatchesCutoff, expanded),
+  );
 
-  $: postCutoffMatchCount =
-    file.matchCount - preCutoffMatchCount - file.fileName.matchRanges.length;
+  let postCutoffMatchCount = $derived(
+    file.matchCount - preCutoffMatchCount - file.fileName.matchRanges.length,
+  );
 
   const expand = () => {
     expanded = true;
@@ -72,7 +76,7 @@
     {#if postCutoffMatchCount > 0 && !expanded}
       <button
         type="button"
-        on:click={expand}
+        onclick={expand}
         class="bg-slate-100 dark:bg-slate-800 text-sm py-1"
       >
         Show {postCutoffMatchCount} more {postCutoffMatchCount === 1
@@ -82,7 +86,7 @@
     {:else if postCutoffMatchCount > 0 && expanded}
       <button
         type="button"
-        on:click={collapse}
+        onclick={collapse}
         class="bg-slate-100 dark:bg-slate-800 text-sm py-1 sticky bottom-0"
       >
         Hide {postCutoffMatchCount}

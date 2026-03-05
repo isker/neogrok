@@ -3,13 +3,18 @@
   import ChevronDown from "lucide-svelte/icons/chevron-down";
   import { nextSortBy, type SortColumn, type SortBy } from "./table-sorting";
 
-  export let sortColumn: SortColumn;
-  export let sortBy: SortBy | null;
+  type Props = {
+    sortColumn: SortColumn;
+    sortBy: SortBy | null;
+    children: import("svelte").Snippet;
+  };
+
+  let { sortColumn, sortBy = $bindable(), children }: Props = $props();
 </script>
 
 <button
   class="w-full h-full flex justify-center items-center hover:bg-slate-200 dark:hover:bg-slate-700"
-  on:click={() => {
+  onclick={() => {
     sortBy = nextSortBy(sortBy, sortColumn);
   }}
 >
@@ -21,5 +26,5 @@
   {:else}
     <ChevronDown class="flex-none" size={16} />
   {/if}
-  <span><slot /></span>
+  <span>{@render children()}</span>
 </button>

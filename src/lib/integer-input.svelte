@@ -1,30 +1,38 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
   import { computeInputColor } from "$lib/input-colors";
 
-  export let value: number;
-  export let kind: "nonnegative" | "positive" = "nonnegative";
-  export let size = 3;
-  export let id: string;
-  export let pending: boolean;
+  type Props = {
+    value: number;
+    kind?: "nonnegative" | "positive";
+    size?: number;
+    id: string;
+    pending: boolean;
+    onChange?: (value: number) => void;
+  };
 
-  const dispatch = createEventDispatcher<{ change: number }>();
+  let {
+    value = $bindable(),
+    kind = "nonnegative",
+    size = 3,
+    id,
+    pending,
+    onChange,
+  }: Props = $props();
 
-  let stringValue = value.toString();
-  let valid = true;
-
-  $: {
-    valid =
-      /^\d+$/.test(stringValue) &&
-      (kind === "nonnegative" || stringValue !== "0");
+  let stringValue = $state(value.toString());
+  let valid = $derived(
+    /^\d+$/.test(stringValue) &&
+      (kind === "nonnegative" || stringValue !== "0"),
+  );
+  $effect(() => {
     if (valid) {
       const parsed = Number.parseInt(stringValue, 10);
       if (value !== parsed) {
         value = parsed;
-        dispatch("change", parsed);
+        onChange?.(parsed);
       }
     }
-  }
+  });
 </script>
 
 <input

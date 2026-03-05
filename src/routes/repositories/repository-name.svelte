@@ -1,8 +1,12 @@
 <script lang="ts">
   import Link from "$lib/link.svelte";
 
-  export let name: string;
-  export let url: string | undefined;
+  type Props = {
+    name: string;
+    url: string | undefined;
+  };
+
+  let { name, url }: Props = $props();
 </script>
 
 <div class="text-left">

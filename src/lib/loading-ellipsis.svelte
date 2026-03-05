@@ -1,19 +1,15 @@
 <script lang="ts">
-  import { navigating } from "$app/stores";
-  import { derived } from "svelte/store";
+  import { navigating } from "$app/state";
 
-  const count = derived<typeof navigating, number>(
-    navigating,
-    ($n, set, update) => {
-      if ($n !== null) {
-        const id = setInterval(() => update((c) => c + 1), 250);
-        return () => clearInterval(id);
-      } else {
-        set(0);
-      }
-    },
-    0,
-  );
+  let count = $state(0);
+  $effect(() => {
+    if (navigating.type !== null) {
+      const id = setInterval(() => count++, 250);
+      return () => clearInterval(id);
+    } else {
+      count = 0;
+    }
+  });
 </script>
 
-{".".repeat($count % 4)}
+{".".repeat(count % 4)}

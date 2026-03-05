@@ -12,7 +12,7 @@
       : "border-dashed border-black dark:border-white"
   }`}
   title={$searchType === "live" ? "disable live search" : "enable live search"}
-  on:click={() => {
+  onclick={() => {
     $searchType = $searchType === "live" ? "manual" : "live";
   }}
 >

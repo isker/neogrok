@@ -1,6 +1,11 @@
 <script lang="ts">
-  export let id: string;
-  export let element: "h2" | "h3" | "caption" = "h2";
+  type Props = {
+    id: string;
+    element?: "h2" | "h3" | "caption";
+    children: import("svelte").Snippet;
+  };
+
+  let { id, element = "h2", children }: Props = $props();
 </script>
 
 <svelte:element
@@ -11,6 +16,6 @@
   class:pb-2={element === "caption"}
 >
   <a href={`#${id}`} class="hover:underline">
-    <slot />
+    {@render children()}
   </a>
 </svelte:element>

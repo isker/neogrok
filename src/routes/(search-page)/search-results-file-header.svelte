@@ -6,10 +6,14 @@
   import type { ResultFile } from "$lib/server/search-api";
   import RenderedContent from "./rendered-content.svelte";
 
-  export let file: ResultFile;
-  export let rank: number;
+  type Props = {
+    file: ResultFile;
+    rank: number;
+  };
 
-  $: metadata = [
+  let { file, rank }: Props = $props();
+
+  let metadata = $derived([
     `${file.matchCount} ${file.matchCount === 1 ? "match" : "matches"}`,
     // I don't like every result just yelling HEAD, it's not particularly useful
     // information.
@@ -18,7 +22,7 @@
       : []),
     file.language || "Text",
     `№${rank}`,
-  ];
+  ]);
 </script>
 
 <h2

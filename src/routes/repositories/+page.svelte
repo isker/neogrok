@@ -1,25 +1,33 @@
 <script lang="ts">
+  import { page } from "$app/state";
   import type { ListResults } from "$lib/server/zoekt-list-repositories";
   import SearchForm from "./search-form.svelte";
   import RepositoriesList from "./repositories-list.svelte";
-  import { routeListQuery } from "./route-list-query";
+  import { parseSearchParams } from "./route-list-query";
 
-  export let data: import("./$types").PageData;
+  let routeListQuery = $derived(parseSearchParams(page.url.searchParams));
+
+  type Props = {
+    data: import("./$types").PageData;
+  };
+
+  let { data }: Props = $props();
 
   // Represents the last non-erroneous results, so that when we get an error,
   // we can display them instead of taking away all the results.
-  let previousListResults: ListResults | null = null;
-  $: {
+  let previousListResults: ListResults | null = $derived.by(() => {
     if (data.listOutcome.kind === "success") {
-      previousListResults = data.listOutcome.results;
+      return data.listOutcome.results;
+    } else {
+      return previousListResults;
     }
-  }
+  });
 </script>
 
 <svelte:head>
   <title
-    >{$routeListQuery.query
-      ? `${$routeListQuery.query} - `
+    >{routeListQuery.query
+      ? `${routeListQuery.query} - `
       : ""}neogrok/repositories</title
   >
 </svelte:head>

@@ -1,28 +1,36 @@
 <script lang="ts">
+  import { page } from "$app/state";
   import type { SearchResults as ApiSearchResults } from "$lib/server/search-api";
   import SearchForm from "./search-form.svelte";
   import Lander from "./lander.svelte";
   import SearchResults from "./search-results.svelte";
-  import { routeSearchQuery } from "./route-search-query";
+  import { parseSearchParams } from "./route-search-query";
 
-  export let data: import("./$types").PageData;
+  let routeSearchQuery = $derived(parseSearchParams(page.url.searchParams));
+
+  type Props = {
+    data: import("./$types").PageData;
+  };
+
+  let { data }: Props = $props();
 
   // Represents the last non-erroneous results, so that when we get an error,
   // we can display them instead of taking away all the results.
-  let previousSearchResults: ApiSearchResults | null = null;
-  $: {
+  let previousSearchResults: ApiSearchResults | null = $derived.by(() => {
     if (data.searchOutcome.kind === "success") {
-      previousSearchResults = data.searchOutcome.results;
+      return data.searchOutcome.results;
     } else if (data.searchOutcome.kind === "none") {
-      previousSearchResults = null;
+      return null;
+    } else {
+      return previousSearchResults;
     }
-  }
+  });
 </script>
 
 <svelte:head>
   <title
-    >{$routeSearchQuery.query
-      ? `${$routeSearchQuery.query} - `
+    >{routeSearchQuery.query
+      ? `${routeSearchQuery.query} - `
       : ""}neogrok</title
   >
 </svelte:head>

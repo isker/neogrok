@@ -6,8 +6,12 @@
   import type { LineGroup } from "./chunk-renderer";
   import RenderedContent from "./rendered-content.svelte";
 
-  export let lines: LineGroup;
-  export let file: ResultFile;
+  type Props = {
+    lines: LineGroup;
+    file: ResultFile;
+  };
+
+  let { lines, file }: Props = $props();
 
   // Syntax highlighting can be pretty CPU intensive and so is done just in
   // time, and only on the client.
@@ -24,8 +28,9 @@
   // to everything else in the app. The baseline shiki bundle (their JS, the
   // oniguruma wasm blob, plus the theme we use) is something like 300kb
   // _gzipped_, and each language is 3-50 more.
-  let visible = false;
-  let highlights: undefined | ReadonlyArray<ReadonlyArray<ThemedToken>>;
+  let visible = $state(false);
+  let highlights: undefined | ReadonlyArray<ReadonlyArray<ThemedToken>> =
+    $state.raw();
 
   const highlight = async (code: string, theme: BrowserTheme) => {
     // We dynamically import shiki itself because it's huge and won't be
@@ -52,7 +57,6 @@
       const lang = language as BundledLanguage;
       // It's worth checking again, as downloading that chunk can take a
       // while, and highlighting can occupy meaningful CPU time.
-      // eslint-disable-next-line svelte/infinite-reactive-loop
       highlights = (
         await codeToTokens(code, {
           theme: `github-${theme}`,
@@ -70,7 +74,7 @@
     }
   };
 
-  $: {
+  $effect(() => {
     if (visible) {
       // Skip highlighting anything with long lines, as it's an excellent way to
       // freeze the browser. Such files are probably minified web assets, or
@@ -78,7 +82,6 @@
       if (!lines.some(({ line }) => line.text.length >= 1000)) {
         // Shiki only accepts a single string even though it goes
         // right ahead and splits it :(.
-        // eslint-disable-next-line svelte/infinite-reactive-loop
         highlight(
           lines.map(({ line: { text } }) => text).join("\n"),
           $browserTheme,
@@ -87,10 +90,12 @@
         // We can have defined `highlights` here if our LineGroup was cut in two
         // by a now-removed "hidden" threshold. Having highlights for part of
         // the group but not the rest is strange in the UI, so remove it all.
+
+        // TODO verify this situation is reachable still in svelte 5 :thonk:
         highlights = undefined;
       }
     }
-  }
+  });
 
   let visibilityCanary: Element;
   onMount(() => {

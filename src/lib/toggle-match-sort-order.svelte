@@ -14,7 +14,7 @@
   title={$matchSortOrder === "line-number"
     ? "sort matches by score"
     : "sort matches by line number"}
-  on:click={() => {
+  onclick={() => {
     $matchSortOrder =
       $matchSortOrder === "line-number" ? "score" : "line-number";
   }}

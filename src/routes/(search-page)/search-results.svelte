@@ -1,20 +1,31 @@
 <script lang="ts">
+  import { page } from "$app/state";
   import type { SearchResults } from "$lib/server/search-api";
-  import { routeSearchQuery } from "./route-search-query";
+  import { parseSearchParams } from "./route-search-query";
   import SearchResultsFile from "./search-results-file.svelte";
 
-  export let results: SearchResults;
-  $: ({
+  let routeSearchQuery = $derived(parseSearchParams(page.url.searchParams));
+
+  type Props = {
+    results: SearchResults;
+  };
+
+  let { results }: Props = $props();
+  let {
     zoektStats: { fileCount, matchCount, filesSkipped, duration },
     files,
-  } = results);
-  $: neogrokMatchCount = files.reduce((n, { matchCount: m }) => n + m, 0);
+  } = $derived(results);
+  let neogrokMatchCount = $derived(
+    files.reduce((n, { matchCount: m }) => n + m, 0),
+  );
 
-  $: filesLimited =
-    fileCount > files.length && files.length === $routeSearchQuery.files;
-  $: matchesLimited =
+  let filesLimited = $derived(
+    fileCount > files.length && files.length === routeSearchQuery.files,
+  );
+  let matchesLimited = $derived(
     matchCount > neogrokMatchCount &&
-    neogrokMatchCount === $routeSearchQuery.matches;
+      neogrokMatchCount === routeSearchQuery.matches,
+  );
 </script>
 
 <h1 class="text-xs flex flex-wrap py-1">

@@ -1,10 +1,15 @@
 <script lang="ts">
   import type { ContentLine, Range } from "$lib/server/content-parser";
 
-  export let content: ContentLine;
-  export let highlights: ReadonlyArray<ThemedToken> | undefined = undefined;
   import type { ThemedToken } from "shiki";
   import type { FontStyle } from "@shikijs/vscode-textmate";
+
+  type Props = {
+    content: ContentLine;
+    highlights?: ReadonlyArray<ThemedToken> | undefined;
+  };
+
+  let { content, highlights = undefined }: Props = $props();
 
   const toFontClass = (
     fontStyle: FontStyle | undefined,
@@ -34,9 +39,7 @@
     match: boolean;
     color?: string;
     fontClass?: string;
-  }>;
-
-  $: {
+  }> = $derived.by(() => {
     const t: typeof tokens = [];
     if (highlights) {
       // If highlights are present, its spans have full coverage, so we can just
@@ -115,8 +118,8 @@
         t.push({ text: content.text.slice(base), match: false });
       }
     }
-    tokens = t;
-  }
+    return t;
+  });
 </script>
 
 <!-- eslint-disable-next-line svelte/require-each-key -->
