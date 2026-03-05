@@ -34,35 +34,50 @@
   // oniguruma wasm blob, plus the theme we use) is something like 300kb
   // _gzipped_, and each language is 3-50 more.
   let visible = $state(false);
-  let highlights: undefined | ReadonlyArray<ReadonlyArray<ThemedToken>> =
-    $state.raw();
+  let highlights = $state.raw<
+    ReadonlyArray<ReadonlyArray<ThemedToken>> | undefined
+  >();
 
-  const highlight = async (code: string, theme: BrowserTheme) => {
-    // We dynamically import shiki itself because it's huge and won't be
-    // needed by those landing on the home page with no search query, or
-    // on the server at all.
-    const { codeToTokens, bundledLanguages } = await import("shiki");
-
+  const toTextmateLanguage = (linguistLanguage: string): string => {
     // This is the same normalization that zoekt applies when querying
     // go-enry, and it seems to be good enough for us querying shiki as well.
-    let language = file.language.toLowerCase();
+    const language = linguistLanguage.toLowerCase();
     // ... except when it isn't. go-enry (backed by linguist) and shiki
     // (backed by vscode's textmate grammars) just seem to have fundamentally
     // different lineages, we have no hope but to do some remappings. TODO
     // perhaps these should be upstreamed as aliases in shikiji.
-    if (language === "restructuredtext") {
-      language = "rst";
-    } else if (language === "protocol buffer") {
-      language = "protobuf";
+    switch (language) {
+      case "restructuredtext":
+        return "rst";
+      case "protocol buffer":
+        return "protobuf";
+      default:
+        return language;
+    }
+  };
+
+  const computeHighlights = async (
+    lines: ReadonlyArray<string>,
+    language: string,
+    theme: BrowserTheme,
+    signal: AbortSignal,
+  ): Promise<typeof highlights> => {
+    // We dynamically import shiki itself because it's huge and won't be
+    // needed by those landing on the home page with no search query, or
+    // on the server at all.
+    const { codeToTokens, bundledLanguages } = await import("shiki");
+    if (signal.aborted) {
+      return;
     }
 
     if (language in bundledLanguages) {
       // I guess TS isn't interested in doing this refinement based on the
       // check above.
       const lang = language as BundledLanguage;
-      // It's worth checking again, as downloading that chunk can take a
-      // while, and highlighting can occupy meaningful CPU time.
-      highlights = (
+      // Shiki only accepts a single string even though it goes right ahead and
+      // splits it :(.
+      const code = lines.join("\n");
+      return (
         await codeToTokens(code, {
           theme: `github-${theme}`,
           lang,
@@ -78,40 +93,46 @@
   };
 
   $effect(() => {
-    if (visible) {
-      // Skip highlighting anything with long lines, as it's an excellent way to
-      // freeze the browser. Such files are probably minified web assets, or
-      // otherwise low-signal.
-      if (!lines.some(({ line }) => line.text.length >= 1000)) {
-        // Shiki only accepts a single string even though it goes
-        // right ahead and splits it :(.
-        highlight(
-          lines.map(({ line: { text } }) => text).join("\n"),
-          browserTheme,
-        );
-      } else {
-        // We can have defined `highlights` here if our LineGroup was cut in two
-        // by a now-removed "hidden" threshold. Having highlights for part of
-        // the group but not the rest is strange in the UI, so remove it all.
-
-        // TODO verify this situation is reachable still in svelte 5 :thonk:
-        highlights = undefined;
-      }
+    if (!visible) {
+      return;
     }
+
+    // Skip highlighting anything with long lines, as it's an excellent way to
+    // freeze the browser. Such files are probably minified web assets, or
+    // otherwise low-signal.
+    if (lines.some(({ line }) => line.text.length >= 1000)) {
+      highlights = undefined;
+      return;
+    }
+
+    // Capture current reactive values for this run.
+    const language = toTextmateLanguage(file.language);
+    const theme = browserTheme;
+
+    const abortController = new AbortController();
+    computeHighlights(
+      lines.map(({ line: { text } }) => text),
+      language,
+      theme,
+      abortController.signal,
+    ).then((tokens) => {
+      if (!abortController.signal.aborted) {
+        highlights = tokens;
+      }
+    });
+    return () => abortController.abort();
   });
 
   let visibilityCanary: Element;
   onMount(() => {
-    const observer = new IntersectionObserver(async (entries) => {
+    const observer = new IntersectionObserver((entries) => {
       if (entries.some(({ isIntersecting }) => isIntersecting)) {
         observer.disconnect();
         visible = true;
       }
     });
     observer.observe(visibilityCanary);
-    return () => {
-      observer.disconnect();
-    };
+    return () => observer.disconnect();
   });
 </script>
 
