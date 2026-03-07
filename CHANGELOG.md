@@ -1,5 +1,12 @@
 # neogrok
 
+## 1.2.1
+
+### Patch Changes
+
+- 3986a08: Minimize number of unknown language in syntax highlighting
+- 75a35ca: Disallow setting the `repos` form field to 0, as that's nonsense
+
 ## 1.2.0
 
 ### Minor Changes
