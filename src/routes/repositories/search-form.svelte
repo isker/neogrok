@@ -113,6 +113,7 @@
       <span class="text-xs px-1 text-gray-500 dark:text-gray-400">repos</span>
       <IntegerInput
         id="context"
+        kind="positive"
         pending={reposPending}
         bind:value={repos}
         onChange={(value) => {
