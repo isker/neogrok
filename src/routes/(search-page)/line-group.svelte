@@ -47,10 +47,65 @@
     // different lineages, we have no hope but to do some remappings. TODO
     // perhaps these should be upstreamed as aliases in shikiji.
     switch (language) {
-      case "restructuredtext":
-        return "rst";
+      case "1c enterprise":
+        return "1c";
+      case "actionscript":
+        return "actionscript-3";
+      case "apacheconf":
+        return "apache";
+      case "assembly":
+        return "asm";
+      case "batchfile":
+        return "bat";
+      case "closure templates":
+        return "closure-templates";
+      case "common lisp":
+        return "common-lisp";
+      case "dm":
+        return "dream-maker";
+      case "emacs lisp":
+        return "emacs-lisp";
+      case "fortran":
+      case "fortran free form":
+        return "fortran-free-form";
+      case "gettext catalog":
+        return "po";
+      case "git commit":
+        return "git-commit";
+      case "glimmer js":
+        return "glimmer-js";
+      case "glimmer ts":
+        return "glimmer-ts";
+      case "godot resource":
+        return "gdresource";
+      case "html+erb":
+        return "erb";
+      case "json with comments":
+        return "jsonc";
+      case "lean 4":
+        return "lean4";
+      case "objective-c++":
+        return "objective-cpp";
       case "protocol buffer":
         return "protobuf";
+      case "regular expression":
+        return "regexp";
+      case "restructuredtext":
+        return "rst";
+      case "ros interface":
+        return "rosmsg";
+      case "ssh config":
+        return "ssh-config";
+      case "systemverilog":
+        return "system-verilog";
+      case "vim script":
+        return "viml";
+      case "visual basic .net":
+        return "vb";
+      case "webassembly":
+        return "wasm";
+      case "wolfram language":
+        return "wolfram";
       default:
         return language;
     }
