@@ -33,3 +33,25 @@ export const makeZoektRequest = async (
     zoektRequestConcurrency.labels(path).dec();
   }
 };
+
+// zoekt reports failures in two shapes: a 400 carrying a JSON `{ Error }` body
+// (typically a malformed query), or some other non-OK status with a plain-text
+// body. Every neogrok API backed by zoekt surfaces these identically, so this
+// builds the shared `{ kind: "error" }` result - the `prefix` distinguishes the
+// non-400 case per call site.
+export const zoektErrorResponse = async (
+  response: Response,
+  prefix: string,
+): Promise<{ kind: "error"; error: string }> => {
+  if (response.status === 400) {
+    const { Error: error } = await response.json();
+    return { kind: "error", error };
+  }
+  const responseBody = await response.text();
+  return {
+    kind: "error",
+    error: `${prefix}, HTTP ${response.status}: ${response.statusText}${
+      responseBody ? ` - ${responseBody}` : ""
+    }`,
+  };
+};
