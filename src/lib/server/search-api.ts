@@ -5,7 +5,7 @@ import {
   parseChunkMatch,
   parseFileNameMatch,
 } from "./content-parser";
-import { makeZoektRequest } from "./zoekt-client";
+import { makeZoektRequest, zoektErrorResponse } from "./zoekt-client";
 import { evaluateFileUrlTemplate } from "$lib/url-templates";
 
 export const searchQuerySchema = v.object({
@@ -49,19 +49,7 @@ export const search = async (
   const response = await makeZoektRequest(f, "/api/search", body);
 
   if (!response.ok) {
-    if (response.status === 400) {
-      const { Error: error } = await response.json();
-      return { kind: "error", error };
-    } else {
-      const responseBody = await response.text();
-      return {
-        kind: "error",
-        error: `Search failed, HTTP ${response.status}: ${
-          response.statusText
-        } ${responseBody ? ` - ${responseBody}` : ""}
-        `,
-      };
-    }
+    return zoektErrorResponse(response, "Search failed");
   }
 
   return {
@@ -232,29 +220,48 @@ const searchResultSchema = v.object({
           filesSkipped,
         },
         files: files.map(
-          ({ repository, version, fileName, chunks, ...rest }) => {
+          ({ repository, version, branches, fileName, chunks, ...rest }) => {
             const fileUrlTemplate = repoUrls[repository];
+            let fileUrl: string | undefined;
+            // The 'template' is such that the line number can be `join`ed into
+            // it. JSON serializable!
+            let lineNumberTemplate: ReadonlyArray<string> | undefined;
+            if (version && fileUrlTemplate) {
+              fileUrl = evaluateFileUrlTemplate(
+                fileUrlTemplate,
+                version,
+                fileName.text,
+              );
+              lineNumberTemplate =
+                repoLineNumberFragments[repository]?.split("{{.LineNumber}}");
+            } else {
+              // zoekt has no URL template for this repo - typically a local
+              // directory indexed without any VCS. Fall back to neogrok's own
+              // file preview, which serves the whole file straight from zoekt,
+              // analogous to how zoekt's web UI falls back to its `/print`
+              // endpoint.
+              const params = new URLSearchParams({
+                r: repository,
+                f: fileName.text,
+              });
+              if (branches[0]) {
+                params.set("b", branches[0]);
+              }
+              fileUrl = `/preview?${params.toString()}`;
+              lineNumberTemplate = ["#l", ""];
+            }
             return {
               ...rest,
               repository,
+              branches,
               matchCount: chunks.reduce(
                 (n, { matchCount: m }) => n + m,
                 fileName.matchRanges.length,
               ),
               fileName,
               chunks,
-              fileUrl:
-                version &&
-                fileUrlTemplate &&
-                evaluateFileUrlTemplate(
-                  fileUrlTemplate,
-                  version,
-                  fileName.text,
-                ),
-              // The 'template' is such that the line number can be `join`ed
-              // into it. JSON serializable!
-              lineNumberTemplate:
-                repoLineNumberFragments[repository]?.split("{{.LineNumber}}"),
+              fileUrl,
+              lineNumberTemplate,
             };
           },
         ),

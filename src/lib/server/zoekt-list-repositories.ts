@@ -1,6 +1,6 @@
 import * as v from "@badrap/valita";
 import type { ReadonlyDeep } from "type-fest";
-import { makeZoektRequest } from "./zoekt-client";
+import { makeZoektRequest, zoektErrorResponse } from "./zoekt-client";
 
 export const listQuerySchema = v.object({ query: v.string().optional() });
 export type ListQuery = ReadonlyDeep<v.Infer<typeof listQuerySchema>>;
@@ -24,18 +24,7 @@ export async function listRepositories(
   const response = await makeZoektRequest(f, "/api/list", body);
 
   if (!response.ok) {
-    if (response.status === 400) {
-      const { Error: error } = await response.json();
-      return { kind: "error", error };
-    } else {
-      const responseBody = await response.text();
-      return {
-        kind: "error",
-        error: `Search failed, HTTP ${response.status}: ${
-          response.statusText
-        } ${responseBody ? ` - ${responseBody}` : ""}`,
-      };
-    }
+    return zoektErrorResponse(response, "Listing repositories failed");
   }
 
   return {

@@ -4,7 +4,7 @@
   import ChevronRight from "lucide-svelte/icons/chevron-right";
   import Link from "$lib/link.svelte";
   import type { ResultFile } from "$lib/server/search-api";
-  import RenderedContent from "./rendered-content.svelte";
+  import RenderedContent from "$lib/rendered-content.svelte";
 
   type Props = {
     file: ResultFile;
