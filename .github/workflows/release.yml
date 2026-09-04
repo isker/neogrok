@@ -42,8 +42,8 @@ jobs:
         with:
           node-version-file: .nvmrc
       - run: yarn install
-      - uses: changesets/action@v1
+      - uses: changesets/action@v2
         with:
-          commit: Publish release
-          title: Publish release
-          publish: npx changeset publish
+          commit-message: Publish release
+          pr-title: Publish release
+          publish-script: npx changeset publish
