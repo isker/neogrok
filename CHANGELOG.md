@@ -1,5 +1,11 @@
 # neogrok
 
+## 1.2.2
+
+### Patch Changes
+
+- 3940001: Fixed desyncs in syntax highlighting from the theme preference.
+
 ## 1.2.1
 
 ### Patch Changes
