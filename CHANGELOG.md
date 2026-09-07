@@ -1,5 +1,11 @@
 # neogrok
 
+## 1.2.3
+
+### Patch Changes
+
+- 049339b: Fixed the published package missing its build output, which made it impossible to run.
+
 ## 1.2.2
 
 ### Patch Changes
