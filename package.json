@@ -22,7 +22,7 @@
     "lint": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --fail-on-warnings && prettier --check . && eslint --report-unused-disable-directives --max-warnings 0 .",
     "format": "prettier --write .",
     "test": "vitest",
-    "prepublishOnly": "npm run build"
+    "prepack": "yarn run build"
   },
   "bin": "main.js",
   "files": [
