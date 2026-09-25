@@ -15,11 +15,13 @@
 
   // Represents the last non-erroneous results, so that when we get an error,
   // we can display them instead of taking away all the results.
-  let previousListResults: ListResults | null = $derived.by(() => {
+  // svelte-ignore state_referenced_locally
+  let previousListResults = $state.raw<ListResults | null>(
+    data.listOutcome.kind === "success" ? data.listOutcome.results : null,
+  );
+  $effect.pre(() => {
     if (data.listOutcome.kind === "success") {
-      return data.listOutcome.results;
-    } else {
-      return previousListResults;
+      previousListResults = data.listOutcome.results;
     }
   });
 </script>
