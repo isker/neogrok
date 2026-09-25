@@ -1,5 +1,11 @@
 # neogrok
 
+## 1.2.4
+
+### Patch Changes
+
+- c5f2be4: Fix infinite loop on invalid query syntax
+
 ## 1.2.3
 
 ### Patch Changes
