@@ -16,13 +16,15 @@
 
   // Represents the last non-erroneous results, so that when we get an error,
   // we can display them instead of taking away all the results.
-  let previousSearchResults: ApiSearchResults | null = $derived.by(() => {
+  // svelte-ignore state_referenced_locally
+  let previousSearchResults = $state.raw<ApiSearchResults | null>(
+    data.searchOutcome.kind === "success" ? data.searchOutcome.results : null,
+  );
+  $effect.pre(() => {
     if (data.searchOutcome.kind === "success") {
-      return data.searchOutcome.results;
+      previousSearchResults = data.searchOutcome.results;
     } else if (data.searchOutcome.kind === "none") {
-      return null;
-    } else {
-      return previousSearchResults;
+      previousSearchResults = null;
     }
   });
 </script>
