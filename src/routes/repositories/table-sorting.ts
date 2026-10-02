@@ -1,4 +1,4 @@
-import type { Repository } from "$lib/server/zoekt-list-repositories";
+import type { Repository } from "#lib/server/zoekt-list-repositories.js";
 
 export type SortColumn =
   | {

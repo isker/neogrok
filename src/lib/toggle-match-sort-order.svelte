@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { usePreferences } from "$lib/preferences.svelte";
+  import { usePreferences } from "#lib/preferences.svelte.js";
   import ListOrdered from "lucide-svelte/icons/list-ordered";
 
   const prefs = usePreferences();

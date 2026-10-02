@@ -1,8 +1,8 @@
 <script lang="ts">
-  import Link from "$lib/link.svelte";
-  import ExampleQuery from "$lib/example-query.svelte";
-  import Expression from "$lib/expression.svelte";
-  import Heading from "$lib/doc-section-heading.svelte";
+  import Link from "#lib/link.svelte";
+  import ExampleQuery from "#lib/example-query.svelte";
+  import Expression from "#lib/expression.svelte";
+  import Heading from "#lib/doc-section-heading.svelte";
 </script>
 
 <svelte:head>

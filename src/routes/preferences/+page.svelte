@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { usePreferences } from "$lib/preferences.svelte";
-  import IntegerInput from "$lib/integer-input.svelte";
+  import { usePreferences } from "#lib/preferences.svelte.js";
+  import IntegerInput from "#lib/integer-input.svelte";
 
   const prefs = usePreferences();
 </script>

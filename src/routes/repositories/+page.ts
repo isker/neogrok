@@ -1,7 +1,7 @@
 import type {
   ListQuery,
   ListRepositoriesResponse,
-} from "$lib/server/zoekt-list-repositories";
+} from "#lib/server/zoekt-list-repositories.js";
 import { parseSearchParams } from "./route-list-query";
 
 export const load: import("./$types").PageLoad = async ({ url, fetch }) => {

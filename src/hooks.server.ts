@@ -1,11 +1,11 @@
-import { building } from "$app/environment";
-import { resolveConfiguration } from "$lib/server/configuration";
+import type { Handle, HandleServerError } from "@sveltejs/kit/hooks";
+import { building } from "$app/env";
+import { resolveConfiguration } from "#lib/server/configuration.js";
 import {
   neogrokRequestCount,
   neogrokRequestDuration,
   neogrokRequestConcurrency,
-} from "$lib/server/metrics";
-import type { Handle, HandleServerError } from "@sveltejs/kit";
+} from "#lib/server/metrics.js";
 
 if (!building) {
   // This seems to be the magic way to do truly one-time setup in both dev and
@@ -40,8 +40,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 // SvelteKit logs an error every time anything requests a URL that does not map
 // to a route. Bonkers. Override the default behavior to exclude such cases.
-export const handleError: HandleServerError = ({ error, event }) => {
-  if (event.route.id !== null) {
+export const handleError: HandleServerError = ({ error, event, kind }) => {
+  if (event.route.id !== null && kind === "unknown") {
     console.error(error);
   }
 };

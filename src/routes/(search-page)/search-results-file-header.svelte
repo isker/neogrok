@@ -2,8 +2,8 @@
   // FIXME extra whitespace around inline lucide icons during SSR:
   // https://github.com/lucide-icons/lucide/pull/1707#issuecomment-1894976168
   import ChevronRight from "lucide-svelte/icons/chevron-right";
-  import Link from "$lib/link.svelte";
-  import type { ResultFile } from "$lib/server/search-api";
+  import Link from "#lib/link.svelte";
+  import type { ResultFile } from "#lib/server/search-api.js";
   import RenderedContent from "./rendered-content.svelte";
 
   type Props = {

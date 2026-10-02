@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Link from "$lib/link.svelte";
-  import { usePreferences } from "$lib/preferences.svelte";
+  import Link from "#lib/link.svelte";
+  import { usePreferences } from "#lib/preferences.svelte.js";
   type Props = {
     children: import("svelte").Snippet;
   };

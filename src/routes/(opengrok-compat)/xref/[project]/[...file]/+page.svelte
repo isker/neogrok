@@ -1,7 +1,7 @@
 <script lang="ts">
-  import ExampleQuery from "$lib/example-query.svelte";
-  import Link from "$lib/link.svelte";
-  import { escapeRegExp } from "$lib/regexp";
+  import ExampleQuery from "#lib/example-query.svelte";
+  import Link from "#lib/link.svelte";
+  import { escapeRegExp } from "#lib/regexp.js";
 
   type Props = {
     data: import("./$types").PageData;

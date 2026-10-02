@@ -2,7 +2,7 @@ import type {
   SearchQuery,
   SearchResponse,
   SearchResults,
-} from "$lib/server/search-api";
+} from "#lib/server/search-api.js";
 import { parseSearchParams } from "./route-search-query";
 
 export type SearchOutcome =

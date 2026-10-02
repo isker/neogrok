@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import type { SearchResults } from "$lib/server/search-api";
+  import type { SearchResults } from "#lib/server/search-api.js";
   import { parseSearchParams } from "./route-search-query";
   import SearchResultsFile from "./search-results-file.svelte";
 

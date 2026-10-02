@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { usePreferences } from "$lib/preferences.svelte";
-  import type { ResultFile } from "$lib/server/search-api";
+  import { usePreferences } from "#lib/preferences.svelte.js";
+  import type { ResultFile } from "#lib/server/search-api.js";
   import SearchResultsFileHeader from "./search-results-file-header.svelte";
   import LineGroup from "./line-group.svelte";
   import { renderChunksToLineGroups } from "./chunk-renderer";

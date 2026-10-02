@@ -10,7 +10,9 @@
 import { createServer } from "node:http";
 import { register } from "prom-client";
 import { handler } from "./build/handler.js";
-import { env } from "./build/env.js";
+
+const env = (name, fallback) =>
+  name in process.env ? process.env[name] : fallback;
 
 // These are copied straight out of the default SvelteKit entrypoint.
 const path = env("SOCKET_PATH", false);

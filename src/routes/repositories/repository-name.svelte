@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Link from "$lib/link.svelte";
+  import Link from "#lib/link.svelte";
 
   type Props = {
     name: string;

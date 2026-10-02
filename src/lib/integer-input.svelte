@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { computeInputColor } from "$lib/input-colors";
+  import { computeInputColor } from "#lib/input-colors.js";
 
   type Props = {
     value: number;

@@ -1,6 +1,6 @@
-import { dev } from "$app/environment";
+import { dev } from "$app/env";
 import { error, type RequestHandler } from "@sveltejs/kit";
-import { registry } from "$lib/server/metrics";
+import { registry } from "#lib/server/metrics.js";
 
 export const GET = (async () => {
   if (!dev) {
