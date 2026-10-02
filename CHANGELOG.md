@@ -1,5 +1,11 @@
 # neogrok
 
+## 1.2.5
+
+### Patch Changes
+
+- f6e41f7: Preserve syntax highlighting when an invalid query displays previous search results.
+
 ## 1.2.4
 
 ### Patch Changes
