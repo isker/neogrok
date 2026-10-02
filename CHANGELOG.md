@@ -1,5 +1,11 @@
 # neogrok
 
+## 1.2.6
+
+### Patch Changes
+
+- 46bc0d8: Migrate to SvelteKit 3 and its TypeScript 6 and Vite 8 toolchain.
+
 ## 1.2.5
 
 ### Patch Changes
