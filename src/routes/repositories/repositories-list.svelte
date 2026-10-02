@@ -4,13 +4,13 @@
   import type {
     ListResults,
     RepoStats,
-  } from "$lib/server/zoekt-list-repositories";
+  } from "#lib/server/zoekt-list-repositories.js";
   import RepositoryName from "./repository-name.svelte";
   import Branches from "./branches.svelte";
   import Sortable from "./sortable-column-header.svelte";
   import { createComparator, type SortBy } from "./table-sorting";
   import { parseSearchParams } from "./route-list-query";
-  import Link from "$lib/link.svelte";
+  import Link from "#lib/link.svelte";
 
   let routeListQuery = $derived(parseSearchParams(page.url.searchParams));
 

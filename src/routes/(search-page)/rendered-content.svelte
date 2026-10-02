@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { ContentLine, Range } from "$lib/server/content-parser";
+  import type { ContentLine, Range } from "#lib/server/content-parser.js";
 
   import type { ThemedToken } from "shiki";
   import type { FontStyle } from "@shikijs/vscode-textmate";

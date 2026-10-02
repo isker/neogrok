@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Link from "$lib/link.svelte";
-  import ExampleQuery from "$lib/example-query.svelte";
+  import Link from "#lib/link.svelte";
+  import ExampleQuery from "#lib/example-query.svelte";
 </script>
 
 <h1 class="text-4xl text-center pt-8 tracking-wide">ɴᴇᴏɢʀᴏᴋ</h1>

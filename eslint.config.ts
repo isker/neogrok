@@ -7,7 +7,9 @@ import globals from "globals";
 import { fileURLToPath } from "node:url";
 import ts from "typescript-eslint";
 const gitignorePath = fileURLToPath(new URL("./.gitignore", import.meta.url));
-import svelteConfig from "./svelte.config.js";
+import { loadConfig } from "@sveltejs/load-config";
+
+const svelteConfig = (await loadConfig("./", { traverse: false }))?.config;
 
 export default defineConfig(
   includeIgnoreFile(gitignorePath),

@@ -1,7 +1,7 @@
 <script lang="ts">
-  import Link from "$lib/link.svelte";
-  import type { Repository } from "$lib/server/zoekt-list-repositories";
-  import { evaluateCommitUrlTemplate } from "$lib/url-templates";
+  import Link from "#lib/link.svelte";
+  import type { Repository } from "#lib/server/zoekt-list-repositories.js";
+  import { evaluateCommitUrlTemplate } from "#lib/url-templates.js";
 
   type Props = {
     branches: Repository["branches"];

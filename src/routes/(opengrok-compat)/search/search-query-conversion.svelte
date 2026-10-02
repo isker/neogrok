@@ -1,7 +1,7 @@
 <script lang="ts">
-  import ExampleQuery from "$lib/example-query.svelte";
-  import Expression from "$lib/expression.svelte";
-  import Link from "$lib/link.svelte";
+  import ExampleQuery from "#lib/example-query.svelte";
+  import Expression from "#lib/expression.svelte";
+  import Link from "#lib/link.svelte";
   import {
     renderWarning,
     type QueryLocation,

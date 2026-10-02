@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import type { ListResults } from "$lib/server/zoekt-list-repositories";
+  import type { ListResults } from "#lib/server/zoekt-list-repositories.js";
   import SearchForm from "./search-form.svelte";
   import RepositoriesList from "./repositories-list.svelte";
   import { parseSearchParams } from "./route-list-query";

@@ -1,5 +1,5 @@
-import type { ContentLine } from "$lib/server/content-parser";
-import type { Chunk, ResultFile } from "$lib/server/search-api";
+import type { ContentLine } from "#lib/server/content-parser.js";
+import type { Chunk, ResultFile } from "#lib/server/search-api.js";
 
 export type LineGroup = Array<{
   readonly lineNumber: number;

@@ -6,7 +6,7 @@ import {
   parseFileNameMatch,
 } from "./content-parser";
 import { makeZoektRequest } from "./zoekt-client";
-import { evaluateFileUrlTemplate } from "$lib/url-templates";
+import { evaluateFileUrlTemplate } from "#lib/url-templates.js";
 
 export const searchQuerySchema = v.object({
   query: v.string(),

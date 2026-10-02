@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import type { SearchResults as ApiSearchResults } from "$lib/server/search-api";
+  import type { SearchResults as ApiSearchResults } from "#lib/server/search-api.js";
   import SearchForm from "./search-form.svelte";
   import Lander from "./lander.svelte";
   import SearchResults from "./search-results.svelte";

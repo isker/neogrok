@@ -1,7 +1,7 @@
 import { goto } from "$app/navigation";
 import { navigating, page } from "$app/state";
-import type { SearchType } from "$lib/preferences.svelte";
-import type { ListQuery } from "$lib/server/zoekt-list-repositories";
+import type { SearchType } from "#lib/preferences.svelte.js";
+import type { ListQuery } from "#lib/server/zoekt-list-repositories.js";
 
 const defaultQueryOptions: RouteListQuery = Object.freeze({ repos: 100 });
 
@@ -12,7 +12,7 @@ export type RouteListQuery = ListQuery & {
 };
 
 export const parseSearchParams = (
-  searchParams: URLSearchParams,
+  searchParams: Pick<URLSearchParams, "get">,
 ): RouteListQuery => {
   const parsedRepos = Number.parseInt(searchParams.get("repos") ?? "", 10);
 
@@ -54,7 +54,7 @@ export const updateRouteListQuery = ({
 
   if (queryChanged || reposChanged) {
     const now = Date.now();
-    const next = new URL(baselineUrl);
+    const next = new URL(baselineUrl.href);
 
     if (queryChanged && query) {
       next.searchParams.set("q", query);
@@ -69,9 +69,8 @@ export const updateRouteListQuery = ({
     }
 
     goto(next, {
-      replaceState: searchType === "live" && now - lastNavigateTime < 2000,
-      keepFocus: true,
-      noScroll: true,
+      replace: searchType === "live" && now - lastNavigateTime < 2000,
+      reset: false,
     });
     lastNavigateTime = now;
   }

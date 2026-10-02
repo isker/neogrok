@@ -4,7 +4,7 @@ import type {
   QueryLocation,
   ZoektConversionWarning,
 } from "./conversion-warnings";
-import { escapeRegExp } from "$lib/regexp";
+import { escapeRegExp } from "#lib/regexp.js";
 
 const locationSchema = v.object({
   column: v.number(),

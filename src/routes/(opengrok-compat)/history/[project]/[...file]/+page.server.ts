@@ -1,7 +1,7 @@
-import { escapeRegExp } from "$lib/regexp";
-import { configuration } from "$lib/server/configuration";
-import { listRepositories } from "$lib/server/zoekt-list-repositories";
-import { evaluateFileUrlTemplate } from "$lib/url-templates";
+import { escapeRegExp } from "#lib/regexp.js";
+import { configuration } from "#lib/server/configuration.js";
+import { listRepositories } from "#lib/server/zoekt-list-repositories.js";
+import { evaluateFileUrlTemplate } from "#lib/url-templates.js";
 import { redirect } from "@sveltejs/kit";
 
 export const load: import("./$types").PageServerLoad = async ({
@@ -41,7 +41,7 @@ export const load: import("./$types").PageServerLoad = async ({
   });
 
   if (destinationUrl && (await parent()).preferences.openGrokInstantRedirect) {
-    redirect(301, destinationUrl);
+    redirect(301, destinationUrl, { external: true });
   }
 
   return { file, destinationUrl };

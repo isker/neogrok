@@ -4,8 +4,8 @@ import {
   renderRepoQuery,
 } from "./opengrok-lucene.server";
 import { redirect } from "@sveltejs/kit";
-import { listRepositories } from "$lib/server/zoekt-list-repositories";
-import { configuration } from "$lib/server/configuration";
+import { listRepositories } from "#lib/server/zoekt-list-repositories.js";
+import { configuration } from "#lib/server/configuration.js";
 
 export const load: import("./$types").PageServerLoad = async ({
   url,

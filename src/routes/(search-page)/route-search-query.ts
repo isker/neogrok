@@ -1,7 +1,7 @@
 import { goto } from "$app/navigation";
 import { page, navigating } from "$app/state";
-import type { SearchType } from "$lib/preferences.svelte";
-import type { SearchQuery } from "$lib/server/search-api";
+import type { SearchType } from "#lib/preferences.svelte.js";
+import type { SearchQuery } from "#lib/server/search-api.js";
 
 const defaultQueryOptions: Omit<SearchQuery, "query"> = Object.freeze({
   contextLines: 1,
@@ -14,7 +14,7 @@ export type RouteSearchQuery = Omit<SearchQuery, "query"> & {
 };
 
 export const parseSearchParams = (
-  searchParams: URLSearchParams,
+  searchParams: Pick<URLSearchParams, "get">,
 ): RouteSearchQuery => {
   const parsedContextLines = Number.parseInt(
     searchParams.get("contextLines") ?? "",
@@ -78,7 +78,7 @@ export const updateRouteSearchQuery = ({
 
   if (queryChanged || contextLinesChanged || filesChanged || matchesChanged) {
     const now = Date.now();
-    const next = new URL(baselineUrl);
+    const next = new URL(baselineUrl.href);
 
     if (queryChanged && query) {
       next.searchParams.set("q", query);
@@ -108,9 +108,8 @@ export const updateRouteSearchQuery = ({
     }
 
     goto(next, {
-      replaceState: searchType === "live" && now - lastNavigateTime < 2000,
-      keepFocus: true,
-      noScroll: true,
+      replace: searchType === "live" && now - lastNavigateTime < 2000,
+      reset: false,
     });
     lastNavigateTime = now;
   }

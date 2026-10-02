@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { usePreferences } from "$lib/preferences.svelte";
+  import { usePreferences } from "#lib/preferences.svelte.js";
   import Zap from "lucide-svelte/icons/zap";
 
   const prefs = usePreferences();

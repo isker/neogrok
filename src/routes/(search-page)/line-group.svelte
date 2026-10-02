@@ -1,8 +1,8 @@
 <script lang="ts">
-  import type { ResultFile } from "$lib/server/search-api";
+  import type { ResultFile } from "#lib/server/search-api.js";
   import { onMount } from "svelte";
   import type { ThemedToken, BundledLanguage } from "shiki";
-  import { prefersDark } from "$lib/theme";
+  import { prefersDark } from "#lib/theme.js";
   import type { LineGroup } from "./chunk-renderer";
   import RenderedContent from "./rendered-content.svelte";
 

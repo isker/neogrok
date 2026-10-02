@@ -1,11 +1,11 @@
 <script lang="ts">
   import { navigating, page } from "$app/state";
-  import { usePreferences, type SearchType } from "$lib/preferences.svelte";
-  import { computeInputColor } from "$lib/input-colors";
+  import { usePreferences, type SearchType } from "#lib/preferences.svelte.js";
+  import { computeInputColor } from "#lib/input-colors.js";
   import { parseSearchParams, updateRouteListQuery } from "./route-list-query";
-  import ToggleSearchType from "$lib/toggle-search-type.svelte";
-  import LoadingEllipsis from "$lib/loading-ellipsis.svelte";
-  import IntegerInput from "$lib/integer-input.svelte";
+  import ToggleSearchType from "#lib/toggle-search-type.svelte";
+  import LoadingEllipsis from "#lib/loading-ellipsis.svelte";
+  import IntegerInput from "#lib/integer-input.svelte";
 
   let routeListQuery = $derived(parseSearchParams(page.url.searchParams));
 

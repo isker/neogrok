@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { renderChunksToLineGroups } from "./chunk-renderer";
-import type { Chunk } from "$lib/server/search-api";
+import type { Chunk } from "#lib/server/search-api.js";
 
 // This is real data from a search result against the zoekt repo:
 // r:zoekt f:api test

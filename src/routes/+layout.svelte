@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import { contextifyPreferences } from "$lib/preferences.svelte";
+  import { contextifyPreferences } from "#lib/preferences.svelte.js";
   import "../app.css";
 
   const navLinks = [
