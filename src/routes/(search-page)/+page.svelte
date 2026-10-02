@@ -27,6 +27,12 @@
       previousSearchResults = null;
     }
   });
+
+  let displayedSearchResults = $derived(
+    data.searchOutcome.kind === "success"
+      ? data.searchOutcome.results
+      : previousSearchResults,
+  );
 </script>
 
 <svelte:head>
@@ -48,14 +54,8 @@
     ? data.searchOutcome.error
     : null}
 />
-{#if data.searchOutcome.kind === "none"}
-  <Lander />
-{:else if data.searchOutcome.kind === "error"}
-  {#if previousSearchResults}
-    <SearchResults results={previousSearchResults} />
-  {:else}
-    <Lander />
-  {/if}
+{#if displayedSearchResults}
+  <SearchResults results={displayedSearchResults} />
 {:else}
-  <SearchResults results={data.searchOutcome.results} />
+  <Lander />
 {/if}
