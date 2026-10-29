@@ -1,5 +1,12 @@
 # neogrok
 
+## 1.2.6
+
+### Patch Changes
+
+- 46bc0d8: Migrate to SvelteKit 3 and its TypeScript 6 and Vite 8 toolchain.
+- 1ec297c: Fix search results crashing on syntax-highlighted code with strikethrough or combined font styles, such as Markdown `~~strikethrough~~`. Errors in syntax highlighting now fall back to plain text instead of breaking the page.
+
 ## 1.2.5
 
 ### Patch Changes
