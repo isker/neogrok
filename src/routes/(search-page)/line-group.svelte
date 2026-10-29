@@ -170,13 +170,21 @@
       language,
       theme,
       abortController.signal,
-    ).then((tokens) => {
-      if (!abortController.signal.aborted) {
-        highlights = tokens;
-      }
-    });
+    )
+      .then((tokens) => {
+        if (!abortController.signal.aborted) {
+          highlights = tokens;
+        }
+      })
+      .catch(onHighlightError);
     return () => abortController.abort();
   });
+
+  // Highlighting is a nice-to-have; failures should degrade to plain text
+  // rather than break the page.
+  const onHighlightError = (error: unknown) => {
+    console.error("Syntax highlighting failed for %s", file.fileName, error);
+  };
 
   let visibilityCanary: Element;
   onMount(() => {
@@ -212,6 +220,11 @@
         >
       {:else}{lineNumber}{/if}
     </span>
-    <code><RenderedContent content={line} highlights={highlights?.[i]} /></code>
+    <code
+      ><svelte:boundary onerror={onHighlightError}>
+        <RenderedContent content={line} highlights={highlights?.[i]} />
+        {#snippet failed()}<RenderedContent content={line} />{/snippet}
+      </svelte:boundary></code
+    >
   {/each}
 </div>

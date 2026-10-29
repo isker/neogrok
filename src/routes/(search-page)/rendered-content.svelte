@@ -14,24 +14,28 @@
   const toFontClass = (
     fontStyle: FontStyle | undefined,
   ): string | undefined => {
-    if (fontStyle === undefined) {
+    // These magic numbers come from an enum in shiki that I refuse to link
+    // this component to. Written on the wall that contains the thousands of
+    // terrible design decisions in typescript, you will find enums.
+    //
+    // It's a bitmask (e.g. 3 is bold italic), and -1 means "not set".
+    if (fontStyle === undefined || fontStyle <= 0) {
       return undefined;
     }
-    switch (fontStyle) {
-      // These magic numbers come from an enum in shiki that I refuse to link
-      // this component to. Written on the wall that contains the thousands of
-      // terrible design decisions in typescript, you will find enums.
-      case 0:
-        return undefined;
-      case 1:
-        return "italic";
-      case 2:
-        return "font-bold";
-      case 4:
-        return "underline";
-      default:
-        throw new Error(`unreachable ${fontStyle}`);
+    const classes = [];
+    if (fontStyle & 1) {
+      classes.push("italic");
     }
+    if (fontStyle & 2) {
+      classes.push("font-bold");
+    }
+    if (fontStyle & 4) {
+      classes.push("underline");
+    }
+    if (fontStyle & 8) {
+      classes.push("line-through");
+    }
+    return classes.length > 0 ? classes.join(" ") : undefined;
   };
 
   let tokens: Array<{
