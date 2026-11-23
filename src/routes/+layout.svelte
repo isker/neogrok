@@ -21,6 +21,12 @@
   contextifyPreferences(data.preferences);
 </script>
 
+<svelte:head>
+  <!-- Loaded app-wide so that search results rendered after a client-side
+  navigation from another page are never briefly unhighlighted. -->
+  <link rel="stylesheet" href="/highlights.css" />
+</svelte:head>
+
 <div class="container mx-auto px-2 py-4">
   <nav class="pb-12">
     <ul class="flex justify-center text-xs gap-y-2 flex-wrap">

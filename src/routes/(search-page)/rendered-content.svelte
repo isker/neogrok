@@ -1,48 +1,19 @@
 <script lang="ts">
   import type { ContentLine, Range } from "#lib/server/content-parser.js";
 
-  import type { ThemedToken } from "shiki";
-  import type { FontStyle } from "@shikijs/vscode-textmate";
+  import type { HighlightToken } from "#lib/server/syntax-highlighting.js";
 
   type Props = {
     content: ContentLine;
-    highlights?: ReadonlyArray<ThemedToken> | undefined;
+    highlights?: ReadonlyArray<HighlightToken> | undefined;
   };
 
   let { content, highlights = undefined }: Props = $props();
 
-  const toFontClass = (
-    fontStyle: FontStyle | undefined,
-  ): string | undefined => {
-    // These magic numbers come from an enum in shiki that I refuse to link
-    // this component to. Written on the wall that contains the thousands of
-    // terrible design decisions in typescript, you will find enums.
-    //
-    // It's a bitmask (e.g. 3 is bold italic), and -1 means "not set".
-    if (fontStyle === undefined || fontStyle <= 0) {
-      return undefined;
-    }
-    const classes = [];
-    if (fontStyle & 1) {
-      classes.push("italic");
-    }
-    if (fontStyle & 2) {
-      classes.push("font-bold");
-    }
-    if (fontStyle & 4) {
-      classes.push("underline");
-    }
-    if (fontStyle & 8) {
-      classes.push("line-through");
-    }
-    return classes.length > 0 ? classes.join(" ") : undefined;
-  };
-
   let tokens: Array<{
     text: string;
     match: boolean;
-    color?: string;
-    fontClass?: string;
+    highlightClass?: string;
   }> = $derived.by(() => {
     const t: typeof tokens = [];
     if (highlights) {
@@ -54,9 +25,9 @@
         matchRangeIterator.next().value;
 
       let start = 0;
-      for (const { content: highlightText, fontStyle, color } of highlights) {
-        const end = start + highlightText.length;
-        const fontClass = toFontClass(fontStyle);
+      for (const [length, type] of highlights) {
+        const end = start + length;
+        const highlightClass = `hl-${type}`;
         let base = start;
 
         while (
@@ -72,8 +43,7 @@
             t.push({
               text: content.text.slice(base, currentMatchRange.start),
               match: false,
-              fontClass,
-              color,
+              highlightClass,
             });
             base = currentMatchRange.start;
           }
@@ -83,8 +53,7 @@
             t.push({
               text: content.text.slice(base, currentMatchRange.end),
               match: true,
-              fontClass,
-              color,
+              highlightClass,
             });
             base = currentMatchRange.end;
             currentMatchRange = matchRangeIterator.next().value;
@@ -101,8 +70,7 @@
               !!currentMatchRange &&
               base >= currentMatchRange.start &&
               base < currentMatchRange.end,
-            fontClass,
-            color,
+            highlightClass,
           });
         }
 
@@ -127,21 +95,15 @@
 </script>
 
 <!-- eslint-disable-next-line svelte/require-each-key -->
-{#each tokens as { text, match, color, fontClass }}
-  {#if match && color}
-    <!--
-      We have no choice but to go for direct styles here, as tailwind will not
-      be able to precompile arbitrary colors. The only alternative would be to
-      enumerate all possible colors emitted by the highlight theme (thus
-      coupling us to it) in code, so that tailwind could pick them up.
-    -->
+{#each tokens as { text, match, highlightClass }}
+  {#if match && highlightClass}
     <mark class="bg-yellow-200 dark:bg-yellow-900 text-inherit"
-      ><span style={`color: ${color}`} class={fontClass}>{text}</span></mark
+      ><span class={highlightClass}>{text}</span></mark
     >
   {:else if match}
     <mark class="bg-yellow-200 dark:bg-yellow-900 text-inherit">{text}</mark>
-  {:else if color}
-    <span style={`color: ${color}`} class={fontClass}>{text}</span>
+  {:else if highlightClass}
+    <span class={highlightClass}>{text}</span>
   {:else}
     {text}
   {/if}

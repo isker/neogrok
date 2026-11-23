@@ -1,9 +1,8 @@
-import type { ContentLine } from "#lib/server/content-parser.js";
-import type { Chunk, ResultFile } from "#lib/server/search-api.js";
+import type { Chunk, ChunkLine, ResultFile } from "#lib/server/search-api.js";
 
 export type LineGroup = Array<{
   readonly lineNumber: number;
-  readonly line: ContentLine;
+  readonly line: ChunkLine;
 }>;
 
 export const renderChunksToLineGroups = (

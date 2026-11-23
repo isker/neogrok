@@ -5,6 +5,7 @@ import {
   parseChunkMatch,
   parseFileNameMatch,
 } from "./content-parser";
+import { highlightChunks } from "./syntax-highlighting";
 import { makeZoektRequest } from "./zoekt-client";
 import { evaluateFileUrlTemplate } from "#lib/url-templates.js";
 
@@ -193,19 +194,25 @@ const searchResultSchema = v.object({
                     fileNameParsed = { text: fileName, matchRanges: [] };
                   }
 
+                  const chunks = chunkMatches
+                    .filter(({ isFileNameChunk }) => !isFileNameChunk)
+                    .map(({ content, startLineNumber, matchRanges }) => ({
+                      lines: parseChunkMatch(content, matchRanges),
+                      startLineNumber,
+                      matchCount: matchRanges.length,
+                    }));
+                  const highlightedLines = highlightChunks(chunks, language);
+
                   return {
                     repository,
                     fileName: fileNameParsed,
                     branches,
                     language,
                     version,
-                    chunks: chunkMatches
-                      .filter(({ isFileNameChunk }) => !isFileNameChunk)
-                      .map(({ content, startLineNumber, matchRanges }) => ({
-                        lines: parseChunkMatch(content, matchRanges),
-                        startLineNumber,
-                        matchCount: matchRanges.length,
-                      })),
+                    chunks: chunks.map((chunk, i) => ({
+                      ...chunk,
+                      lines: highlightedLines[i],
+                    })),
                   };
                 },
               ),
