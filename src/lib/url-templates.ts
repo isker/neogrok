@@ -3,7 +3,21 @@
 //
 // These functions handle both the old and new versions of the templates.
 
-const urlJoinPathTemplate = /^{{\s*URLJoinPath\s+(?<args>.*?)\s*}}$/;
+// Zoekt may put more template text after the URLJoinPath block. Bitbucket
+// Server's file template is one such case:
+//   {{URLJoinPath "https://host/projects/P/repos/r/browse" .Path}}?at={{.Version}}
+const urlJoinPathTemplate =
+  /^{{\s*URLJoinPath\s+(?<args>.*?)\s*}}(?<suffix>.*)$/;
+
+// The suffix sits outside the joined path, typically in the query string, so
+// variables in it are encoded as single components rather than path segments.
+const evaluateSuffix = (
+  suffix: string,
+  variables: { version: string; path?: string },
+): string =>
+  suffix
+    .replaceAll("{{.Version}}", () => encodeURIComponent(variables.version))
+    .replaceAll("{{.Path}}", () => encodeURIComponent(variables.path ?? ""));
 
 export const evaluateFileUrlTemplate = (
   template: string,
@@ -12,7 +26,7 @@ export const evaluateFileUrlTemplate = (
 ): string => {
   const match = template.match(urlJoinPathTemplate);
   if (match?.groups) {
-    const { args } = match.groups;
+    const { args, suffix } = match.groups;
     return args
       .split(/\s+/)
       .map((s) => {
@@ -25,7 +39,8 @@ export const evaluateFileUrlTemplate = (
           return JSON.parse(s);
         }
       })
-      .join("/");
+      .join("/")
+      .concat(evaluateSuffix(suffix, { version, path }));
   } else {
     return (
       template
@@ -44,7 +59,7 @@ export const evaluateCommitUrlTemplate = (
 ): string => {
   const match = template.match(urlJoinPathTemplate);
   if (match?.groups) {
-    const { args } = match.groups;
+    const { args, suffix } = match.groups;
     return args
       .split(/\s+/)
       .map((s) => {
@@ -55,7 +70,8 @@ export const evaluateCommitUrlTemplate = (
           return JSON.parse(s);
         }
       })
-      .join("/");
+      .join("/")
+      .concat(evaluateSuffix(suffix, { version }));
   } else {
     // We use the function version of replaceAll because it interprets a
     // variety of characters in strings specially. Only functions guarantee
