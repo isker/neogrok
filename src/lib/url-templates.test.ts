@@ -65,6 +65,18 @@ describe("evaluateFileUrlTemplate", () => {
       ),
     ).toEqual("https://svn.future/r/12345/nopath");
   });
+
+  it("evaluates new templates with a suffix (Bitbucket Server)", () => {
+    expect(
+      evaluateFileUrlTemplate(
+        '{{URLJoinPath "https://bitbucket.example.com/projects/TOOL/repos/acme/browse" .Path}}?at={{.Version}}',
+        "refs/heads/main",
+        "src/a b.go",
+      ),
+    ).toEqual(
+      "https://bitbucket.example.com/projects/TOOL/repos/acme/browse/src/a%20b.go?at=refs%2Fheads%2Fmain",
+    );
+  });
 });
 
 describe("evaluateCommitUrlTemplate", () => {
